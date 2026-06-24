@@ -1,5 +1,5 @@
 try:
-    from evdev import list_devices, ecodes
+    from evdev import InputDevice, list_devices, ecodes
 except ImportError:
     InputDevice = None
     ecodes = None
