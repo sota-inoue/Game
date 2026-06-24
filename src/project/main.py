@@ -7,6 +7,7 @@ from Screen.input import TouchInput
 
 class App:
     FB = "/dev/fb1"
+    FPS = 10
 
     def __init__(self):
         pygame.init()
@@ -22,7 +23,7 @@ class App:
             self.input.update()
             print(self.count, self.input.x, self.input.y, self.input.touch_down)
             self.count += 1
-            time.sleep(1 / self.input.FPS)
+            time.sleep(1 / self.FPS)
         self.fb.close()
         pygame.quit()
 
