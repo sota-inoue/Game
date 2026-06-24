@@ -7,7 +7,7 @@ class TouchDisplay:
         self.WIDTH = 480
         self.HEIGHT = 320
         self.surface = pygame.Surface( (self.WIDTH, self.HEIGHT), depth=16)
-        self.Draw()
+        self.draw()
 
     def draw(self):
         self.surface.fill((0, 0, 0))
