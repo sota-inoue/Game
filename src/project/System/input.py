@@ -1,12 +1,12 @@
 try:
-    from evdev import InputDevice, ecodes
+    from evdev import list_devices, ecodes
 except ImportError:
     InputDevice = None
     ecodes = None
 
 class TouchInput:
 
-    DEVICE = "/dev/input/event11"
+    DEVICE_NAME = "ADS7846 Touchscreen"
 
     WIDTH = 480
     HEIGHT = 320
@@ -15,11 +15,19 @@ class TouchInput:
     RAW_Y_MAX = 4095
 
     def __init__(self):
-        self.touch = InputDevice(self.DEVICE)
+        self.touch = self.find_device()
 
         self.x = 0
         self.y = 0
         self.touch_down = False
+
+    def find_device(self):
+        for path in list_devices():
+            device = InputDevice(path)
+            if device.name == self.DEVICE_NAME:
+                return device
+
+        raise FileNotFoundError("ADS7846 Touchscreen が見つかりません")
 
     def update(self):
         try:
