@@ -1,51 +1,29 @@
+import mmap
 import pygame
 
-from Screen.Touch import TouchDisplay
-from Screen.fb import FrameBuffer
+FB = "/dev/fb2"
+W, H = 480, 320
 
+pygame.init()
 
-class App:
-    DEVICE1 = "/dev/fb1"
-    FPS = 10
+screen = pygame.Surface((W, H))
+screen.fill((0, 0, 0))
 
-    def __init__(self):
-        pygame.init()
+pygame.draw.rect(screen, (255, 0, 0), (50, 50, 150, 100))
+pygame.draw.circle(screen, (0, 255, 0), (300, 160), 50)
 
-        self.touch = TouchDisplay()
+raw = pygame.image.tostring(screen, "RGB")
 
-        self.fb1 = FrameBuffer(
-            self.touch.WIDTH,
-            self.touch.HEIGHT,
-            self.DEVICE1
-        )
+with open(FB, "r+b") as f:
+    fb = mmap.mmap(f.fileno(), W * H * 2)
 
-        self.clock = pygame.time.Clock()
+    # RGB888 → RGB565
+    data = bytearray()
+    for i in range(0, len(raw), 3):
+        r, g, b = raw[i], raw[i+1], raw[i+2]
+        rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+        data += rgb565.to_bytes(2, "little")
 
-    def run(self):
-        try:
-            while self.get_event():
-                self.touch.Draw()
-
-                self.fb1.draw(
-                    self.touch.surface
-                )
-
-                self.clock.tick(self.FPS)
-
-        finally:
-            self.fb1.close()
-            pygame.quit()
-
-    def get_event(self):
-        events = pygame.event.get()
-
-        for event in events:
-            if event.type == pygame.QUIT:
-                return False
-
-            self.touch.GetEvent(event)
-
-        return True
-
-
-App()
+    fb.seek(0)
+    fb.write(data)
+    fb.close()
