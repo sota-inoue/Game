@@ -10,8 +10,8 @@ class Command(Enum):
 class GameDisplay:
     BACK_COLOR = (90, 90, 90)
     TEXT_COLOR = (0, 0, 0)
-    WIDTH = 600
-    HEIGHT = 450
+    WIDTH = 1920
+    HEIGHT = 1080
 
     def __init__(self):
         self.surface = pygame.Surface((self.WIDTH, self.HEIGHT), depth=16)
