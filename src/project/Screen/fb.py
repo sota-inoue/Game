@@ -1,6 +1,4 @@
 import mmap
-import pygame
-
 
 class FrameBuffer:
     def __init__(self, device, width, height):

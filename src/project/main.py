@@ -9,7 +9,7 @@ class App:
     def __init__(self):
         pygame.init()
         self.touch = TouchDisplay()
-        self.fb = FrameBuffer(self.FB, self.touch.WIDTH, self.touch.HEIGHT,)
+        self.fb = FrameBuffer(self.FB, self.touch.WIDTH, self.touch.HEIGHT)
         self.run()
 
     def run(self):
