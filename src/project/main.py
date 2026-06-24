@@ -3,25 +3,23 @@ import pygame
 from Screen.Touch import TouchDisplay
 from Screen.fb import FrameBuffer
 
+class App:
+    FB = "/dev/fb1"
 
-FB = "/dev/fb1"
-W = 480
-H = 320
+    def __init__(self):
+        pygame.init()
+        self.touch = TouchDisplay()
+        self.fb = FrameBuffer(self.FB, self.touch.WIDTH, self.touch.HEIGHT,)
+        self.run()
 
+    def run(self):
+        try:
+            self.touch.draw()
+            self.fb.draw(self.touch.surface)
 
-def main():
-    pygame.init()
-
-    fb = FrameBuffer(FB, W, H)
-    screen = TouchDisplay(W, H)
-
-    try:
-        screen.draw()
-        fb.draw(screen.surface)
-
-    finally:
-        fb.close()
-        pygame.quit()
+        finally:
+            self.fb.close()
+            pygame.quit()
 
 
-main()
+App()
