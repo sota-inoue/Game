@@ -13,7 +13,8 @@ class FrameBuffer:
         self.map = mmap.mmap(self.file.fileno(), self.size)
 
     def draw(self, surface):
-        raw = pygame.image.tostring(surface, "RGB565")
+         # Surface が 16bit RGB565 である前提
+        raw = surface.get_view("2")
 
         self.map.seek(0)
         self.map.write(raw)
