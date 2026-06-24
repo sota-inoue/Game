@@ -1,10 +1,7 @@
-import time
 from evdev import InputDevice, ecodes
 
-
 class TouchInput:
-
-    FPS = 10
+    
     DEVICE = "/dev/input/event11"
 
     def __init__(self):
@@ -12,17 +9,9 @@ class TouchInput:
 
         self.x = 0
         self.y = 0
-
         self.touch_down = False
-        self.run()
-
-    def run(self):
-        while True:
-            self.update()
-            time.sleep(1 / self.FPS)
 
     def update(self):
-
         self.touch_down = False
 
         try:
@@ -43,8 +32,5 @@ class TouchInput:
 
             elif event.type == ecodes.EV_KEY:
 
-                if (
-                    event.code == ecodes.BTN_TOUCH
-                    and event.value == 1
-                ):
-                    self.touch_down = True
+                if event.code == ecodes.BTN_TOUCH:
+                    self.touch_down = bool(event.value)

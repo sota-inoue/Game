@@ -19,6 +19,7 @@ class App:
     def run(self):
         self.draw()
         while self.count < 30:
+            self.input.update()
             print(self.count, self.input.x, self.input.y, self.input.touch_down)
             self.count += 1
             time.sleep(1 / self.input.FPS)
