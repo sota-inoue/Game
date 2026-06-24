@@ -3,7 +3,7 @@ import time
 
 from Screen.Touch import TouchDisplay
 from Screen.Display import GameDisplay, Command
-from System.fb import FrameBuffer
+from System.fb import FbManager
 from System.input import TouchInput
 
 class App:
@@ -22,13 +22,11 @@ class App:
 
         if self.mode:
             self.screen = None
-            self.fb1 = FrameBuffer(self.FB1, self.game.WIDTH, self.game.HEIGHT)
-            self.fb2 = FrameBuffer(self.FB2, self.touch.WIDTH, self.touch.HEIGHT)
+            self.fb = FbManager()
             self.input_device = TouchInput()
         else:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-            self.fb1 = None
-            self.fb2 = None
+            self.fb = None
             self.input_device = None
             
         self.TOUCH_SCREEN_TOP_X = (self.WIDTH - self.touch.WIDTH) // 2
@@ -89,11 +87,9 @@ class App:
     def draw(self):
         self.touch.draw_Controller()
         self.game.draw_Game()
-
         if self.mode:
-            self.fb1.draw(self.game.surface)
-            self.fb2.draw(self.touch.surface)
-
+            self.fb.hdmi_draw(self.game.surface)
+            self.fb.spi_draw(self.touch.surface)
         else:
             self.screen.fill(self.BACK_COLOR)
             self.screen.blit(self.game.surface, (0, 0))
@@ -104,10 +100,9 @@ class App:
         if self.mode == True:
             self.touch.draw()
             self.game.draw()
-            self.fb1.draw(self.touch.surface)
-            self.fb2.draw(self.touch.surface)
-            self.fb1.close()
-            self.fb2.close()
+            self.fb.hdmi_draw(self.game.surface)
+            self.fb.spi_draw(self.touch.surface)
+            self.fb.close()
             pygame.quit()
         else:
             pygame.quit()
