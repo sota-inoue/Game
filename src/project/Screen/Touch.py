@@ -12,7 +12,7 @@ class TouchDisplay:
             depth=16
         )
 
-        self.Draw()
+        self.draw()
 
     def draw(self):
         self.surface.fill((0, 0, 0))
