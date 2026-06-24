@@ -1,7 +1,7 @@
 import mmap
 import pygame
 
-FB = "/dev/fb2"
+FB = "/dev/fb1"
 W, H = 480, 320
 
 pygame.init()
