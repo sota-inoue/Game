@@ -1,5 +1,8 @@
-from evdev import InputDevice, ecodes
-
+try:
+    from evdev import InputDevice, ecodes
+except ImportError:
+    InputDevice = None
+    ecodes = None
 
 class TouchInput:
 
