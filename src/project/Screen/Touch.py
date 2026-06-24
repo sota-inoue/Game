@@ -1,18 +1,13 @@
 import pygame
 
+
 class TouchDisplay:
 
-    WIDTH = 480
-    HEIGHT = 320
-
     def __init__(self):
-
-        self.surface = pygame.Surface(
-            (self.WIDTH, self.HEIGHT),
-            depth=16
-        )
-
-        self.draw()
+        self.WIDTH = 480
+        self.HEIGHT = 320
+        self.surface = pygame.Surface( (self.WIDTH, self.HEIGHT), depth=16)
+        self.Draw()
 
     def draw(self):
         self.surface.fill((0, 0, 0))
@@ -20,6 +15,5 @@ class TouchDisplay:
         pygame.draw.rect(
             self.surface,
             (255, 0, 0),
-            (0, 0, 100, 100)
-            )
-
+            (50, 50, 150, 100)
+        )

@@ -17,13 +17,7 @@ class FrameBuffer:
 
     def draw(self, surface):
         self.map.seek(0)
-
-        self.map.write(
-            pygame.image.tostring(
-                surface,
-                "RGB565"
-            )
-        )
+        self.map.write(surface.get_buffer().raw)
 
     def close(self):
         self.map.close()
