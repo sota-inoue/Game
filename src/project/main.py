@@ -12,6 +12,7 @@ class App:
         pygame.init()
 
         self.touch = TouchDisplay()
+
         self.fb1 = FrameBuffer(
             self.touch.WIDTH,
             self.touch.HEIGHT,
@@ -20,13 +21,14 @@ class App:
 
         self.clock = pygame.time.Clock()
 
-        self.Run()
-
-    def Run(self):
+    def run(self):
         try:
-            while self.GetEvent():
+            while self.get_event():
+                self.touch.Draw()
 
-                self.fb1.draw(self.touch.surface)
+                self.fb1.draw(
+                    self.touch.surface
+                )
 
                 self.clock.tick(self.FPS)
 
@@ -34,12 +36,14 @@ class App:
             self.fb1.close()
             pygame.quit()
 
-    def GetEvent(self):
+    def get_event(self):
         events = pygame.event.get()
 
         for event in events:
             if event.type == pygame.QUIT:
                 return False
+
+            self.touch.GetEvent(event)
 
         return True
 

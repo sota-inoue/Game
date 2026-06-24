@@ -1,8 +1,10 @@
 import mmap
+import pygame
+
 
 class FrameBuffer:
 
-    def __init__(self, device, width, height):
+    def __init__(self, width, height, device):
         self.width = width
         self.height = height
 
@@ -14,9 +16,14 @@ class FrameBuffer:
         )
 
     def draw(self, surface):
-
         self.map.seek(0)
-        self.map.write(surface.get_buffer())
+
+        self.map.write(
+            pygame.image.tostring(
+                surface,
+                "RGB565"
+            )
+        )
 
     def close(self):
         self.map.close()

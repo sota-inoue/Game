@@ -1,13 +1,25 @@
 import pygame
 
 class TouchDisplay:
+
     WIDTH = 480
     HEIGHT = 320
-    BACK_COLOR = (90, 90, 90)
 
     def __init__(self):
-        self.surface = pygame.Surface((self.WIDTH, self.HEIGHT))
+
+        self.surface = pygame.Surface(
+            (self.WIDTH, self.HEIGHT),
+            depth=16
+        )
+
+        self.Draw()
 
     def draw(self):
-        self.surface.fill(self.BACK_COLOR)
+        self.surface.fill((0, 0, 0))
+
+        pygame.draw.rect(
+            self.surface,
+            (255, 0, 0),
+            (0, 0, 100, 100)
+            )
 
