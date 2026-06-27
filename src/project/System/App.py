@@ -80,7 +80,7 @@ class App:
             # 入力からコマンドを決定
             command = self.get_command()
             # ゲーム更新
-            self.game.update(command)
+            #self.game.update(command)
             # 描画
             self.draw()
             # フレーム数を更新
@@ -151,9 +151,9 @@ class App:
         ゲーム画面とタッチパネルを描画する
         """
         # タッチパネル描画
-        self.touch.draw_Continue()
+        self.touch.draw()
         # ゲーム画面描画
-        self.game.draw_Clear()
+        self.game.draw()
         # Raspberry Piモードでの描画処理
         if self.mode:
             # HDMIへゲーム画面を描画

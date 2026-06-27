@@ -23,7 +23,7 @@ class GameDisplay:
         self.height = height
         self.surface = pygame.Surface((self.width, self.height), depth=16)
         self.font = pygame.font.Font(None, 50)
-        self.text = "STAY"
+        self.state = GameScene.TITLE
 
     def DrawText(self, str, x, y):
         # 指定した文字列を作成
@@ -34,47 +34,42 @@ class GameDisplay:
         # 指定された座標を文字列の中心として描画
         self.surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
-    def update(self,cmd):
-        if cmd == Command.STAY:
-            self.text = "STAY"
-        elif cmd == Command.LEFT:
-            self.text = "LEFT"
-        elif cmd == Command.JUMP:
-            self.text = "JUMP"
-        elif cmd == Command.RIGHT:
-            self.text = "RIGHT"
-        else:
-            return
+    # 外部からゲーム画面の状態を変更する機能
+    def set_state(self, state):
+        self.state = state
 
     def draw(self):
-        self.surface.fill(self.BACK_COLOR)
-
-    def draw_Title(self):
         # BACK_COLORでsurfaceを塗りつぶす
         self.surface.fill(self.BACK_COLOR)
+
+        # 現在のstateに応じたスクリーンを描画を行う
+        if self.state == GameScene.TITLE:
+            self.draw_Title()
+        elif self.state == GameScene.OP:
+            self.draw_Opening()
+        elif self.state == GameScene.STAGE:
+            self.draw_Stage()
+        elif self.state == GameScene.OVER:
+            self.draw_Over()
+        elif self.state == GameScene.CLEAR:
+            self.draw_Clear()
+
+    def draw_Title(self):
         # 画面の中心にTitleの文字列を描画
         self.DrawText("Tirle", self.width//2, self.height//2)
 
     def draw_Opening(self):
-        # BACK_COLORでsurfaceを塗りつぶす
-        self.surface.fill(self.BACK_COLOR)
         # 画面の中心にOpeningの文字列を描画
         self.DrawText("Opening", self.width//2, self.height//2)
 
     def draw_Stage(self):
-        # BACK_COLORでsurfaceを塗りつぶす
-        self.surface.fill(self.BACK_COLOR)
         # 画面の中心にstageの文字列を描画
         self.DrawText("Stage", self.width//2, self.height//2)
 
     def draw_Over(self):
-        # BACK_COLORでsurfaceを塗りつぶす
-        self.surface.fill(self.BACK_COLOR)
         # 画面の中心にGame Overの文字列を描画
         self.DrawText("Game Over", self.width//2, self.height//2)
 
     def draw_Clear(self):
-        # BACK_COLORでsurfaceを塗りつぶす
-        self.surface.fill(self.BACK_COLOR)
         # 画面の中心にGame Game Clearの文字列を描画
         self.DrawText("Game Clear", self.width//2, self.height//2)
