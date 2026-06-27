@@ -145,7 +145,7 @@ class App:
         # タッチパネル描画
         self.touch.draw_Controller()
         # ゲーム画面描画
-        self.game.draw_Game()
+        self.game.draw_Title()
         # Raspberry Piモードでの描画処理
         if self.mode:
             # HDMIへゲーム画面を描画

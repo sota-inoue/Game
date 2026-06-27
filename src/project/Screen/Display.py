@@ -18,11 +18,14 @@ class GameDisplay:
         self.font = pygame.font.Font(None, 50)
         self.text = "STAY"
 
-    def DrawText(self, text, x, y):
-        text_surface = self.font.render(text, True, self.TEXT_COLOR)
-        text_width = text_surface.get_width()
-        text_height = text_surface.get_height()
-        self.surface.blit( text_surface, (x - text_width // 2, y - text_height // 2) )
+    def DrawText(self, str, x, y):
+        # 指定した文字列を作成
+        text = self.font.render(str, True, self.TEXT_COLOR)
+        # 描画する文字列の幅と高さを取得
+        text_width = text.get_width()
+        text_height = text.get_height()
+        # 指定された座標を文字列の中心として描画
+        self.surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
     def update(self,cmd):
         if cmd == Command.STAY:
@@ -38,6 +41,12 @@ class GameDisplay:
 
     def draw(self):
         self.surface.fill(self.BACK_COLOR)
+
+    def draw_Title(self):
+        # BACK_COLORでsurfaceを塗りつぶす
+        self.surface.fill(self.BACK_COLOR)
+        # 画面の中心にTITLEの文字列を描画
+        self.DrawText("TITLE", self.width//2, self.height//2)
 
     def draw_Game(self):
         self.surface.fill(self.BACK_COLOR)
