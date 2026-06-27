@@ -14,10 +14,7 @@ class App:
     # Windous用のゲーム画面サイズ
     DISPLAY_WIDTH = 600
     DISPLAY_HEIGHT = 450
-    # Raspberry Pi用のゲーム画面サイズ
-    HDMI_WIDTH = 1920
-    HDMI_HEIGHT = 1080
-    # PC版ウィンドウサイズ
+    # pygameのウィンドウサイズ
     SCREEN_WIDTH = 600
     SCREEN_HEIGHT = 800
 
@@ -31,12 +28,13 @@ class App:
         self.touch = TouchDisplay()
         # Raspberry Piモードで使用するインスタンスを生成
         if self.mode:
-            # Raspberry Pi用ゲーム画面の生成
-            self.game = GameDisplay(self.HDMI_WIDTH, self.HDMI_HEIGHT)
             # pygameウィンドウは使用しない
             self.screen = None
             # フレームバッファへ直接描画するFbManagerクラスのインスタンスを生成
             self.fb = FbManager()
+            # Raspberry Pi用ゲーム画面の生成
+            # fbの宣言時に動的にゲーム画面のサイズが決まるため、fbの宣言後にゲーム画面のサイズを決める
+            self.game = GameDisplay(self.fb.HDMI_WIDTH, self.fb.HDMI_HEIGHT)
             # タッチ入力を取得するTouchInputクラスのインスタンスを生成
             self.input_device = TouchInput()
         # Windowsモードで使用するインスタンスを生成
