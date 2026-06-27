@@ -57,6 +57,8 @@ class FbManager:
                     ["fbset", "-fb", fb],
                     # 実行結果を文字列として受け取る
                     text=True
+                    # 存在しないフレームバッファを指定したときのエラーメッセージを表示しない
+                    stderr=subprocess.DEVNULL
                 )
 
                 # 実行結果の例
