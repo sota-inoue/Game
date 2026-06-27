@@ -65,3 +65,9 @@ class GameDisplay:
         self.surface.fill(self.BACK_COLOR)
         # 画面の中心にGame Overの文字列を描画
         self.DrawText("Game Over", self.width//2, self.height//2)
+
+    def draw_Clear(self):
+        # BACK_COLORでsurfaceを塗りつぶす
+        self.surface.fill(self.BACK_COLOR)
+        # 画面の中心にGame Game Clearの文字列を描画
+        self.DrawText("Game Clear", self.width//2, self.height//2)
