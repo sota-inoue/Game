@@ -58,9 +58,14 @@ class FbManager:
                         # geometry行を空白で分割する
                         # ['geometry', '480', '320', '480', '320', '16']
                         data = line.split()
-                        # SPI液晶の解像度と一致するか判定
-                        if width == int(data[1]) and height == int(data[2]):
+                        fb_width = int(data[1])
+                        fb_height = int(data[2])
+
+                        print(f"{fb}: {fb_width}x{fb_height}")
+
+                        if width == fb_width and height == fb_height:
                             return fb
+
             # フレームバッファが存在しないなどのエラーは無視して次を調べる
             except Exception:
                 pass
