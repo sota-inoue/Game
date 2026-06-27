@@ -108,8 +108,15 @@ class App:
                 self.state = GameState.OP
                 self.game.set_state(GameScene.OP)
                 self.touch.set_state(TouchScene.CONTROLLER)
+                self.count = 0
             elif self.input_x > self.touch.WIDTH //2 :
                 self.running = False
+        elif self.state == GameState.OP and self.count > 20:
+            self.state = GameState.STAGE
+            self.game.set_state(GameScene.STAGE)
+            self.touch.set_state(TouchScene.CONTROLLER)
+            self.count = 0
+
 
 
 
