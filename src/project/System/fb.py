@@ -76,8 +76,8 @@ class FbManager:
 class FrameBuffer:
     def __init__(self, device, width, height):
         # 真っ黒な画面を作成
-        self.surface = pygame.Surface((width, width), depth=16)
-        self.surface.fill(0,0,0)
+        self.surface = pygame.Surface((width, height), depth=16)
+        self.surface.fill((0, 0, 0))
         # RGB565(16bit = 2Byte)のため必要なバイト数を計算
         self.size = width * height * 2
         # フレームバッファを読み書き可能モードで開く
