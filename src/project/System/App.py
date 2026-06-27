@@ -116,6 +116,12 @@ class App:
             self.game.set_state(GameScene.STAGE)
             self.touch.set_state(TouchScene.CONTROLLER)
             self.count = 0
+        elif self.state == GameState.STAGE and self.count > 50:
+            self.state = GameState.CLEAR
+            self.game.set_state(GameScene.CLEAR)
+            self.touch.set_state(TouchScene.CONTINUE)
+            self.count = 0
+        
 
 
 
