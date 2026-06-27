@@ -1,10 +1,18 @@
 import pygame
 import time
+from enum import Enum
 
 from Screen.Touch import TouchDisplay
 from Screen.Display import GameDisplay, Command
 from System.fb import FbManager
 from System.input import TouchInput
+
+class GameState(Enum):
+    TITLE = 0
+    OP = 1
+    STAGE = 2
+    OVER = 3
+    CLEAR = 4
 
 class App:
     # 背景色（黒）
