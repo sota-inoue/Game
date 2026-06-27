@@ -103,28 +103,43 @@ class App:
         self.close()
 
     def update(self):
+        """
+        ゲームの進行を管理する
+        """
+        # タイトル画面でタッチされた場合
         if self.state == GameState.TITLE and self.is_touching == True:
+            # 左半分が押されたらオープニング画面へ遷移
             if self.input_x < self.touch.WIDTH //2 :
                 self.state = GameState.OP
                 self.game.set_state(GameScene.OP)
                 self.touch.set_state(TouchScene.CONTROLLER)
                 self.count = 0
+
+            # 右半分が押されたらゲームを終了
             elif self.input_x > self.touch.WIDTH //2 :
                 self.running = False
+
+        # オープニング画面を2秒表示したらゲーム画面へ遷移
         elif self.state == GameState.OP and self.count > 20:
             self.state = GameState.STAGE
             self.game.set_state(GameScene.STAGE)
             self.touch.set_state(TouchScene.CONTROLLER)
             self.count = 0
+
+        # ゲーム画面を5秒表示したらクリア画面へ遷移
         elif self.state == GameState.STAGE and self.count > 50:
             self.state = GameState.CLEAR
             self.game.set_state(GameScene.CLEAR)
             self.touch.set_state(TouchScene.CONTINUE)
             self.count = 0
+
+        # クリア画面でタッチされたらタイトル画面へ戻る
+        elif self.state == GameState.CLEAR and self.is_touching == True:
+            self.state = GameState.TITLE
+            self.game.set_state(GameScene.TITLE)
+            self.touch.set_state(TouchScene.START)
+            self.count = 0
         
-
-
-
 
     def get_event(self):
         """
