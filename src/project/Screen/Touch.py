@@ -46,8 +46,12 @@ class TouchDisplay:
 
 
     def draw_Start(self):
-        # 画面の中心にStartの文字列を描画
-        self.DrawText("Start", self.WIDTH//2, self.HEIGHT//2)
+        # 画面の左側にStartの文字列を描画
+        self.DrawText("Start", self.WIDTH//4, self.HEIGHT//2)
+        # 画面の左側にEndの文字列を描画
+        self.DrawText("End", self.WIDTH*3//4, self.HEIGHT//2)
+        # 線の描画
+        pygame.draw.line(self.surface, self.LINE_COLOR, (self.WIDTH//2, 0), (self.WIDTH//2, self.HEIGHT), self.LINE_WIDTH)
 
     def draw_Controller(self):
         #文字の描画

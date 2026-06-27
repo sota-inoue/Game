@@ -2,8 +2,8 @@ import pygame
 import time
 from enum import Enum
 
-from Screen.Touch import TouchDisplay
-from Screen.Display import GameDisplay, Command
+from Screen.Touch import TouchDisplay, TouchScene
+from Screen.Display import GameDisplay, Command, GameScene
 from System.fb import FbManager
 from System.input import TouchInput
 
@@ -58,54 +58,60 @@ class App:
         # タッチパネルの表示位置の頂点座標
         self.TOUCH_SCREEN_TOP_X = (self.SCREEN_WIDTH - self.touch.WIDTH) // 2
         self.TOUCH_SCREEN_TOP_Y = self.SCREEN_HEIGHT - self.touch.HEIGHT - 15
+
         # フレームカウンタ
         self.count = 0
+
+        # ゲームの状態
+        self.state = GameState.TITLE
 
         # タッチ入力情報
         self.is_touching = False
         self.input_x = 0
         self.input_y = 0
+
+        # メインループを継続するためのフラグ
+        self.running = True
+
         # メインループ開始
         self.run()
        
     def run(self):
         """
         メインループ
-        入力取得 → コマンド判定 → ゲーム更新 → 描画
+        入力取得 → ゲーム更新 → 描画
         を繰り返す
         """
-        while self.count < 50:
+        while self.running:
+
             # 入力取得
             self.get_event()
-            # 入力からコマンドを決定
-            command = self.get_command()
+
             # ゲーム更新
-            #self.game.update(command)
-            # 描画
+            self.update()
+
+            # 描画処理
             self.draw()
+
             # フレーム数を更新
             self.count += 1
+
             # FPS調整
             time.sleep(1 / self.FPS)
+
         # 終了処理
         self.close()
 
-    def get_command(self):
-        """
-        入力座標からコマンドを決定する
-        """
+    def update(self):
+        if self.state == GameState.TITLE and self.is_touching == True:
+            if self.input_x < self.touch.WIDTH //2 :
+                self.state = GameState.OP
+                self.game.set_state(GameScene.OP)
+                self.touch.set_state(TouchScene.CONTROLLER)
+            elif self.input_x > self.touch.WIDTH //2 :
+                self.running = False
 
-        # タッチされていない場合
-        if not self.is_touching:
-            return Command.STAY
-        
-        if 0 <= self.input_x < self.touch.WIDTH // 3:
-            return Command.LEFT
-        elif self.touch.WIDTH // 3 <= self.input_x < self.touch.WIDTH * 2 // 3:
-            return Command.JUMP
-        elif self.touch.WIDTH * 2 // 3 <= self.input_x <= self.touch.WIDTH:
-            return Command.RIGHT
-        return Command.STAY
+
 
     def get_event(self):
         """
@@ -117,14 +123,17 @@ class App:
         self.is_touching = False
         self.input_x = 0
         self.input_y = 0
+
         # Raspberry Piモードでのタッチ座標の取得
         if self.mode:
             # タッチデバイスの現在の入力座上を更新
             self.input_device.update()
+
              # タッチ状態取得
             self.is_touching = self.input_device.touch_down
             self.input_x = self.input_device.x
             self.input_y = self.input_device.y
+
         # Windowsモードでのタッチ座標の取得
         else:
             # pygameイベント取得
@@ -137,18 +146,36 @@ class App:
                 # マウスクリックの場合の処理(仕様でマウスクリックをタッチ入力として拾ってくれ、Windows上でのデバックも楽なため)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = event.pos
-                     # タッチパネル内をクリックしたか判定
+                     # タッチパネル内をクリックしたかどうかを判定
                     if (self.TOUCH_SCREEN_TOP_X <= x <= self.TOUCH_SCREEN_TOP_X + self.touch.WIDTH
                         and self.TOUCH_SCREEN_TOP_Y <= y <= self.TOUCH_SCREEN_TOP_Y + self.touch.HEIGHT):
 
+                        # タッチ状態取得し、タッチパネル内座標へ変換
                         self.is_touching = True
-                        # タッチパネル内座標へ変換
                         self.input_x = x - self.TOUCH_SCREEN_TOP_X
                         self.input_y = y - self.TOUCH_SCREEN_TOP_Y
 
+
+    def get_command(self):
+        """
+        入力座標からコマンドを決定する
+        """
+        # タッチされていない場合
+        if not self.is_touching:
+            return Command.STAY
+        
+        if 0 <= self.input_x < self.touch.WIDTH // 3:
+            return Command.LEFT
+        elif self.touch.WIDTH // 3 <= self.input_x < self.touch.WIDTH * 2 // 3:
+            return Command.JUMP
+        elif self.touch.WIDTH * 2 // 3 <= self.input_x <= self.touch.WIDTH:
+            return Command.RIGHT
+        return Command.STAY
+    
+
     def draw(self):
         """
-        ゲーム画面とタッチパネルを描画する
+        ゲーム画面とタッチパネルを出力先に描画する
         """
         # タッチパネル描画
         self.touch.draw()
@@ -175,7 +202,6 @@ class App:
         """
         終了処理
         """
-
         # ラズパイではフレームバッファを閉じる
         if self.mode:
             self.fb.close()
