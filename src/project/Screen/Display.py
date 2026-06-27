@@ -7,6 +7,13 @@ class Command(Enum):
     RIGHT = 2
     STAY = 3
 
+class GameScene(Enum):
+    TITLE = 0
+    OP = 1
+    STAGE = 2
+    OVER = 3
+    CLEAR = 4
+
 class GameDisplay:
     BACK_COLOR = (90, 90, 90)
     TEXT_COLOR = (0, 0, 0)
