@@ -13,13 +13,19 @@ class TouchDisplay:
         self.font = pygame.font.Font(None, 50)
 
     def DrawText(self, text, x, y):
+        # 指定した文字列を作成
         text_surface = self.font.render(text, True, self.TEXT_COLOR)
+        # 描画する文字列の幅と高さを取得
         text_width = text_surface.get_width()
         text_height = text_surface.get_height()
+        # 指定された座標を文字列の中心として描画
         self.surface.blit( text_surface, (x - text_width // 2, y - text_height // 2) )
 
-    def draw(self):
+    def draw_Start(self):
+        # BACK_COLORでsurfaceを塗りつぶす
         self.surface.fill(self.BACK_COLOR)
+        # 画面の中心にStartの文字列を描画
+        self.DrawText("Start", self.WIDTH//2, self.HEIGHT//2)
 
     def draw_Controller(self):
         self.surface.fill(self.BACK_COLOR)
@@ -30,4 +36,4 @@ class TouchDisplay:
         # 線の描画
         pygame.draw.line(self.surface, self.LINE_COLOR, (self.WIDTH//3, 0), (self.WIDTH//3, self.HEIGHT), self.LINE_WIDTH)
         pygame.draw.line(self.surface, self.LINE_COLOR, (self.WIDTH*2//3, 0), (self.WIDTH*2//3, self.HEIGHT), self.LINE_WIDTH)
-        #pygame.draw.line(self.surface, self.LINE_COLOR, (0, self.HEIGHT//2), (self.WIDTH, self.HEIGHT//2), self.LINE_WIDTH)
+
