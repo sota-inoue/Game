@@ -3,8 +3,6 @@ import mmap
 import subprocess
 
 class FbManager:
-    SPI_FB = None 
-    HDMI_FB = None 
     SPI_WIDTH = 480
     SPI_HEIGHT = 320
     HDMI_WIDTH = 1920
@@ -12,7 +10,13 @@ class FbManager:
      
     def __init__(self):
         # SPI_FBとHDMI_FBの具体的なデバイス名を調べる
-        self.find_framebuffers()
+        self.SPI_FB = self.find_fb(self.SPI_WIDTH, self.SPI_HEIGHT)
+        if self.SPI_FB is None:
+            raise RuntimeError("SPI LCD用のフレームバッファが見つかりません")
+        
+        self.HDMI_FB = self.find_fb(self.HDMI_WIDTH, self.HDMI_HEIGHT)
+        if self.HDMI_FB is None:
+            raise RuntimeError("HDMI用のフレームバッファが見つかりません")
         #フレームバッファーに直接描写するクラスを呼びだす。
         self.fb1 = FrameBuffer(self.SPI_FB, self.SPI_WIDTH , self.SPI_HEIGHT)
         self.fb2 = FrameBuffer(self.HDMI_FB, self.HDMI_WIDTH, self.HDMI_HEIGHT)
@@ -29,7 +33,7 @@ class FbManager:
         self.fb1.close()
         self.fb2.close()
 
-    def find_framebuffers(self):
+    def find_fb(self, width, height):
         # /dev/fb0～/dev/fb2 を順番に調べる
         # 出力画面はSPI液晶とHDMI1と2があるため3つ調べる
         for fb in ["/dev/fb0", "/dev/fb1", "/dev/fb2"]:
@@ -54,20 +58,9 @@ class FbManager:
                         # geometry行を空白で分割する
                         # ['geometry', '480', '320', '480', '320', '16']
                         data = line.split()
-                        # 幅と高さを取得する
-                        width = int(data[1])
-                        height = int(data[2])
                         # SPI液晶の解像度と一致するか判定
-                        if self.SPI_WIDTH == width and self.SPI_HEIGHT == height:
-                            self.SPI_FB = fb
-                            break
-                        # HDMIの解像度と一致するか判定
-                        elif self.HDMI_WIDTH == width and self.HDMI_HEIGHT == height:
-                            self.HDMI_FB = fb
-                            break
-                        # どちらにも一致しない場合
-                        else:
-                            break
+                        if width == int(data[1]) and height == int(data[2]):
+                            return fb
             # フレームバッファが存在しないなどのエラーは無視して次を調べる
             except Exception:
                 pass
