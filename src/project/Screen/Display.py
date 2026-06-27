@@ -48,6 +48,12 @@ class GameDisplay:
         # 画面の中心にTITLEの文字列を描画
         self.DrawText("TITLE", self.width//2, self.height//2)
 
+    def draw_Opening(self):
+        # BACK_COLORでsurfaceを塗りつぶす
+        self.surface.fill(self.BACK_COLOR)
+        # 画面の中心にOpeningの文字列を描画
+        self.DrawText("Opening", self.width//2, self.height//2)
+
     def draw_Game(self):
         self.surface.fill(self.BACK_COLOR)
         self.DrawText(self.text, self.width//2, self.height//2)
