@@ -1,4 +1,10 @@
 import pygame
+from enum import Enum
+
+class TouchScene(Enum):
+    START = 0
+    CONTROLLER = 1
+    CONTINUE = 2
 
 class TouchDisplay:
     BACK_COLOR = (90, 90, 90)
