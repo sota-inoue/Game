@@ -37,3 +37,9 @@ class TouchDisplay:
         pygame.draw.line(self.surface, self.LINE_COLOR, (self.WIDTH//3, 0), (self.WIDTH//3, self.HEIGHT), self.LINE_WIDTH)
         pygame.draw.line(self.surface, self.LINE_COLOR, (self.WIDTH*2//3, 0), (self.WIDTH*2//3, self.HEIGHT), self.LINE_WIDTH)
 
+    def draw_Continue(self):
+        # BACK_COLORでsurfaceを塗りつぶす
+        self.surface.fill(self.BACK_COLOR)
+        # 画面の中心にContinueの文字列を描画
+        self.DrawText("Continue", self.WIDTH//2, self.HEIGHT//2)
+

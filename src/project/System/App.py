@@ -143,7 +143,7 @@ class App:
         ゲーム画面とタッチパネルを描画する
         """
         # タッチパネル描画
-        self.touch.draw_Start()
+        self.touch.draw_Continue()
         # ゲーム画面描画
         self.game.draw_Clear()
         # Raspberry Piモードでの描画処理
