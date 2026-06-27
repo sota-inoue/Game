@@ -10,11 +10,11 @@ class Command(Enum):
 class GameDisplay:
     BACK_COLOR = (90, 90, 90)
     TEXT_COLOR = (0, 0, 0)
-    WIDTH = 1920
-    HEIGHT = 1080
 
-    def __init__(self):
-        self.surface = pygame.Surface((self.WIDTH, self.HEIGHT), depth=16)
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.surface = pygame.Surface((self.width, self.height), depth=16)
         self.font = pygame.font.Font(None, 50)
         self.text = "STAY"
 
@@ -41,4 +41,4 @@ class GameDisplay:
 
     def draw_Game(self):
         self.surface.fill(self.BACK_COLOR)
-        self.DrawText(self.text, self.WIDTH//2, self.HEIGHT//2)
+        self.DrawText(self.text, self.width//2, self.height//2)
