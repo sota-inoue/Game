@@ -37,6 +37,10 @@ class Player:
         self.Y1 = y
         self.Y2 = y + self.obstacle_size*2
 
+        # プレイヤーの移動速度
+        self.speed_x = (self.X2 - self.X1) // 10
+        self.speed_y = (self.Y2 - self.Y1) // 10
+
         # プレイヤーの初期座標
         self.player_x = self.X3
         self.player_y = self.Y1
@@ -75,10 +79,6 @@ class Player:
         # 横方向の状態がRIGHTの場合、右隣の座標を次の移動先にする
         if self.state_x == State_x.RIGHT:
 
-            # 左端にいる場合は、これ以上左に移動できないため、次の移動先を決めない
-            if self.player_x == self.X1:
-                    return
-
             # 現在位置がX1以上X2未満の場合、次の移動先をX2にする
             if self.X1 <= self.player_x < self.X2:
                 self.next_locate_x = self.X2
@@ -98,10 +98,6 @@ class Player:
         # 横方向の状態がLEFTの場合、左隣の座標を次の移動先にする
         elif self.state_x == State_x.LEFT:
 
-            # 右端にいる場合は、これ以上左に移動できないため、次の移動先を決めない
-            if self.player_x == self.X5:
-                    return
-
             # 現在位置がX4より大きくX5以下の場合、次の移動先をX4にする
             if self.X4 < self.player_x <= self.X5:
                 self.next_locate_x = self.X4
@@ -117,3 +113,40 @@ class Player:
             # 現在位置がX1より大きくX2以下の場合、次の移動先をX1にする
             elif self.X1 < self.player_x <= self.X2:
                 self.next_locate_x = self.X1
+
+    # プレイヤーをx軸方向に移動させる関数
+    def move_x(self):
+
+        # 横方向の状態がSTAYの場合は、移動しない
+        if self.state_x == State_x.STAY:
+            return
+
+        # 横方向の状態がLEFTの場合、左方向へ移動する
+        elif self.state_x == State_x.LEFT:
+            # 一番左にいる場合は、これ以上左に移動できないため横移動を停止する
+            if self.player_x == self.X1:
+                self.state_x = State_x.STAY
+                return
+
+            # プレイヤーを左方向へ移動させる
+            self.player_x -= self.speed_x
+
+            # 次の移動先に到達、または通り過ぎた場合
+            if self.player_x <= self.next_locate_x:
+                # 横方向の移動状態を停止に戻す
+                self.state_x = State_x.STAY
+
+        # 横方向の状態がRIGHTの場合、右方向へ移動する
+        elif self.state_x == State_x.RIGHT:
+            # 一番右にいる場合は、これ以上右に移動できないため横移動を停止する
+            if self.player_x == self.X5:
+                self.state_x = State_x.STAY
+                return
+
+            # プレイヤーを右方向へ移動させる
+            self.player_x += self.speed_x
+
+            # 次の移動先に到達、または通り過ぎた場合
+            if self.player_x >= self.next_locate_x:
+                # 横方向の移動状態を停止に戻す
+                self.state_x = State_x.STAY
