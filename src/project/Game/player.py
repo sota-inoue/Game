@@ -54,6 +54,23 @@ class Player:
         self.next_locate_x = self.player_x
         self.next_locate_y = self.player_y
 
+    # プレイヤーの状態更新、移動、描画をまとめて行う関数
+    def update(self, command, display):
+        # 外部から受け取った入力コマンドをもとに、プレイヤーの状態を変更する
+        self.set_command(command)
+
+        # 現在位置と移動状態をもとに、次の移動先を決める
+        self.set_locate()
+
+        # プレイヤーをx軸方向に移動させる
+        self.move_x()
+
+        # プレイヤーをy軸方向に移動させる
+        self.move_y()
+
+        # プレイヤーを画面上に描画する
+        self.draw(display)
+
     # 外部から受け取った入力コマンドに応じて、プレイヤーの横方向・縦方向の状態を変更する
     def set_command(self, command):
         
