@@ -35,12 +35,14 @@ class Player:
         self.X5 = width * 5 // 6
 
         # マス目のy座標
-        self.Y1 = (height - width * 3 // 20)
-        self.Y2 = self.Y1 + self.obstacle_size*2
+        self.Y1 = height - width * 3 // 20
+        self.Y2 = self.Y1 - self.obstacle_size * 2
 
-        # プレイヤーの移動速度
+        # プレイヤーのx方向の移動速度
         self.speed_x = (self.X2 - self.X1) // 10
-        self.speed_y = (self.Y2 - self.Y1) // 10
+
+        # プレイヤーのy方向の移動速度
+        self.speed_y = (self.Y1 - self.Y2) // 10
 
         # プレイヤーの初期座標
         self.player_x = self.X3
@@ -52,7 +54,6 @@ class Player:
 
         # 移動予定の座標
         self.next_locate_x = self.player_x
-        self.next_locate_y = self.player_y
 
     # プレイヤーの状態更新、移動、描画をまとめて行う関数
     def update(self, command, display):
@@ -184,7 +185,7 @@ class Player:
         # 縦方向の状態がJUMPの場合、上方向へ移動する
         elif self.state_y == State_y.JUMP:
             # プレイヤーを上方向へ移動させる
-            self.player_y -= self.player_y
+            self.player_y -= self.speed_y
 
             # ジャンプの頂点に到達、または通り過ぎた場合
             if self.player_y <= self.Y2:
@@ -197,7 +198,7 @@ class Player:
         # 縦方向の状態がDOWNの場合、下方向へ移動する
         elif self.state_y == State_y.DOWN:
             # プレイヤーを下方向へ移動させる
-            self.player_y += self.player_y
+            self.player_y += self.speed_y
 
             # 地面の位置に到達、または通り過ぎた場合
             if self.player_y >= self.Y1:

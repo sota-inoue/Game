@@ -1,11 +1,7 @@
 import pygame
 from enum import Enum
 
-class Command(Enum):
-    LEFT = 0
-    JUMP = 1
-    RIGHT = 2
-    STAY = 3
+from Game.player import Player, Command
 
 class GameScene(Enum):
     TITLE = 0
@@ -24,6 +20,8 @@ class GameDisplay:
         self.surface = pygame.Surface((self.width, self.height), depth=16)
         self.font = pygame.font.Font(None, 50)
         self.state = GameScene.TITLE
+        self.player = Player(width, height)
+        self.player_cmd = Command.STAY
 
     def DrawText(self, str, x, y):
         # 指定した文字列を作成
@@ -37,6 +35,10 @@ class GameDisplay:
     # 外部からゲーム画面の状態を変更する機能
     def set_state(self, state):
         self.state = state
+
+    # 外部からプレイヤー操作用コマンドを受け取り保存する機能
+    def set_player_cmd(self, command):
+        self.player_cmd = command
 
     def draw(self):
         # BACK_COLORでsurfaceを塗りつぶす
@@ -63,8 +65,8 @@ class GameDisplay:
         self.DrawText("Opening", self.width//2, self.height//2)
 
     def draw_Stage(self):
-        # 画面の中心にstageの文字列を描画
-        self.DrawText("Stage", self.width//2, self.height//2)
+        # 保存されている入力コマンドをもとにプレイヤーを更新し、画面に描画する
+        self.player.update(self.player_cmd, self.surface)
 
     def draw_Over(self):
         # 画面の中心にGame Overの文字列を描画
