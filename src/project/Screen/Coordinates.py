@@ -53,8 +53,7 @@ class CoordinateManager:
         ]
 
         # 各レーンの座標情報を作成して配列に保存
-        # LaneCoordinateには、
-        # レーン幅・レーンの左上X座標・レーンのY座標を渡す
+        # LaneCoordinateに、レーン幅・レーンの左上X座標・レーンのY座標を渡す
         self.lanes = [
             LaneCoordinate(self.lane_width[0], self.lane_x[0], lane_y_rate[0] * height),  # Lane1
             LaneCoordinate(self.lane_width[1], self.lane_x[1], lane_y_rate[1] * height),  # Lane2
@@ -68,38 +67,23 @@ class CoordinateManager:
     def get_Coordinate(self, x, y):
         # 指定されたマスの座標を返す
         #
-        # x:
-        #   横方向のマス番号
-        #   1〜5で指定する
-        #
-        # y:
-        #   奥行き方向のレーン番号
-        #   1〜7で指定する
-        #
-        # self.lanesの並びは、
-        #   self.lanes[0] = Lane1 一番手前
-        #   self.lanes[6] = Lane7 一番奥
+        # x座標 : 1〜5で指定する
+        # y座標 : 1〜7で指定する
         #
         # ゲーム上のyは、
         #   y = 1 が一番手前
         #   y = 7 が一番奥
-        #
-        # そのため、yの値とself.lanesのindexを逆順に対応させる
-        if y == 1:
-            return self.lanes[0].get_Coordinate(x)
-        elif y == 2:
-            return self.lanes[1].get_Coordinate(x)
-        elif y == 3:
-            return self.lanes[2].get_Coordinate(x)
-        elif y == 4:
-            return self.lanes[3].get_Coordinate(x)
-        elif y == 5:
-            return self.lanes[4].get_Coordinate(x)
-        elif y == 6:
-            return self.lanes[5].get_Coordinate(x)
-        elif y == 7:
-            return self.lanes[6].get_Coordinate(x)
+        return self.lanes[y-1].get_Coordinate(x)
+    
+    def get_enemy_size(self, y):
+        # 指定されたレーンの敵のサイズを返す
+        # y座標 : 1〜7で指定する
+        return self.lanes[y-1].get_enemy_size()
 
+    def get_obstacle_size(self, y):
+        # 指定されたレーンの障害物のサイズを返す
+        # y座標 : 1〜7で指定する
+        return self.lanes[y-1].get_obstacle_size()
 
 
 class LaneCoordinate:
@@ -109,8 +93,7 @@ class LaneCoordinate:
 
         # このレーンにある5マス分のX座標
         #
-        # レーンの左端を基準に、
-        # レーン幅を6等分した位置へマスを配置する
+        # レーンの左端を基準に、レーン幅を6等分した位置へマスを配置する
         #
         # 5マスを配置するため、以下の位置を使う
         #   1/6, 2/6, 3/6, 4/6, 5/6
@@ -122,12 +105,23 @@ class LaneCoordinate:
             x + width * 5 // 6,  # 右端のx座標
         ]
 
+        # 敵の横幅と縦幅、比率は3:5
+        self.enemy_width = width//10
+        self.enemy_height = self.enemy_width * 5 // 3
+
+        # 障害物の横幅と縦幅、比率は1:1
+        self.obstacle_width = width//20
+        self.obstacle_width = width//20
+
     def get_Coordinate(self, x):
         # 指定された横マス番号の座標を返す
-        #
-        # x:
-        #   1〜5で指定する
-        #
-        # 戻り値:
-        #   (X座標, Y座標)
-        return self.cell_x[x - 1], self.cell_y
+        # x座標 : 1〜5で指定する
+        return self.cell_x[x-1], self.cell_y
+    
+    def get_enemy_size(self):
+        # 敵の横幅と縦幅を返す
+        return (self.enemy_width, self.enemy_height)
+
+    def get_obstacle_size(self):
+        # 障害物の横幅と縦幅を返す
+        return (self.obstacle_width, self.obstacle_height)
