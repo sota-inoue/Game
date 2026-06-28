@@ -18,6 +18,7 @@ class Command(Enum):
     STAY = 3
 
 class Player:
+    PLAYER_COLOR = (0, 200, 80)
     def __init__(self, width, height):
         # プレイヤーの横幅と縦幅、比率は3:5
         self.player_width = width // 10
@@ -188,3 +189,24 @@ class Player:
 
                 # 縦方向の状態を停止状態に戻す
                 self.state_y = State_y.STAY
+
+    # プレイヤーを画面上に描画する関数
+    def draw(self, display):
+        # 指定された画面に、プレイヤーを長方形で描画する
+        pygame.draw.rect(
+            display,
+            self.PLAYER_COLOR,
+            (
+                # player_xを中心にして、左上のx座標を決める
+                self.player_x - (self.player_width // 2),
+
+                # player_yを中心にして、左上のy座標を決める
+                self.player_y - (self.player_height // 2),
+
+                # プレイヤーの横幅
+                self.player_width,
+
+                # プレイヤーの縦幅
+                self.player_height
+            )
+        )
