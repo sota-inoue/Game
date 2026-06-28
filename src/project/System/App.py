@@ -3,9 +3,10 @@ import time
 from enum import Enum
 
 from Screen.Touch import TouchDisplay, TouchScene
-from Screen.Display import GameDisplay, Command, GameScene
+from Screen.Display import GameDisplay, GameScene
 from System.fb import FbManager
 from System.input import TouchInput
+from Game.player import Command
 
 class GameState(Enum):
     TITLE = 0
@@ -126,12 +127,18 @@ class App:
             self.touch.set_state(TouchScene.CONTROLLER)
             self.count = 0
 
-        # ゲーム画面を5秒表示したらクリア画面へ遷移
-        elif self.state == GameState.STAGE and self.count > 50:
-            self.state = GameState.CLEAR
-            self.game.set_state(GameScene.CLEAR)
-            self.touch.set_state(TouchScene.CONTINUE)
-            self.count = 0
+        # ゲーム画面を表示している間の処理
+        elif self.state == GameState.STAGE:
+            # 入力されたコマンドを取得し、ゲーム画面に渡す
+            cmd = self.get_command()
+            self.game.set_player_cmd(cmd)
+
+            # ゲーム画面を一定時間表示したらクリア画面へ遷移する
+            if self.count > 50:
+                self.state = GameState.CLEAR
+                self.game.set_state(GameScene.CLEAR)
+                self.touch.set_state(TouchScene.CONTINUE)
+                self.count = 0
 
         # クリア画面でタッチされたらタイトル画面へ戻る
         elif self.state == GameState.CLEAR and self.is_touching == True:
