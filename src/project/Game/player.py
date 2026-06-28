@@ -18,7 +18,7 @@ class Command(Enum):
     STAY = 3
 
 class Player:
-    def __init__(self, width, y):
+    def __init__(self, width, height):
         # プレイヤーの横幅と縦幅、比率は3:5
         self.player_width = width // 10
         self.player_height = self.player_width * 5 // 3
@@ -34,8 +34,8 @@ class Player:
         self.X5 = width * 5 // 6
 
         # マス目のy座標
-        self.Y1 = y
-        self.Y2 = y + self.obstacle_size*2
+        self.Y1 = (height - width * 3 // 20)
+        self.Y2 = self.Y1 + self.obstacle_size*2
 
         # プレイヤーの移動速度
         self.speed_x = (self.X2 - self.X1) // 10
@@ -116,7 +116,7 @@ class Player:
 
     # プレイヤーをx軸方向に移動させる関数
     def move_x(self):
-
+        
         # 横方向の状態がSTAYの場合は、移動しない
         if self.state_x == State_x.STAY:
             return
@@ -133,6 +133,9 @@ class Player:
 
             # 次の移動先に到達、または通り過ぎた場合
             if self.player_x <= self.next_locate_x:
+                # 座標を次の移動先に補正する
+                self.player_x = self.next_locate_x
+
                 # 横方向の移動状態を停止に戻す
                 self.state_x = State_x.STAY
 
@@ -148,5 +151,40 @@ class Player:
 
             # 次の移動先に到達、または通り過ぎた場合
             if self.player_x >= self.next_locate_x:
+                # 座標を次の移動先に補正する
+                self.player_x = self.next_locate_x
+
                 # 横方向の移動状態を停止に戻す
                 self.state_x = State_x.STAY
+
+    # プレイヤーをy軸方向に移動させる関数
+    def move_y(self):
+        # 縦方向の状態がSTAYの場合は、移動しない
+        if self.state_y == State_y.STAY:
+            return
+
+        # 縦方向の状態がJUMPの場合、上方向へ移動する
+        elif self.state_y == State_y.JUMP:
+            # プレイヤーを上方向へ移動させる
+            self.player_y -= self.player_y
+
+            # ジャンプの頂点に到達、または通り過ぎた場合
+            if self.player_y <= self.Y2:
+                # 座標をジャンプの頂点に補正する
+                self.player_y = self.Y2
+
+                # 縦方向の状態を下降状態に変更する
+                self.state_y = State_y.DOWN
+
+        # 縦方向の状態がDOWNの場合、下方向へ移動する
+        elif self.state_y == State_y.DOWN:
+            # プレイヤーを下方向へ移動させる
+            self.player_y += self.player_y
+
+            # 地面の位置に到達、または通り過ぎた場合
+            if self.player_y >= self.Y1:
+                # 座標を地面の位置に補正する
+                self.player_y = self.Y1
+
+                # 縦方向の状態を停止状態に戻す
+                self.state_y = State_y.STAY

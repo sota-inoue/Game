@@ -27,41 +27,36 @@ class CoordinateManager:
             (width - self.lane_width[6]) // 2,
         ]
 
-        # 各レーンのY座標の比率
-        # heightで割って比率にすることで、
-        # 画面の縦幅が変わっても相対的な位置を保てるようにする
+        # 各レーンのY座標
         #
-        # width // 10:
-        #   敵やプレイヤーの基準サイズとして使う
+        # width // 10: 敵やプレイヤーの基準サイズとして使う
+        #   
+        # width // 20: 一番手前のレーン下側に少し余白を作るために使う
         #
-        # width // 20:
-        #   一番手前のレーン下側に少し余白を作るために使う
+        # width * 3 // 20: 奥側のレーン全体を少し上に配置するための基準値
         #
-        # width * 3 // 20:
-        #   奥側のレーン全体を少し上に配置するための基準値
+        # height * n // 50: レーンごとの縦方向の間隔を作るための値
         #
-        # height * n // 50:
-        #   レーンごとの縦方向の間隔を作るための値
-        lane_y_rate = [
-            ((height - width // 10) - width // 20) / height,
-            ((height - width * 3 // 20) - (height * 7 // 50)) / height,
-            ((height - width * 3 // 20) - (height * 6 // 50)) / height,
-            ((height - width * 3 // 20) - (height * 5 // 50)) / height,
-            ((height - width * 3 // 20) - (height * 4 // 50)) / height,
-            ((height - width * 3 // 20) - (height * 3 // 50)) / height,
-            ((height - width * 3 // 20) - (height * 2 // 50)) / height,
+        lane_y = [
+            ((height - width // 10) - width // 20),
+            ((height - width * 3 // 20) - (height * 7 // 50)),
+            ((height - width * 3 // 20) - (height * 6 // 50)),
+            ((height - width * 3 // 20) - (height * 5 // 50)),
+            ((height - width * 3 // 20) - (height * 4 // 50)),
+            ((height - width * 3 // 20) - (height * 3 // 50)),
+            ((height - width * 3 // 20) - (height * 2 // 50))
         ]
 
         # 各レーンの座標情報を作成して配列に保存
         # LaneCoordinateに、レーン幅・レーンの左上X座標・レーンのY座標を渡す
         self.lanes = [
-            LaneCoordinate(self.lane_width[0], self.lane_x[0], lane_y_rate[0] * height),  # Lane1
-            LaneCoordinate(self.lane_width[1], self.lane_x[1], lane_y_rate[1] * height),  # Lane2
-            LaneCoordinate(self.lane_width[2], self.lane_x[2], lane_y_rate[2] * height),  # Lane3
-            LaneCoordinate(self.lane_width[3], self.lane_x[3], lane_y_rate[3] * height),  # Lane4
-            LaneCoordinate(self.lane_width[4], self.lane_x[4], lane_y_rate[4] * height),  # Lane5
-            LaneCoordinate(self.lane_width[5], self.lane_x[5], lane_y_rate[5] * height),  # Lane6
-            LaneCoordinate(self.lane_width[6], self.lane_x[6], lane_y_rate[6] * height),  # Lane7
+            LaneCoordinate(self.lane_width[0], self.lane_x[0], lane_y[0]),  # Lane1
+            LaneCoordinate(self.lane_width[1], self.lane_x[1], lane_y[1]),  # Lane2
+            LaneCoordinate(self.lane_width[2], self.lane_x[2], lane_y[2]),  # Lane3
+            LaneCoordinate(self.lane_width[3], self.lane_x[3], lane_y[3]),  # Lane4
+            LaneCoordinate(self.lane_width[4], self.lane_x[4], lane_y[4]),  # Lane5
+            LaneCoordinate(self.lane_width[5], self.lane_x[5], lane_y[5]),  # Lane6
+            LaneCoordinate(self.lane_width[6], self.lane_x[6], lane_y[6])   # Lane7
         ]
 
     def get_Coordinate(self, x, y):
