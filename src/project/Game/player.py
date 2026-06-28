@@ -68,3 +68,52 @@ class Player:
         # 入力がない場合は状態を変更しない
         elif command == Command.STAY:
             pass
+
+    # プレイヤーの状態と現在位置をもとに、次の移動先を決める関数
+    def set_locate(self):
+        
+        # 横方向の状態がRIGHTの場合、右隣の座標を次の移動先にする
+        if self.state_x == State_x.RIGHT:
+
+            # 左端にいる場合は、これ以上左に移動できないため、次の移動先を決めない
+            if self.player_x == self.X1:
+                    return
+
+            # 現在位置がX1以上X2未満の場合、次の移動先をX2にする
+            if self.X1 <= self.player_x < self.X2:
+                self.next_locate_x = self.X2
+
+            # 現在位置がX2以上X3未満の場合、次の移動先をX3にする
+            elif self.X2 <= self.player_x < self.X3:
+                self.next_locate_x = self.X3
+
+            # 現在位置がX3以上X4未満の場合、次の移動先をX4にする
+            elif self.X3 <= self.player_x < self.X4:
+                self.next_locate_x = self.X4
+
+            # 現在位置がX4以上X5未満の場合、次の移動先をX5にする
+            elif self.X4 <= self.player_x < self.X5:
+                self.next_locate_x = self.X5
+
+        # 横方向の状態がLEFTの場合、左隣の座標を次の移動先にする
+        elif self.state_x == State_x.LEFT:
+
+            # 右端にいる場合は、これ以上左に移動できないため、次の移動先を決めない
+            if self.player_x == self.X5:
+                    return
+
+            # 現在位置がX4より大きくX5以下の場合、次の移動先をX4にする
+            if self.X4 < self.player_x <= self.X5:
+                self.next_locate_x = self.X4
+
+            # 現在位置がX3より大きくX4以下の場合、次の移動先をX3にする
+            elif self.X3 < self.player_x <= self.X4:
+                self.next_locate_x = self.X3
+
+            # 現在位置がX2より大きくX3以下の場合、次の移動先をX2にする
+            elif self.X2 < self.player_x <= self.X3:
+                self.next_locate_x = self.X2
+
+            # 現在位置がX1より大きくX2以下の場合、次の移動先をX1にする
+            elif self.X1 < self.player_x <= self.X2:
+                self.next_locate_x = self.X1
