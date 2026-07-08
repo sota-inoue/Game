@@ -33,6 +33,10 @@ class App:
         self.mode = mode
         # pygameを初期化
         pygame.init()
+
+        # fpsを管理するためのClockオブジェクトを生成
+        self.clock = pygame.time.Clock()
+
         # タッチ画面を生成
         self.touch = TouchDisplay()
         # Raspberry Piモードで使用するインスタンスを生成
@@ -98,7 +102,7 @@ class App:
             self.count += 1
 
             # FPS調整
-            time.sleep(1 / self.FPS)
+            self.clock.tick(self.FPS)
 
         # 終了処理
         self.close()
