@@ -1,11 +1,10 @@
-
 class CoordinateManager:
     def __init__(self, width, height):
 
         # 各レーンの横幅
         # 手前のレーンほど大きく、奥のレーンほど小さくする
         self.lane_width = [
-            width * 10 // 10,
+            width,
             width * 9 // 10,
             width * 8 // 10,
             width * 7 // 10,
@@ -18,7 +17,7 @@ class CoordinateManager:
         # レーンを画面の中央に配置するため、
         # 画面幅とレーン幅の差を2で割る
         self.lane_x = [
-            (width - self.lane_width[0]) // 2,
+            0,
             (width - self.lane_width[1]) // 2,
             (width - self.lane_width[2]) // 2,
             (width - self.lane_width[3]) // 2,
@@ -28,23 +27,21 @@ class CoordinateManager:
         ]
 
         # 各レーンのY座標
-        #
-        # width // 10: 敵やプレイヤーの基準サイズとして使う
         #   
-        # width // 20: 一番手前のレーン下側に少し余白を作るために使う
+        # width // 20: 一番下のレーンの余白
         #
         # width * 3 // 20: 奥側のレーン全体を少し上に配置するための基準値
         #
         # height * n // 50: レーンごとの縦方向の間隔を作るための値
         #
         lane_y = [
-            ((height - width // 10) - width // 20),
-            ((height - width * 3 // 20) - (height * 7 // 50)),
-            ((height - width * 3 // 20) - (height * 6 // 50)),
-            ((height - width * 3 // 20) - (height * 5 // 50)),
-            ((height - width * 3 // 20) - (height * 4 // 50)),
-            ((height - width * 3 // 20) - (height * 3 // 50)),
-            ((height - width * 3 // 20) - (height * 2 // 50))
+            (height - width // 20),
+            ((height - width // 20) - (height * 7 // 50)),
+            ((height - width // 20) - (height * 13 // 50)),
+            ((height - width // 20) - (height * 18 // 50)),
+            ((height - width // 20) - (height * 22 // 50)),
+            ((height - width // 20) - (height * 25 // 50)),
+            ((height - width // 20) - (height * 27 // 50))
         ]
 
         # 各レーンの座標情報を作成して配列に保存
@@ -62,23 +59,23 @@ class CoordinateManager:
     def get_Coordinate(self, x, y):
         # 指定されたマスの座標を返す
         #
-        # x座標 : 1〜5で指定する
-        # y座標 : 1〜7で指定する
+        # x座標 : 0〜4で指定する
+        # y座標 : 0〜6で指定する
         #
         # ゲーム上のyは、
-        #   y = 1 が一番手前
-        #   y = 7 が一番奥
-        return self.lanes[y-1].get_Coordinate(x)
-    
+        #   y = 0 が一番手前
+        #   y = 6 が一番奥
+        return self.lanes[y].get_Coordinate(x)
+
     def get_enemy_size(self, y):
         # 指定されたレーンの敵のサイズを返す
-        # y座標 : 1〜7で指定する
-        return self.lanes[y-1].get_enemy_size()
+        # y座標 : 0〜6で指定する
+        return self.lanes[y].get_enemy_size()
 
     def get_obstacle_size(self, y):
         # 指定されたレーンの障害物のサイズを返す
-        # y座標 : 1〜7で指定する
-        return self.lanes[y-1].get_obstacle_size()
+        # y座標 : 0〜6で指定する
+        return self.lanes[y].get_obstacle_size()
 
 
 class LaneCoordinate:
@@ -105,13 +102,13 @@ class LaneCoordinate:
         self.enemy_height = self.enemy_width * 5 // 3
 
         # 障害物の横幅と縦幅、比率は1:1
-        self.obstacle_width = width//20
-        self.obstacle_width = width//20
+        self.obstacle_width = width//10
+        self.obstacle_height = self.obstacle_width
 
     def get_Coordinate(self, x):
         # 指定された横マス番号の座標を返す
-        # x座標 : 1〜5で指定する
-        return self.cell_x[x-1], self.cell_y
+        # x座標 : 0〜4で指定する
+        return self.cell_x[x], self.cell_y
     
     def get_enemy_size(self):
         # 敵の横幅と縦幅を返す

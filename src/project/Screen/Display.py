@@ -2,6 +2,7 @@ import pygame
 from enum import Enum
 
 from Game.player import Player, Command
+from Screen.stagedrow import StageDraw
 
 class GameScene(Enum):
     TITLE = 0
@@ -17,6 +18,7 @@ class GameDisplay:
     def __init__(self, width, height):
         self.width = width
         self.height = height
+        self.stagedorw = StageDraw(width, height)
         self.surface = pygame.Surface((self.width, self.height), depth=16)
         self.font = pygame.font.Font(None, 50)
         self.state = GameScene.TITLE
@@ -31,6 +33,9 @@ class GameDisplay:
         text_height = text.get_height()
         # 指定された座標を文字列の中心として描画
         self.surface.blit(text, (x - text_width // 2, y - text_height // 2))
+
+    def mapupdate(self, date):
+        self.stagedorw.update(date)
 
     # 外部からゲーム画面の状態を変更する機能
     def set_state(self, state):
@@ -65,6 +70,7 @@ class GameDisplay:
         self.DrawText("Opening", self.width//2, self.height//2)
 
     def draw_Stage(self):
+        self.stagedorw.draw(self.surface)
         # 保存されている入力コマンドをもとにプレイヤーを更新し、画面に描画する
         self.player.update(self.player_cmd, self.surface)
 

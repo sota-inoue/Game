@@ -7,6 +7,7 @@ from Screen.Display import GameDisplay, GameScene
 from System.fb import FbManager
 from System.input import TouchInput
 from Game.player import Command
+from System.Textreader import TextReader
 
 class GameState(Enum):
     TITLE = 0
@@ -36,6 +37,8 @@ class App:
 
         # fpsを管理するためのClockオブジェクトを生成
         self.clock = pygame.time.Clock()
+
+        self.map = TextReader()
 
         # タッチ画面を生成
         self.touch = TouchDisplay()
@@ -136,9 +139,11 @@ class App:
             # 入力されたコマンドを取得し、ゲーム画面に渡す
             cmd = self.get_command()
             self.game.set_player_cmd(cmd)
+            if self.count % 5 == 0:
+                self.game.mapupdate(self.map.get_mapdata1(self.count // 5))
 
             # ゲーム画面を一定時間表示したらクリア画面へ遷移する
-            if self.count > 50:
+            if self.count > 100:
                 self.state = GameState.CLEAR
                 self.game.set_state(GameScene.CLEAR)
                 self.touch.set_state(TouchScene.CONTINUE)

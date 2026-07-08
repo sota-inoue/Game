@@ -35,7 +35,7 @@ class Player:
         self.X5 = width * 5 // 6
 
         # マス目のy座標
-        self.Y1 = height - width * 3 // 20
+        self.Y1 = height - width//20 - self.player_height//2
         self.Y2 = self.Y1 - self.obstacle_size * 2
 
         # プレイヤーのx方向の移動速度
