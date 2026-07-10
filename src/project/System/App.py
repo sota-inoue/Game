@@ -39,6 +39,7 @@ class App:
         self.clock = pygame.time.Clock()
 
         self.map = TextReader()
+        self.start = 0
 
         # タッチ画面を生成
         self.touch = TouchDisplay()
@@ -91,6 +92,11 @@ class App:
         を繰り返す
         """
         while self.running:
+            prestart = self.start
+            self.start = time.perf_counter()
+
+            # 前フレームから今回のフレーム開始までの経過時間
+            loop_time = self.start - prestart
 
             # 入力取得
             self.get_event()
@@ -103,6 +109,13 @@ class App:
 
             # フレーム数を更新
             self.count += 1
+
+            end = time.perf_counter()
+
+            # 今フレームの処理時間
+            processing_time = end - self.start
+
+            print(f"ループ間隔: {loop_time:.6f} 秒 : 処理時間: {processing_time:.6f} 秒")
 
             # FPS調整
             self.clock.tick(self.FPS)
