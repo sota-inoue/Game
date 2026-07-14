@@ -7,6 +7,7 @@ from Screen.Display import GameDisplay, GameScene
 from System.fb import FbManager
 from System.input import TouchInput
 from Game.player import Command
+from System.Textreader import TextReader
 
 class GameState(Enum):
     TITLE = 0
@@ -33,6 +34,13 @@ class App:
         self.mode = mode
         # pygameを初期化
         pygame.init()
+
+        # fpsを管理するためのClockオブジェクトを生成
+        self.clock = pygame.time.Clock()
+
+        self.map = TextReader()
+        self.start = 0
+
         # タッチ画面を生成
         self.touch = TouchDisplay()
         # Raspberry Piモードで使用するインスタンスを生成
@@ -84,6 +92,11 @@ class App:
         を繰り返す
         """
         while self.running:
+            prestart = self.start
+            self.start = time.perf_counter()
+
+            # 前フレームから今回のフレーム開始までの経過時間
+            loop_time = self.start - prestart
 
             # 入力取得
             self.get_event()
@@ -97,8 +110,15 @@ class App:
             # フレーム数を更新
             self.count += 1
 
+            end = time.perf_counter()
+
+            # 今フレームの処理時間
+            processing_time = end - self.start
+
+            print(f"ループ間隔: {loop_time:.6f} 秒 : 処理時間: {processing_time:.6f} 秒")
+
             # FPS調整
-            time.sleep(1 / self.FPS)
+            self.clock.tick(self.FPS)
 
         # 終了処理
         self.close()
@@ -132,9 +152,11 @@ class App:
             # 入力されたコマンドを取得し、ゲーム画面に渡す
             cmd = self.get_command()
             self.game.set_player_cmd(cmd)
+            if self.count % 5 == 0:
+                self.game.mapupdate(self.map.get_mapdata1(self.count // 5))
 
             # ゲーム画面を一定時間表示したらクリア画面へ遷移する
-            if self.count > 50:
+            if self.count > 100:
                 self.state = GameState.CLEAR
                 self.game.set_state(GameScene.CLEAR)
                 self.touch.set_state(TouchScene.CONTINUE)
