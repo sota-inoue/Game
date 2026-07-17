@@ -5,7 +5,7 @@ from enum import Enum
 from Screen.Touch import TouchDisplay, TouchScene
 from Screen.Display import GameDisplay, GameScene
 from System.fb import FbManager
-from System.input import TouchInput
+from input.input_manager import Input
 from Game.player import Command
 from System.Textreader import TextReader
 
@@ -52,8 +52,6 @@ class App:
             # Raspberry Pi用ゲーム画面の生成
             # fbの宣言時に動的にゲーム画面のサイズが決まるため、fbの宣言後にゲーム画面のサイズを決める
             self.game = GameDisplay(self.fb.HDMI_WIDTH, self.fb.HDMI_HEIGHT)
-            # タッチ入力を取得するTouchInputクラスのインスタンスを生成
-            self.input_device = TouchInput()
         # Windowsモードで使用するインスタンスを生成
         else:
             # Windows用ゲーム画面の生成
@@ -62,7 +60,13 @@ class App:
             self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT))
             # Windowsでは使用しない
             self.fb = None
-            self.input_device = None
+
+        self.input = Input(self.mode)
+
+        # タッチ入力情報
+        self.is_touching = False
+        self.input_x = 0
+        self.input_y = 0
 
         # タッチパネルの表示位置の頂点座標
         self.TOUCH_SCREEN_TOP_X = (self.SCREEN_WIDTH - self.touch.WIDTH) // 2
@@ -74,10 +78,7 @@ class App:
         # ゲームの状態
         self.state = GameState.TITLE
 
-        # タッチ入力情報
-        self.is_touching = False
-        self.input_x = 0
-        self.input_y = 0
+        
 
         # メインループを継続するためのフラグ
         self.running = True
@@ -172,47 +173,17 @@ class App:
 
     def get_event(self):
         """
-        タッチ入力を取得する
-        ラズパイでは入力デバイス、
-        PCではpygameイベントから取得する
+        入力座標を取得し、タッチ状態を更新する。
+        Raspberry Piでは入力デバイスから、
+        PCではpygameイベントから入力を取得する。
         """
-        # 入力情報を初期化
-        self.is_touching = False
-        self.input_x = 0
-        self.input_y = 0
+        self.input_x, self.input_y = self.input.get_input()
 
-        # Raspberry Piモードでのタッチ座標の取得
-        if self.mode:
-            # タッチデバイスの現在の入力座上を更新
-            self.input_device.update()
-
-             # タッチ状態取得
-            self.is_touching = self.input_device.touch_down
-            self.input_x = self.input_device.x
-            self.input_y = self.input_device.y
-
-        # Windowsモードでのタッチ座標の取得
+        if self.input_x == -1 and self.input_y == -1:
+            self.is_touching = False
         else:
-            # pygameイベント取得
-            events = pygame.event.get()
-            for event in events:
-                 # ウィンドウを閉じた場合の処理
-                if event.type == pygame.QUIT:
-                    self.close()
-                    exit()
-                # マウスクリックの場合の処理(仕様でマウスクリックをタッチ入力として拾ってくれ、Windows上でのデバックも楽なため)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    x, y = event.pos
-                     # タッチパネル内をクリックしたかどうかを判定
-                    if (self.TOUCH_SCREEN_TOP_X <= x <= self.TOUCH_SCREEN_TOP_X + self.touch.WIDTH
-                        and self.TOUCH_SCREEN_TOP_Y <= y <= self.TOUCH_SCREEN_TOP_Y + self.touch.HEIGHT):
-
-                        # タッチ状態取得し、タッチパネル内座標へ変換
-                        self.is_touching = True
-                        self.input_x = x - self.TOUCH_SCREEN_TOP_X
-                        self.input_y = y - self.TOUCH_SCREEN_TOP_Y
-
-
+            self.is_touching = True
+        
     def get_command(self):
         """
         入力座標からコマンドを決定する
