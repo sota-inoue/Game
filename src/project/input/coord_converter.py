@@ -1,4 +1,4 @@
-from config import (
+from Domein.config import (
     TOUCH_WIDTH,
     TOUCH_HEIGHT,
     TOUCH_X_MAX,

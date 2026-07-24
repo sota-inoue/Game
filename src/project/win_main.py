@@ -1,3 +1,3 @@
-from System.App import App
+from Application.App import App
 
 App(False)

@@ -7,7 +7,7 @@ except ImportError:
     list_devices = None
     ecodes = None
 
-from config import DEVICE_NAME
+from Domein.config import DEVICE_NAME
 
 def find_device():
     if InputDevice is None or list_devices is None:

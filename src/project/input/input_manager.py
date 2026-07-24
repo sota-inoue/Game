@@ -1,6 +1,6 @@
-from input.device_input import find_device, device_input
-from input.pygame_input import pygame_input
-from input.coord_converter import driver_to_game, pygame_to_game
+from Input.device_input import find_device, device_input
+from Input.pygame_input import pygame_input
+from Input.coord_converter import driver_to_game, pygame_to_game
 
 class Input:
     def __init__(self, mode):
