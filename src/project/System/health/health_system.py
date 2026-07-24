@@ -3,7 +3,7 @@ from Domain.game_state import GameState, GameProgressState
 
 class HealthSystem:
     def __init__(self):
-        pass
+        self._time_accumulator: float = 0.0  # 経過時間の蓄積用タイマー（秒単位）
 
     def increase_urgency(self, state: GameState, amount: int) -> None:
         """
@@ -13,11 +13,19 @@ class HealthSystem:
         new_urgency = current_urgency + amount
         state.set_urgency_level(new_urgency)
 
-    def update(self, state: GameState) -> None:
+    def update(self, state: GameState, dt: float = 0.0) -> None:
         """
         毎フレーム呼び出される更新処理。
+        時間経過（10秒で1%）による切迫度の増加
         100%に達しているか確認し、到達していればゲームオーバーへ遷移させる。
         """
+        # 1. 時間経過による切迫度の増加（10秒ごとに1%）
+        self._time_accumulator += dt #dt: 前フレームからの経過時間（秒単位、例: 0.016）
+        if self._time_accumulator >= 10.0:
+            self.increase_urgency(state, 1)
+            self._time_accumulator -= 10.0  # 端数を保持して10秒差し引く
+
+        # 2. 判定と状態遷移
         current_urgency = state.get_urgency_level()
         max_urgency = state.get_max_urgency_level()
 
