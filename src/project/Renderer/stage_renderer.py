@@ -1,4 +1,4 @@
-from Renderer.StageObject import Enemy, Obstacle,Player
+from Renderer.object_renderer import Enemy, Obstacle,Player
 from Domein.layout import Coordinate
 
 
