@@ -3,8 +3,6 @@ import mmap
 import subprocess
 
 class FbManager:
-    
-     
     def __init__(self):
         # SPI液晶の画面サイズとフレームバッファ名のインスタン生成と初期化
         self.SPI_FB = None
@@ -34,11 +32,11 @@ class FbManager:
         self.fb2 = FrameBuffer(self.HDMI_FB, self.HDMI_WIDTH, self.HDMI_HEIGHT)
 
     # SPI液晶のフレームバッファーに直接描写する処理
-    def spi_draw(self, surface):
+    def touch_draw(self, surface):
         self.fb1.draw(surface)
 
     # HDMIのフレームバッファーに直接描写する処理
-    def hdmi_draw(self, surface):
+    def game_draw(self, surface):
         self.fb2.draw(surface)
 
     def close(self):
