@@ -1,4 +1,4 @@
-class CoordinateManager:
+class Coordinate:
     def __init__(self, width, height):
 
         # 各レーンの横幅

@@ -1,16 +1,15 @@
 from Renderer.StageObject import Enemy, Obstacle,Player
-from Domein.layout import CoordinateManager
+from Domein.layout import Coordinate
 
 
 class StageDraw:
     def __init__(self, width, height):
 
         # オブジェクトの座標や大きさを管理するクラス
-        self.locate = CoordinateManager(width, height)
+        self.locate = Coordinate(width, height)
 
         self.player_width = width // 10
         self.player_height = self.player_width * 5 // 3
-
 
         # 敵と障害物の描画用インスタンス
         self.enemy = Enemy()

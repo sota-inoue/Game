@@ -1,4 +1,5 @@
 import pygame
+
 from Display.pygame_display import PyGameDisplay
 from Display.fb import FbManager
 
@@ -14,10 +15,10 @@ class Display:
         # True : Raspberry Pi（フレームバッファ描画）
         # False: PC（pygameウィンドウ描画）
         self.mode = mode
-
+    
         # Raspberry Piモードで使用するインスタンスを生成
         if self.mode:
-            # フレームバッファへ直接描画するFbManagerクラスのインスタンスを生成
+        # フレームバッファへ直接描画するFbManagerクラスのインスタンスを生成
             self.fb = FbManager()
             self.GAME_SCREEN_HEIGHT = self.fb.HDMI_HEIGHT
             self.GAME_SCREEN_WIDTH = self.fb.HDMI_WIDTH
@@ -38,6 +39,7 @@ class Display:
             self.fb.touch_draw(touch_surface)
         else:
             # PCモードでは、pygameウィンドウに描画する
+            self.pygame.draw_clear()
             self.pygame.game_draw(game_surface)
             self.pygame.touch_draw(touch_surface)
             pygame.display.flip()

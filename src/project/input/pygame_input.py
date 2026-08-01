@@ -8,4 +8,4 @@ def pygame_input():
         if event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
             return x, y
-    return 0, 0
+    return -1, -1

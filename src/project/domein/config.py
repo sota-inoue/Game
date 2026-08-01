@@ -2,8 +2,23 @@
 # タッチパネルのドライバの名前
 DEVICE_NAME = "ADS7846 Touchscreen"
 
-# 背景色（黒）
-BACK_COLOR = (0, 0, 0)
+# 色
+BLACK   = (0, 0, 0)
+WHITE   = (255, 255, 255)
+RED     = (255, 0, 0)
+GREEN   = (0, 255, 0)
+BLUE    = (0, 0, 255)
+YELLOW  = (255, 255, 0)
+CYAN    = (0, 255, 255)
+MAGENTA = (255, 0, 255)
+GRAY    = (128, 128, 128)
+LIGHT_BLUE  = (100, 180, 255)
+LIGHT_GREEN = (120, 220, 120)
+ORANGE      = (255, 165, 0)
+PINK        = (255, 105, 180)
+PURPLE      = (128, 0, 128)
+BROWN       = (139, 69, 19)
+NAVY        = (0, 0, 128)
 
 # FPS（1秒あたりの更新回数）
 FPS = 10

@@ -28,7 +28,6 @@ class Enemy(StageObject):
     def __init__(self):
         super().__init__((255, 0, 0))   # 赤色
 
-
 class Obstacle(StageObject):
     def __init__(self):
         super().__init__((128, 128, 128))   # 灰色

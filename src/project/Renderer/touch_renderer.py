@@ -1,5 +1,6 @@
 import pygame
 
+from Domein.config import GRAY
 
 class TouchDisplay:
 
@@ -39,27 +40,11 @@ class TouchDisplay:
         )
 
     def draw_Controller(self, surface):
+        surface.fill(GRAY)
         # 文字を描画
-        self.DrawText(
-            surface,
-            "L",
-            self.width // 6,
-            self.height // 2
-        )
-
-        self.DrawText(
-            surface,
-            "J",
-            self.width * 3 // 6,
-            self.height // 2
-        )
-
-        self.DrawText(
-            surface,
-            "R",
-            self.width * 5 // 6,
-            self.height // 2
-        )
+        self.DrawText(surface, "L", self.width // 6, self.height // 2)
+        self.DrawText(surface, "J", self.width * 3 // 6, self.height // 2)
+        self.DrawText(surface, "R", self.width * 5 // 6, self.height // 2)
 
         # 区切り線を描画
         pygame.draw.line(

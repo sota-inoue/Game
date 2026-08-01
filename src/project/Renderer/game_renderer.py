@@ -1,5 +1,7 @@
 import pygame
 
+from Domein.config import GRAY
+
 class GameDisplay:
     TEXT_COLOR = (0, 0, 0)
 
@@ -18,17 +20,17 @@ class GameDisplay:
         surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
     def draw_Title(self, surface):
-        # 画面の中心にTitleの文字列を描画
+        surface.fill(GRAY)
         self.DrawText(surface,"Title", self.width//2, self.height//2)
     
     def draw_Opening(self, surface):
-        # 画面の中心にOpeningの文字列を描画
+        surface.fill(GRAY)
         self.DrawText(surface,"Opening", self.width//2, self.height//2)
     
     def draw_Over(self, surface):
-        # 画面の中心にGame Overの文字列を描画
+        surface.fill(GRAY)
         self.DrawText(surface,"Game Over", self.width//2, self.height//2)
     
     def draw_Clear(self, surface):
-        # 画面の中心にGame Game Clearの文字列を描画
+        surface.fill(GRAY)
         self.DrawText(surface,"Game Clear", self.width//2, self.height//2)

@@ -5,7 +5,7 @@ from Domein.config import (
     SCREEN_HEIGHT,
     TOUCH_SCREEN_TOP_X,
     TOUCH_SCREEN_TOP_Y,
-    BACK_COLOR
+    BLACK
 )
 
 class PyGameDisplay:
@@ -16,7 +16,7 @@ class PyGameDisplay:
 
     def draw_clear(self):
         # pygameウィンドウを背景色で塗りつぶす
-        self.screen.fill(BACK_COLOR)
+        self.screen.fill(BLACK)
 
     def game_draw(self, surface):
         # pygameウィンドウにゲーム画面を描画する
