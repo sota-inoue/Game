@@ -6,7 +6,6 @@ class Map:
         self.map_data = load_text("stage1.txt")
 
 
-
     def map_update(self, datas, count):
         if not datas:
             raise ValueError("datasが空です")

@@ -1,4 +1,4 @@
-from Domein.config import TOUCH_WIDTH
+from Domain.state import Command
 from enum import Enum
 
 class State_x(Enum):
@@ -10,12 +10,6 @@ class State_y(Enum):
     STAY = 0
     JUMP = 1
     DOWN = 2
-
-class Command(Enum):
-    LEFT = 0
-    JUMP = 1
-    RIGHT = 2
-    STAY = 3
 
 class Player:
     def __init__(self, width, height):
@@ -54,48 +48,11 @@ class Player:
         # 移動予定の座標
         self.next_locate_x = self.player_x
 
-    # プレイヤーの状態更新、移動、描画をまとめて行う関数
-    def update(self, x,y):
-        # 外部から受け取った入力コマンドをもとに、プレイヤーの状態を変更する
-        self.set_command(x,y)
-
-        # 現在位置と移動状態をもとに、次の移動先を決める
-        self.set_locate()
-
-        # プレイヤーをx軸方向に移動させる
-        self.move_x()
-
-        # プレイヤーをy軸方向に移動させる
-        self.move_y()
-
-        return self.player_x, self.player_y
-
-    # 外部から受け取った入力コマンドに応じて、プレイヤーの横方向・縦方向の状態を変更する
-    def set_command(self, x,y):
-        
-        # 左移動の入力を受け取った場合、横方向の状態をLEFTにする
-        if 0 <= x < TOUCH_WIDTH // 3:
-            self.state_x = State_x.LEFT
-
-        # 右移動の入力を受け取った場合、横方向の状態をRIGHTにする
-        elif TOUCH_WIDTH * 2 // 3 <= x <= TOUCH_WIDTH:
-            self.state_x = State_x.RIGHT
-
-        # ジャンプ入力を受け取った場合、プレイヤーが地上にいるときだけジャンプ状態にする
-        elif TOUCH_WIDTH // 3 <= x < TOUCH_WIDTH * 2 // 3:
-            if self.state_y == State_y.STAY:
-                self.state_y = State_y.JUMP
-
-        # 入力がない場合は状態を変更しない
-        elif x == y == -1:
-            return
-
-
     # プレイヤーの状態と現在位置をもとに、次の移動先を決める関数
-    def set_locate(self):
-        
+    def set_locate(self, command):
         # 横方向の状態がRIGHTの場合、右隣の座標を次の移動先にする
-        if self.state_x == State_x.RIGHT:
+        if command == Command.RIGHT:
+            self.state_x = State_x.RIGHT
 
             # 現在位置がX1以上X2未満の場合、次の移動先をX2にする
             if self.X1 <= self.player_x < self.X2:
@@ -114,7 +71,8 @@ class Player:
                 self.next_locate_x = self.X5
 
         # 横方向の状態がLEFTの場合、左隣の座標を次の移動先にする
-        elif self.state_x == State_x.LEFT:
+        elif command == Command.LEFT:
+            self.state_x = State_x.LEFT
 
             # 現在位置がX4より大きくX5以下の場合、次の移動先をX4にする
             if self.X4 < self.player_x <= self.X5:
@@ -131,6 +89,26 @@ class Player:
             # 現在位置がX1より大きくX2以下の場合、次の移動先をX1にする
             elif self.X1 < self.player_x <= self.X2:
                 self.next_locate_x = self.X1
+
+        elif command == Command.JUMP:
+            # 縦方向の状態がSTAYの場合、縦方向の状態をJUMPに変更する
+            if self.state_y == State_y.STAY:
+                self.state_y = State_y.JUMP
+
+
+
+
+    # プレイヤーの状態更新、移動、描画をまとめて行う関数
+    def update(self):
+        # プレイヤーをx軸方向に移動させる
+        self.move_x()
+    
+        # プレイヤーをy軸方向に移動させる
+        self.move_y()
+    
+        return self.player_x, self.player_y
+
+    
 
     # プレイヤーをx軸方向に移動させる関数
     def move_x(self):

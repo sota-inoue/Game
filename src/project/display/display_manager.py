@@ -3,7 +3,7 @@ import pygame
 from Display.pygame_display import PyGameDisplay
 from Display.fb import FbManager
 
-from Domein.config import (
+from Domain.config import (
     DISPLAY_WIDTH,
     DISPLAY_HEIGHT,
     TOUCH_WIDTH,
