@@ -113,9 +113,9 @@ class Controller:
             self.command_update()
             self.player_move()
             if count > 0 and count % 5 == 0:
+                self.map_updata()
                 self.player_position_update()
                 self.collision_check()
-                self.map_updata()
                 self.health_update()
 
                 # デバッグログ
