@@ -1,7 +1,7 @@
 # evdevライブラリはLinuxでのみ使用でき、Windowsではインポートできないため、
 # ImportErrorが発生した場合でもプログラムが停止しないようにする
 try:
-    from evdev import ecodes
+    from evdev import InputDevice, list_devices, ecodes
 except ImportError:
     InputDevice = None
     list_devices = None
@@ -9,18 +9,22 @@ except ImportError:
 
 from Domain.config import DEVICE_NAME
 
+
 def find_device():
+    # evdevが使用できない環境では、入力デバイスを使用しない
     if InputDevice is None or list_devices is None:
         return None
-    # 接続されている入力デバイス(/dev/input/event0～eventX)を順番に調べる
+
+    # 接続されている入力デバイスを順番に調べる
     for path in list_devices():
         # eventXに対応する入力デバイスの情報を取得する
         device = InputDevice(path)
-        # デバイス名が「ADS7846 Touchscreen」であれば、
-        # このeventXをタッチパネルの入力デバイスとして使用する
+
+        # 指定したデバイス名と一致した場合、そのデバイスを返す
         if device.name == DEVICE_NAME:
             return device
-    # タッチパネルの入力デバイスが見つからなかった場合のエラー処理
+
+    # タッチパネルが見つからなかった場合
     raise FileNotFoundError(f"{DEVICE_NAME} が見つかりません")
 
 def device_input(touch):

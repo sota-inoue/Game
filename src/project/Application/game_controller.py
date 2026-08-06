@@ -65,7 +65,7 @@ class Controller:
             self.saved_command = command
 
         # デバッグログ
-        print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
+        #print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
 
         # 5フレームに1回、保存した命令を反映
         if count > 0 and count % 5 == 0:
@@ -119,13 +119,13 @@ class Controller:
                 self.health_update()
 
                 # デバッグログ
-                print(
-                    f"command = {self.state.get_game_command().name} : "
-                    f"position = {self.state.get_player_position()} : "
-                    f"map = {self.saved_map_data} : "
-                    f"collision = {self.state.get_collision()} : "
-                    f"urgency = {self.state.get_urgency_level()}"
-                    )
+                # print(
+                #     f"command = {self.state.get_game_command().name} : "
+                #     f"position = {self.state.get_player_position()} : "
+                #     f"map = {self.saved_map_data} : "
+                #     f"collision = {self.state.get_collision()} : "
+                #     f"urgency = {self.state.get_urgency_level()}"
+                #     )
 
     def draw(self):
         game_state = self.state.get_game_state()

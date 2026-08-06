@@ -4,7 +4,7 @@ def load_text(filename):
     path = (
         Path(__file__).resolve().parent.parent
         / "Assets"
-        / "map"
+        / "Map"
         / filename
     )
 
