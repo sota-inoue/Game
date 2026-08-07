@@ -1,5 +1,5 @@
 from Renderer.object_renderer import Enemy, Obstacle,Player
-from Domein.layout import Coordinate
+from Domain.layout import Coordinate
 
 
 class StageDraw:

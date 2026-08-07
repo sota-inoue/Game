@@ -1,4 +1,4 @@
-from Domein.state import GameState
+from Domain.state import GameState
 
 def progress_system(state, input_x, input_y, count):
 
@@ -11,7 +11,7 @@ def progress_system(state, input_x, input_y, count):
         return GameState.STAGE
 
     # ゲーム画面を表示している間の処理
-    elif state == GameState.STAGE and count >= 20:
+    elif state == GameState.STAGE and count >= 100:
         return GameState.CLEAR
 
     # クリア画面でタッチされたらタイトル画面へ戻る

@@ -1,3 +1,3 @@
-from Application.App import App
+from Application.app import App
 
 App(False)

@@ -1,6 +1,6 @@
 import pygame
 
-from Domein.config import GRAY
+from Domain.config import GRAY
 
 class GameDisplay:
     TEXT_COLOR = (0, 0, 0)

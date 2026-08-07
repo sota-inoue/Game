@@ -1,6 +1,13 @@
 from enum import Enum, auto
 from typing import List
 
+
+class Command(Enum):
+    LEFT = auto()
+    JUMP = auto()
+    RIGHT = auto()
+    STAY = auto()
+
 class GameState(Enum):
     TITLE = auto()
     OP = auto()
@@ -16,6 +23,10 @@ class State:
         self.player_y = 0
         self.count = 0
         self.game_state = GameState.TITLE
+        self.game_command = Command.STAY
+        self.collision = False
+        self.player_position = (2, 0)
+        self.urgency_levelt = 0
 
         self.map_data: List[List[int]] = [
             [0 for _ in range(5)]
@@ -58,6 +69,13 @@ class State:
     def set_game_state(self, game_state):
         self.game_state = game_state
 
+    # game_command
+    def get_game_command(self):
+        return self.game_command
+        
+    def set_game_command(self, game_command):
+        self.game_command = game_command
+
     # count
     def get_count(self):
         return self.count
@@ -69,6 +87,36 @@ class State:
     def get_map_data(self):
         return [row.copy() for row in self.map_data]
 
+    def get_front_map_data(self):
+        """ステージデータの最前列（最初の行）を返す"""
+        return self.map_data[0].copy()
 
     def set_map_data(self, map_data):
         self.map_data = [row.copy() for row in map_data]
+
+
+    # collision
+    def get_collision(self):
+        return self.collision
+
+    def set_collision(self, collision):
+        self.collision = collision
+
+    # player_position
+    def get_player_position(self):
+        return self.player_position
+
+    def set_player_position(self, grid_position):
+        self.player_position = grid_position
+
+    # urgency_level
+    def get_urgency_level(self):
+        return self.urgency_levelt
+
+    def set_urgency_level(self, urgency_level):
+        if urgency_level < 0:
+            urgency_level = 0
+        elif urgency_level > 100:
+            urgency_level = 100
+        else:
+            self.urgency_levelt = urgency_level
