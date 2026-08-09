@@ -1,35 +1,34 @@
-# src/project/renderer/ui_renderer.py
 import pygame
-from Domain.game_state import GameState
+from Domain.config import GRAY, WHITE 
 
 class UIRenderer:
-    def __init__(self, font_path: str = None):
-        pygame.font.init()
-        self.font = pygame.font.Font(font_path, 24)
 
-    def draw(self, surface: pygame.Surface, state: GameState) -> None:
-        """UI全体の描画を行う"""
-        urgency = state.get_urgency_level()
-        max_urgency = state.get_max_urgency_level()
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
 
-        # 切迫度ゲージの描画位置・サイズ
-        gauge_x, gauge_y = 20, 20
-        gauge_width, gauge_height = 200, 25
+        # 日本語を表示する場合は、日本語対応フォントを指定する
+        self.font = pygame.font.Font(None, 50)
 
-        # 1. ゲージの背景枠（灰色）
-        pygame.draw.rect(surface, (100, 100, 100), (gauge_x, gauge_y, gauge_width, gauge_height))
+        self.health_width = width//10 * 3
+        self.health_height = height//10 * 2
+        self.health_x = width - self.health_width
+        self.health_y = 0
 
-        # 2. ゲージの中身（切迫度に応じて赤くなるバー）
-        fill_width = int((urgency / max_urgency) * gauge_width)
-        # 危険度が高くなると色が変化（黄 → 赤）
-        color = (255, 50, 50) if urgency > 70 else (255, 200, 0)
-        
-        if fill_width > 0:
-            pygame.draw.rect(surface, color, (gauge_x, gauge_y, fill_width, gauge_height))
 
-        # 3. 枠線（白色）
-        pygame.draw.rect(surface, (255, 255, 255), (gauge_x, gauge_y, gauge_width, gauge_height), 2)
+    def DrawText(self, surface, str, x, y):
+        # 指定した文字列を作成
+        text = self.font.render(str, True, GRAY)
+        # 描画する文字列の幅と高さを取得
+        text_width = text.get_width()
+        text_height = text.get_height()
+        # 指定された座標を文字列の中心として描画
+        surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
-        # 4. パーセント表示テキスト（例: "おなか: 75%"）
-        text_surface = self.font.render(f"おなか: {urgency}%", True, (255, 255, 255))
-        surface.blit(text_surface, (gauge_x + gauge_width + 10, gauge_y))
+
+
+    def health_draw(self, surface, hp):
+        pygame.draw.rect(surface, WHITE, (self.health_x, self.health_y, self.health_width, self.health_height))
+        self.DrawText(surface, f"おなか: {hp}%",
+            self.health_x + self.health_width // 2, 
+            self.health_y + self.health_height // 2)
