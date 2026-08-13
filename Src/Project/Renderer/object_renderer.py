@@ -1,37 +1,37 @@
 import pygame
+from Domain.config import (
+    PLAYER_IMAGE_PATH,
+    ENEMY_IMAGE_PATH,
+    OBSTACLE_IMAGE_PATH
+)
 
 class StageObject:
-    def __init__(self, color):
-        self.color = color
+    def __init__(self, image_path):
+        self.image = pygame.image.load(image_path).convert_alpha()
 
     def draw(self, x, y, width, height, surface):
-        # x, yを中心座標として、オブジェクトを画面上に描画する
-        pygame.draw.rect(
-            surface,
-            self.color,
+        image = pygame.transform.scale(
+            self.image,
+            (width, height)
+        )
+
+        # 画像を画面上に描画する
+        surface.blit(
+            image,
             (
-                # xを中心にして、左上のx座標を決める
                 x - (width // 2),
-
-                # yを中心にして、左上のy座標を決める
-                y - (height // 2),
-
-                # オブジェクトの横幅
-                width,
-
-                # オブジェクトの縦幅
-                height
+                y - (height // 2)
             )
         )
 
 class Enemy(StageObject):
     def __init__(self):
-        super().__init__((255, 0, 0))   # 赤色
+        super().__init__(ENEMY_IMAGE_PATH)
 
 class Obstacle(StageObject):
     def __init__(self):
-        super().__init__((128, 128, 128))   # 灰色
+        super().__init__(OBSTACLE_IMAGE_PATH)
 
 class Player(StageObject):
     def __init__(self):
-        super().__init__((0, 255, 0))   # 緑色
+        super().__init__(PLAYER_IMAGE_PATH)
