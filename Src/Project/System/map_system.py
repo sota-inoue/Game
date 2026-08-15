@@ -1,9 +1,10 @@
 
 from Load.text_loader import load_text
+from Domain.config import STAGE1_PATH
 
 class Map:
     def __init__(self):
-        self.map_data = load_text("stage1.txt")
+        self.map_data = load_text(STAGE1_PATH)
 
 
     def map_update(self, datas, count):

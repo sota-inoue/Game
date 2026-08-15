@@ -150,3 +150,36 @@ class SoundManager:
     def clear_cache(self) -> None:
         """保持しているSEのキャッシュを消去する"""
         self._se_cache.clear()
+
+
+from Domain.config import (
+    DECIDE_BUTTON_SOUND_PATH,
+    BGM_PATH
+)
+
+class AudioLoader:
+    def __init__(self):
+        self.sounds = {}
+        self.bgm_paths = {}
+
+        self.load_se("decide", DECIDE_BUTTON_SOUND_PATH)
+        self.load_bgm("bgm", BGM_PATH)
+
+    def load_se(self, name, path):
+        self.sounds[name] = pygame.mixer.Sound(path)
+
+    def load_bgm(self, name, path):
+        self.bgm_paths[name] = path
+
+    def play_se(self, name, volume=1.0):
+        sound = self.sounds[name]
+        sound.set_volume(volume)
+        sound.play()
+
+    def play_bgm(self, name, volume=0.5):
+        pygame.mixer.music.load(self.bgm_paths[name])
+        pygame.mixer.music.set_volume(volume)
+        pygame.mixer.music.play(-1)
+
+    def stop_bgm(self):
+        pygame.mixer.music.stop()

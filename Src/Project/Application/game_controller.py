@@ -16,11 +16,14 @@ from System.system_manager import System
 # 画面への出力処理を管理するクラス
 from Display.display_manager import Display
 
+from Load.sound_loader import AudioLoader 
+
 
 class Controller:
     def __init__(self,mode):
         self.mode = mode
         pygame.init()
+        self.audio = AudioLoader()
         self.state = State()
         self.display = Display(mode)
         self.input = Input(mode)
@@ -35,6 +38,8 @@ class Controller:
         # デバッグ用の変数
         self.saved_command = Command.STAY
         self.saved_map_data = None
+
+        self.audio.play_bgm("bgm", volume=0.5)
 
     def get_event(self):
         x, y = self.input.get_input()
@@ -71,6 +76,8 @@ class Controller:
         if count > 0 and count % 5 == 0:
             self.system.player_set_locate(self.saved_command)
             self.state.set_game_command(self.saved_command)
+            if self.saved_command != Command.STAY:
+                self.audio.play_se("decide", volume=0.5)
             self.saved_command = Command.STAY
 
     def player_move(self):
