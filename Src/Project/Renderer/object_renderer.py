@@ -1,13 +1,8 @@
 import pygame
-from Domain.config import (
-    PLAYER_IMAGE_PATH,
-    ENEMY_IMAGE_PATH,
-    OBSTACLE_IMAGE_PATH
-)
 
 class StageObject:
-    def __init__(self, image_path):
-        self.image = pygame.image.load(image_path).convert_alpha()
+    def __init__(self, image):
+        self.image = image
 
     def draw(self, x, y, width, height, surface):
         image = pygame.transform.scale(
@@ -25,13 +20,13 @@ class StageObject:
         )
 
 class Enemy(StageObject):
-    def __init__(self):
-        super().__init__(ENEMY_IMAGE_PATH)
+    def __init__(self, image):
+        super().__init__(image)
 
 class Obstacle(StageObject):
-    def __init__(self):
-        super().__init__(OBSTACLE_IMAGE_PATH)
+    def __init__(self, image):
+        super().__init__(image)
 
 class Player(StageObject):
-    def __init__(self):
-        super().__init__(PLAYER_IMAGE_PATH)
+    def __init__(self, image):
+        super().__init__(image)

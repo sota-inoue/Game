@@ -5,7 +5,7 @@ from Domain.state import Command
 from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
-from Domain.state import State, GameState
+from Domain.state import State, GameState, TitleState, Command
 
 # 描画処理を管理するクラス
 from Renderer.renderer_manager import Renderer
@@ -16,14 +16,12 @@ from System.system_manager import System
 # 画面への出力処理を管理するクラス
 from Display.display_manager import Display
 
-from Load.sound_loader import AudioLoader 
 
 
 class Controller:
     def __init__(self,mode):
         self.mode = mode
         pygame.init()
-        self.audio = AudioLoader()
         self.state = State()
         self.display = Display(mode)
         self.input = Input(mode)
@@ -39,7 +37,8 @@ class Controller:
         self.saved_command = Command.STAY
         self.saved_map_data = None
 
-        self.audio.play_bgm("bgm", volume=0.5)
+        #self.system.play_TitleBGM()
+        self.loop_flug = True
 
     def get_event(self):
         x, y = self.input.get_input()
@@ -70,14 +69,14 @@ class Controller:
             self.saved_command = command
 
         # デバッグログ
-        #print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
+        print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
 
         # 5フレームに1回、保存した命令を反映
         if count > 0 and count % 5 == 0:
-            self.system.player_set_locate(self.saved_command)
+            
             self.state.set_game_command(self.saved_command)
             if self.saved_command != Command.STAY:
-                self.audio.play_se("decide", volume=0.5)
+                self.system.play_PushButton()
             self.saved_command = Command.STAY
 
     def player_move(self):
@@ -111,19 +110,64 @@ class Controller:
         new_map_data = self.system.map_update(map_data, count)
         self.state.set_map_data(new_map_data)
 
+    def title_system(self):
+        self.command_update()
+        count = self.state.get_count()
+        if count <= 0 or count % 5 != 0:
+            return
+
+        title_state = self.state.get_title_state()
+        cmd = self.state.get_game_command()
+
+        if title_state == TitleState.START:
+            if cmd == Command.JUMP:
+                self.state.set_game_state(GameState.OP)
+                self.state.set_game_command(Command.STAY)
+
+            elif cmd == Command.RIGHT:
+                self.state.set_title_state(TitleState.SETTING)
+
+        elif title_state == TitleState.SETTING:
+            if cmd == Command.RIGHT:
+                self.state.set_title_state(TitleState.EXIT)
+
+            elif cmd == Command.LEFT:
+                self.state.set_title_state(TitleState.START)
+
+        elif title_state == TitleState.EXIT:
+            if cmd == Command.JUMP:
+                self.loop_flug = False
+
+            elif cmd == Command.LEFT:
+                self.state.set_title_state(TitleState.SETTING)
+
+
     def system_update(self):
-        self.proggress_update()
         game_state = self.state.get_game_state()
         count = self.state.get_count()
-        
-        if game_state == GameState.STAGE:
+
+        if game_state == GameState.TITLE:
+            self.title_system()
+
+        elif game_state == GameState.OP:
+            if count == 50:
+                self.state.set_game_state(GameState.STAGE)
+                self.state.set_game_command(Command.STAY)
+
+        elif game_state == GameState.STAGE:
             self.command_update()
             self.player_move()
+
             if count > 0 and count % 5 == 0:
-                self.map_updata()
+                cmd = self.state.get_game_command()
+                self.system.player_set_locate(cmd)
                 self.player_position_update()
                 self.collision_check()
                 self.health_update()
+                self.map_updata()
+
+            if count == 100:
+                self.state.set_game_state(GameState.CLEAR)
 
                 # デバッグログ
                 # print(
@@ -134,11 +178,15 @@ class Controller:
                 #     f"urgency = {self.state.get_urgency_level()}"
                 #     )
 
+        count = self.state.get_count()
+        self.state.set_count(count + 1)
+
     def draw(self):
         game_state = self.state.get_game_state()
 
         if game_state == GameState.TITLE:
-            self.renderer.draw_Title()
+            title_state = self.state.get_title_state()
+            self.renderer.draw_Title(title_state)
         elif game_state == GameState.OP:
             self.renderer.draw_Opening()
         elif game_state == GameState.STAGE:
@@ -166,12 +214,10 @@ class Controller:
         self.system_update()
         self.draw()
         self.output()
-
         if self.state.get_game_state()== GameState.CLEAR:
             if self.state.get_count() > 30:
                 return False
-
-        return True
+        return self.loop_flug
 
     
     def close(self):

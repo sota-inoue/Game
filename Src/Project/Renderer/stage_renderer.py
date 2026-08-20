@@ -1,25 +1,24 @@
 from Renderer.object_renderer import Enemy, Obstacle,Player
 from Domain.layout import Coordinate
 
-
-class StageDraw:
-    def __init__(self, width, height):
-
-        # オブジェクトの座標や大きさを管理するクラス
-        self.locate = Coordinate(width, height)
-
+class PlayerDraw:
+    def __init__(self, width, height, image):
         self.player_width = width // 10
         self.player_height = self.player_width * 5 // 3
+        self.player = Player(image)
 
-        # 敵と障害物の描画用インスタンス
-        self.enemy = Enemy()
-        self.obstacle = Obstacle()
-        self.player = Player()
-
-
-    def player_draw(self, surface, player_x, player_y):
+    def draw(self, surface, player_x, player_y):
         # プレイヤーの描画
         self.player.draw(player_x, player_y, self.player_width, self.player_height, surface)
+
+
+class StageObjectDraw:
+    def __init__(self, width, height, enemy_image, obstacle_image):
+        # オブジェクトの座標や大きさを管理するクラス
+        self.locate = Coordinate(width, height)
+        # 敵と障害物の描画用インスタンス
+        self.enemy = Enemy(enemy_image)
+        self.obstacle = Obstacle(obstacle_image)
 
     def draw(self, surface, mapdata):
         # レーン数を取得
