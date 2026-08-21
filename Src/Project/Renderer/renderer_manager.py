@@ -1,21 +1,32 @@
 import pygame
 from Renderer.touch_renderer import TouchDisplay
 from Renderer.game_renderer import GameDisplay
-from Renderer.stage_renderer import StageDraw
+from Renderer.stage_renderer import StageObjectDraw, PlayerDraw
 from Renderer.ui_renderer import UIRenderer
+from System.file_load_system import load_image
 
 from Domain.config import GRAY
+
+from Domain.asset_paths import (
+    PLAYER_IMAGE_PATH,
+    ENEMY_IMAGE_PATH,
+    OBSTACLE_IMAGE_PATH
+)
 
 
 class Renderer:
     def __init__(self,DISPLAY_WIDTH,DISPLAY_HEIGHT,TOUCH_WIDTH,TOUCH_HEIGHT):
+        PLAYER_IMAGE = load_image(PLAYER_IMAGE_PATH)
+        ENEMY_IMAGE = load_image(ENEMY_IMAGE_PATH)
+        OBSTACLE_IMAGE = load_image(OBSTACLE_IMAGE_PATH)
         self.game_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)
         self.touch_surface = pygame.Surface((TOUCH_WIDTH, TOUCH_HEIGHT), depth=16)
 
         self.touch = TouchDisplay(TOUCH_WIDTH, TOUCH_HEIGHT)
         self.game = GameDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-        self.stage = StageDraw(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        self.stage = StageObjectDraw(DISPLAY_WIDTH, DISPLAY_HEIGHT, ENEMY_IMAGE, OBSTACLE_IMAGE)
         self.ui = UIRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        self.player = PlayerDraw(DISPLAY_WIDTH, DISPLAY_HEIGHT, PLAYER_IMAGE)
 
     def get_game(self):
         return self.game_surface
@@ -27,8 +38,8 @@ class Renderer:
     def touch_render(self):
         self.touch.draw_Controller(self.touch_surface)
     
-    def draw_Title(self):
-        self.game.draw_Title(self.game_surface)
+    def draw_Title(self, title_state):
+        self.game.draw_Title(self.game_surface, title_state)
 
     def draw_Opening(self):
         self.game.draw_Opening(self.game_surface)
@@ -45,7 +56,7 @@ class Renderer:
         self.game_surface.fill(GRAY)
     
     def draw_Player(self, x, y):
-        self.stage.player_draw(self.game_surface, x, y)
+        self.player.draw(self.game_surface, x, y)
 
     def stage_render(self, data):
         self.stage.draw(self.game_surface, data)

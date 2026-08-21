@@ -1,6 +1,7 @@
 import pygame
 
 from Domain.config import GRAY
+from Domain.state import TitleState
 
 class GameDisplay:
     TEXT_COLOR = (0, 0, 0)
@@ -19,9 +20,33 @@ class GameDisplay:
         # 指定された座標を文字列の中心として描画
         surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
-    def draw_Title(self, surface):
+    def draw_Title(self, surface, title_state):
         surface.fill(GRAY)
-        self.DrawText(surface,"Title", self.width//2, self.height//2)
+        # タイトル
+        self.DrawText(surface, "Title", self.width // 2, self.height // 3)
+
+        # メニューのX座標とY座標
+        start_x = self.width // 4
+        setting_x = self.width // 2
+        exit_x = self.width * 3 // 4
+        menu_y = self.height * 2 // 3
+        arrow_y = menu_y - 50
+
+        # メニューを表示
+        self.DrawText(surface, "START", start_x, menu_y)
+        self.DrawText(surface, "SETTING", setting_x, menu_y)
+        self.DrawText(surface, "EXIT", exit_x, menu_y)
+
+        # 選択状態から矢印のX座標を決定
+        if title_state == TitleState.START:
+            arrow_x = start_x
+        elif title_state == TitleState.SETTING:
+            arrow_x = setting_x
+        elif title_state == TitleState.EXIT:
+            arrow_x = exit_x
+
+        # 矢印を表示
+        self.DrawText(surface, "▼", arrow_x, arrow_y)
     
     def draw_Opening(self, surface):
         surface.fill(GRAY)

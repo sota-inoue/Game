@@ -32,7 +32,7 @@ class App:
                 fps = 0
 
             # デバッグログ
-            print(f"処理時間 = {processing_time:.4f}s : 1フレーム時間 = {frame_time:.4f}s : FPS = {fps:.2f}")
+            #print(f"処理時間 = {processing_time:.4f}s : 1フレーム時間 = {frame_time:.4f}s : FPS = {fps:.2f}")
 
             self.pre_time = start_time
 

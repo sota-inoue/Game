@@ -1,6 +1,6 @@
 
-from Load.text_loader import load_text
-from Domain.config import STAGE1_PATH
+from System.file_load_system import load_text
+from Domain.asset_paths import STAGE1_PATH
 
 class Map:
     def __init__(self):
