@@ -11,8 +11,6 @@ from Domain.config import GRAY
 
 from Domain.asset_paths import (
     PLAYER_IMAGE_PATH,
-    ENEMY_IMAGE_PATH,
-    OBSTACLE_IMAGE_PATH
 )
 
 

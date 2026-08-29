@@ -6,6 +6,7 @@ from pathlib import Path
 class ObjectType(Enum):
     OBSTACLE = auto()
     ENEMY = auto()
+    PLAYER = auto()
 
 class StageObject:
     def __init__(self, object_type):

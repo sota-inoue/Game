@@ -1,4 +1,4 @@
-from Domain.StageObject.stage_object import StageObject
+from Domain.StageObject.player import Player
 
 from Domain.StageObject.object_converter import ObjectConverter
 
@@ -11,36 +11,25 @@ class StageObjectManager:
             [None for _ in range(5)]
             for _ in range(7)
         ]
-
+        self._player = Player(width)
         self._converter = ObjectConverter()
         self._layout = ObjectLayout(width, height)
 
     def map_update(self, data: list[int]) -> None:
-        print("受け取ったdata =", data)
         # レーンを1つ手前へ移動する
         i = 0
         while i < len(self._objects) - 1:
             self._objects[i] = self._objects[i + 1]
             i += 1
-
         # 数値データをオブジェクトへ変換する
         new_lane = self._converter.convert(data)
-
-        print("変換後new_lane =", new_lane)
-
         # 最後のレーンに新しいレーンを設定する
         self._objects[-1] = new_lane
-
         # 各オブジェクトの座標とサイズを更新する
         self._layout.position_update(self._objects)
 
-        # デバッグ
-        print("new_lane =", new_lane)
-        print("objects =", self._objects)
-
     def get_draw_data(self) -> list[list[dict | None]]:
         draw_data = []
-
         i = 0
         while i < len(self._objects):
             lane = []
