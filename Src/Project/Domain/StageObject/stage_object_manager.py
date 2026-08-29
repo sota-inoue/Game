@@ -15,6 +15,21 @@ class StageObjectManager:
         self._converter = ObjectConverter()
         self._layout = ObjectLayout(width, height)
 
+    def set_player_locate(self, x: int,y: int) -> None:
+        self._player.set_x(x)
+        self._player.set_y(y)
+
+    def get_player_draw_data(self) -> dict:
+        return {
+            "x": self._player.get_x(),
+            "y": self._player.get_y(),
+            "width": self._player.get_width(),
+            "height": self._player.get_height(),
+            "image_path": self._player.get_image_path()
+        }
+        
+
+
     def map_update(self, data: list[int]) -> None:
         # レーンを1つ手前へ移動する
         i = 0

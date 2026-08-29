@@ -75,6 +75,7 @@ class Controller:
         player_x, player_y = self.system.player_update()
         self.state.set_player_x(player_x)
         self.state.set_player_y(player_y)
+        self.stageobject.set_player_locate(player_x, player_y)
 
     def player_position_update(self):
         command = self.state.get_game_command()
@@ -188,13 +189,12 @@ class Controller:
 
         elif game_state == GameState.STAGE:
             self.renderer.draw_Stage()
-            map_data = self.stageobject.get_draw_data()
             
-            self.renderer.stage_render(map_data)
-            self.renderer.draw_Player(
-                self.state.get_player_x(),
-                self.state.get_player_y()
-            )
+            map_data = self.stageobject.get_draw_data()
+            player_data = self.stageobject.get_player_draw_data()
+
+            self.renderer.draw_stage_object(player_data, map_data)
+
             self.renderer.draw_UI(self.state.get_urgency_level())
 
         elif game_state == GameState.CLEAR:

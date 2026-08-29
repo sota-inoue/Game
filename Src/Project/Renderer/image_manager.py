@@ -6,6 +6,7 @@ from System.file_load_system import load_image
 from Domain.asset_paths import (
     ENEMY_IMAGE_PATH,
     OBSTACLE_IMAGE_PATH,
+    PLAYER_IMAGE_PATH
 )
 
 
@@ -17,6 +18,7 @@ class ImageManager:
         # 使用する画像を読み込む
         self.load(ENEMY_IMAGE_PATH)
         self.load(OBSTACLE_IMAGE_PATH)
+        self.load(PLAYER_IMAGE_PATH)
 
     def load(self, path: Path) -> None:
         # 引数の型を確認する
