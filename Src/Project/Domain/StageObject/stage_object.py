@@ -15,6 +15,9 @@ class StageObject:
         self._width: int = 0
         self._height: int = 0
 
+    def get_object_type(self) -> ObjectType:
+        return self._object_type
+
     # _image_pathのgetterとsetter
     def get_image_path(self) -> str:
         return self._image_path

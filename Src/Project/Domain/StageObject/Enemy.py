@@ -1,4 +1,4 @@
-from Domain.StageObject.StageObject import Enemy
+from Domain.StageObject.stage_object import Enemy
 
 from Domain.StageObject.object_parameters import(
     OJISAN_HP,

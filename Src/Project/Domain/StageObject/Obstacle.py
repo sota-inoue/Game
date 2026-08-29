@@ -1,4 +1,4 @@
-from Domain.StageObject.StageObject import Obstacle
+from Domain.StageObject.stage_object import Obstacle
 
 from Domain.StageObject.object_parameters import(
     BANANA_HP,
