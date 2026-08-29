@@ -5,7 +5,6 @@ from Renderer.object_renderer import StageObjectDraw
 from Renderer.ui_renderer import UIRenderer
 
 from Renderer.image_manager import ImageManager
-from System.file_load_system import load_image
 
 from Domain.config import GRAY
 

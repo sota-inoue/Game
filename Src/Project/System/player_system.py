@@ -32,10 +32,10 @@ class Player:
         self.Y2 = self.Y1 - self.obstacle_size * 2
 
         # プレイヤーのx方向の移動速度
-        self.speed_x = (self.X2 - self.X1) // 10
+        self.speed_x = (self.X2 - self.X1) // 5
 
         # プレイヤーのy方向の移動速度
-        self.speed_y = (self.Y1 - self.Y2) // 10
+        self.speed_y = (self.Y1 - self.Y2) // 5
 
         # プレイヤーの初期座標
         self.player_x = self.X3

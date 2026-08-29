@@ -67,20 +67,11 @@ class StageObject:
 
 
 class Obstacle(StageObject):
-    def __init__(self, hp : int, damage : int, image_path : str) -> None:
+    def __init__(self, damage : int, image_path : str, is_jumpable: bool) -> None:
         super().__init__(object_type=ObjectType.OBSTACLE)
-        self._hp: int = hp
         self._damage: int = damage
         self.set_image_path(image_path)
-
-    # _hpのgetterとsetter
-    def get_hp(self) -> int:
-        return self._hp
-
-    def set_hp(self, hp: int) -> None:
-        if not isinstance(hp, int):
-            raise TypeError(f"受け取った型 {type(hp).__name__} : int型を指定してください。")
-        self._hp = hp
+        self._is_jumpable: bool = is_jumpable
 
     # _damageのgetterとsetter
     def get_damage(self) -> int:
@@ -91,13 +82,23 @@ class Obstacle(StageObject):
             raise TypeError(f"受け取った型 {type(damage).__name__} : int型を指定してください。")
         self._damage = damage
 
+    # _is_jumpableのgetterとsetter
+    def get_is_jumpable(self) -> bool:
+        return self._is_jumpable
+
+    def set_is_jumpable(self, is_jumpable: bool) -> None:
+        if not isinstance(is_jumpable, bool):
+            raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
+        self._is_jumpable = is_jumpable
+
 
 class Enemy(StageObject):
-    def __init__(self, hp : int, damage : int, image_path : str) -> None:
+    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool) -> None:
         super().__init__(object_type=ObjectType.ENEMY)
         self._hp: int = hp
         self._damage: int = damage
         self.set_image_path(image_path)
+        self._is_jumpable: bool = is_jumpable
 
     # _hpのgetterとsetter
     def get_hp(self) -> int:
@@ -116,5 +117,14 @@ class Enemy(StageObject):
         if not isinstance(damage, int):
             raise TypeError(f"受け取った型 {type(damage).__name__} : int型を指定してください。")
         self._damage = damage
+
+    # _is_jumpableのgetterとsetter
+    def get_is_jumpable(self) -> bool:
+        return self._is_jumpable
+    
+    def set_is_jumpable(self, is_jumpable: bool) -> None:
+        if not isinstance(is_jumpable, bool):
+            raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
+        self._is_jumpable = is_jumpable
 
     

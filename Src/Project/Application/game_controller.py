@@ -73,38 +73,17 @@ class Controller:
 
     def player_move(self):
         player_x, player_y = self.system.player_update()
-        self.state.set_player_x(player_x)
-        self.state.set_player_y(player_y)
         self.stageobject.set_player_locate(player_x, player_y)
 
     def player_position_update(self):
         command = self.state.get_game_command()
-        player_x, player_y = self.state.get_player_position()
-        new_position = self.system.player_position_update(command, player_x, player_y)
-        self.state.set_player_position(new_position)
-
-    def collision_check(self):
-        stage_data = self.state.get_front_map_data()
-        self.saved_map_data = stage_data
-        player_x, player_y = self.state.get_player_position()
-        collision = self.system.collision_update(stage_data, player_x, player_y)
-        self.state.set_collision(collision)
-
-    def health_update(self):
-        hp = self.state.get_urgency_level()
-        count = self.state.get_count()
-        collision = self.state.get_collision()
-        new_hp = self.system.health_update(hp, count, collision)
-        self.state.set_urgency_level(new_hp)
+        self.stageobject.player_hitbox_update(command)
 
     def map_updata(self):
         count = self.state.get_count()
-        map_data = self.state.get_map_data()
-        new_map_data = self.system.map_update(map_data, count)
-        self.state.set_map_data(new_map_data)
-
         new_lean = self.system.get_map_date(count)
         self.stageobject.map_update(new_lean)
+
 
     def title_system(self):
         self.command_update()
@@ -138,6 +117,7 @@ class Controller:
                 self.state.set_title_state(TitleState.SETTING)
 
 
+
     def system_update(self):
         game_state = self.state.get_game_state()
         count = self.state.get_count()
@@ -146,7 +126,7 @@ class Controller:
             self.title_system()
 
         elif game_state == GameState.OP:
-            if count == 50:
+            if count == 20:
                 self.state.set_game_state(GameState.STAGE)
                 self.state.set_game_command(Command.STAY)
 
@@ -158,8 +138,7 @@ class Controller:
                 cmd = self.state.get_game_command()
                 self.system.player_set_locate(cmd)
                 self.player_position_update()
-                self.collision_check()
-                self.health_update()
+                self.stageobject.player_hit_check()
                 self.map_updata()
 
             if count == 100:
@@ -189,13 +168,13 @@ class Controller:
 
         elif game_state == GameState.STAGE:
             self.renderer.draw_Stage()
-            
+
             map_data = self.stageobject.get_draw_data()
             player_data = self.stageobject.get_player_draw_data()
 
             self.renderer.draw_stage_object(player_data, map_data)
 
-            self.renderer.draw_UI(self.state.get_urgency_level())
+            self.renderer.draw_UI(self.stageobject.get_urgency_level())
 
         elif game_state == GameState.CLEAR:
             self.renderer.draw_Clear()

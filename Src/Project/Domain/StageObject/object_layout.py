@@ -119,10 +119,7 @@ class LaneCoordinate:
         return (self.obstacle_width, self.obstacle_height)
 
 
-from Domain.StageObject.stage_object import (
-    StageObject,
-    ObjectType
-)
+from Domain.StageObject.stage_object import StageObject
 
 
 class ObjectLayout:
@@ -163,12 +160,11 @@ class ObjectLayout:
                 # オブジェクトを描画する基準座標を取得する
                 x, y0 = self.locate.get_coordinate(j, i)
 
-                # オブジェクトの種類に応じて描画サイズを取得する
-                if obj.get_object_type() == ObjectType.ENEMY:
-                    w, h = self.locate.get_enemy_size(i)
-
-                elif obj.get_object_type() == ObjectType.OBSTACLE:
+                # オブジェクトのパラメータに応じて描画サイズを取得する
+                if obj.get_is_jumpable() is True:
                     w, h = self.locate.get_obstacle_size(i)
+                elif obj.get_is_jumpable() is False:
+                    w, h = self.locate.get_enemy_size(i)
 
                 # 対応していないオブジェクトの場合は次のマスへ進む
                 else:
