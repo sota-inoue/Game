@@ -29,6 +29,9 @@ class System:
     def map_update(self, datas, count):
         return self.map.map_update(datas, count)
 
+    def get_map_date(self, count):
+        return self.map.get_map_date(count)
+
     def progress_update(self, state, x, y, count):
         return progress_system(state, x, y, count)
 

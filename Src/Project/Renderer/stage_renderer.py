@@ -1,5 +1,6 @@
-from Renderer.object_renderer import Enemy, Obstacle,Player
-from Domain.layout import Coordinate
+import pygame
+from Renderer.object_renderer import Player
+from Renderer.image_manager import ImageManager
 
 class PlayerDraw:
     def __init__(self, width, height, image):
@@ -13,57 +14,54 @@ class PlayerDraw:
 
 
 class StageObjectDraw:
-    def __init__(self, width, height, enemy_image, obstacle_image):
-        # オブジェクトの座標や大きさを管理するクラス
-        self.locate = Coordinate(width, height)
-        # 敵と障害物の描画用インスタンス
-        self.enemy = Enemy(enemy_image)
-        self.obstacle = Obstacle(obstacle_image)
+    def __init__(self, image : ImageManager):
+        self._image = image
 
-    def draw(self, surface, mapdata):
+    def draw(self, surface: pygame.Surface, draw_data: list[ list [ dict|None ] ] ) -> None:
         # レーン数を取得
-        lane_num = len(mapdata)
+        lane_num = len(draw_data)
 
         # 1レーンあたりのマス数を取得
-        cell_num = len(mapdata[0])
+        cell_num = len(draw_data[0])
 
         # 奥のレーンから順番に描画する
         i = lane_num - 1
         while i >= 0:
+
             # 左端のマスから順番に描画する
             j = 0
             while j < cell_num:
 
-                # 敵を描画
-                if mapdata[i][j] == 1:
-                    # 描画座標を取得
-                    x, y0 = self.locate.get_Coordinate(j, i)
+                # 現在のマスの描画データを取得
+                data = draw_data[i][j]
 
-                    # 敵の大きさを取得
-                    w, h = self.locate.get_enemy_size(i)
+                # オブジェクトが存在する場合のみ描画する
+                if data is not None:
+                    x = data["x"]
+                    y = data["y"]
+                    width = data["width"]
+                    height = data["height"]
 
-                    # 描画位置を補正
-                    y = y0 - h // 2
+                    # 画像を取得する
+                    image = self._image.get_image(data["image_path"])
 
-                    # 敵を描画
-                    self.enemy.draw(x, y, w, h, surface)
+                    # 描画サイズに変更する
+                    image = pygame.transform.scale(
+                        image,
+                        (width, height)
+                    )
 
-                # 障害物を描画
-                elif mapdata[i][j] == 51:
-                    # 描画座標を取得
-                    x, y0 = self.locate.get_Coordinate(j, i)
+                    # x, yを中心座標として画像を描画する
+                    surface.blit(
+                        image,
+                        (
+                            x - (width // 2),
+                            y - (height // 2)
+                        )
+                    )
 
-                    # 障害物の大きさを取得
-                    w, h = self.locate.get_obstacle_size(i)
-
-                    # 描画位置を補正
-                    y = y0 - h // 2
-
-                    # 障害物を描画
-                    self.obstacle.draw(x, y, w, h, surface)
-
-                # 次のマスへ
+                # 次のマスへ進む
                 j += 1
 
-            # 1つ手前のレーンへ
+            # 1つ手前のレーンへ進む
             i -= 1

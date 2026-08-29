@@ -8,10 +8,11 @@ from Domain.StageObject.object_parameters import(
 from Domain.asset_paths import ENEMY_IMAGE_PATH
 
 class Ojisan(Enemy):
-    super().__init__(
-        hp = OJISAN_HP,
-        damage = OJISAN_DAMAGE,
-        image_path = ENEMY_IMAGE_PATH
-    )
+    def __init__(self) -> None:
+        super().__init__(
+            hp=OJISAN_HP,
+            damage=OJISAN_DAMAGE,
+            image_path=ENEMY_IMAGE_PATH
+        )
 
     

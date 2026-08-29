@@ -56,7 +56,7 @@ class Coordinate:
             LaneCoordinate(self.lane_width[6], self.lane_x[6], lane_y[6])   # Lane7
         ]
 
-    def get_Coordinate(self, x, y):
+    def get_coordinate(self, x, y):
         # 指定されたマスの座標を返す
         #
         # x座標 : 0〜4で指定する
@@ -65,7 +65,7 @@ class Coordinate:
         # ゲーム上のyは、
         #   y = 0 が一番手前
         #   y = 6 が一番奥
-        return self.lanes[y].get_Coordinate(x)
+        return self.lanes[y].get_coordinate(x)
 
     def get_enemy_size(self, y):
         # 指定されたレーンの敵のサイズを返す
@@ -105,7 +105,7 @@ class LaneCoordinate:
         self.obstacle_width = width//10
         self.obstacle_height = self.obstacle_width
 
-    def get_Coordinate(self, x):
+    def get_coordinate(self, x):
         # 指定された横マス番号の座標を返す
         # x座標 : 0〜4で指定する
         return self.cell_x[x], self.cell_y

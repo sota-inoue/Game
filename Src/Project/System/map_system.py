@@ -23,3 +23,6 @@ class Map:
         # 最後のレーンに新しいマップデータを設定
         datas[-1] = self.map_data[count % len(self.map_data)].copy()
         return datas
+
+    def get_map_date(self, count) -> list[int]:
+        return self.map_data[(count // 5) - 1]

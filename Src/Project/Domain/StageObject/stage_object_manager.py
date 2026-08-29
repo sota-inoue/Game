@@ -16,6 +16,7 @@ class StageObjectManager:
         self._layout = ObjectLayout(width, height)
 
     def map_update(self, data: list[int]) -> None:
+        print("受け取ったdata =", data)
         # レーンを1つ手前へ移動する
         i = 0
         while i < len(self._objects) - 1:
@@ -25,12 +26,44 @@ class StageObjectManager:
         # 数値データをオブジェクトへ変換する
         new_lane = self._converter.convert(data)
 
+        print("変換後new_lane =", new_lane)
+
         # 最後のレーンに新しいレーンを設定する
         self._objects[-1] = new_lane
 
         # 各オブジェクトの座標とサイズを更新する
         self._layout.position_update(self._objects)
 
+        # デバッグ
+        print("new_lane =", new_lane)
+        print("objects =", self._objects)
 
+    def get_draw_data(self) -> list[list[dict | None]]:
+        draw_data = []
 
-         
+        i = 0
+        while i < len(self._objects):
+            lane = []
+
+            j = 0
+            while j < len(self._objects[i]):
+                obj = self._objects[i][j]
+
+                if obj is None:
+                    lane.append(None)
+
+                else:
+                    lane.append({
+                        "x": obj.get_x(),
+                        "y": obj.get_y(),
+                        "width": obj.get_width(),
+                        "height": obj.get_height(),
+                        "image_path": obj.get_image_path()
+                    })
+
+                j += 1
+
+            draw_data.append(lane)
+            i += 1
+
+        return draw_data

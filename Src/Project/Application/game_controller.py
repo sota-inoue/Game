@@ -16,6 +16,8 @@ from System.system_manager import System
 # 画面への出力処理を管理するクラス
 from Display.display_manager import Display
 
+from Domain.StageObject.stage_object_manager import StageObjectManager
+
 
 
 class Controller:
@@ -33,6 +35,8 @@ class Controller:
         )
         self.system = System(self.display.GAME_SCREEN_WIDTH, self.display.GAME_SCREEN_HEIGHT)
 
+        self.stageobject = StageObjectManager(self.display.GAME_SCREEN_WIDTH, self.display.GAME_SCREEN_HEIGHT)
+
         # デバッグ用の変数
         self.saved_command = Command.STAY
         self.saved_map_data = None
@@ -45,18 +49,6 @@ class Controller:
         self.state.set_input_x(x)
         self.state.set_input_y(y)
 
-    def proggress_update(self):
-        game_state = self.state.get_game_state()
-        count = self.state.get_count()
-        input_x = self.state.get_input_x()
-        input_y = self.state.get_input_y()
-        new_state = self.system.progress_update(game_state, input_x, input_y, count)
-        self.state.set_game_state(new_state)
-
-        if new_state != game_state:
-            self.state.set_count(0)
-        else:
-            self.state.set_count(count + 1)
 
     def command_update(self):
         input_x = self.state.get_input_x()
@@ -69,7 +61,7 @@ class Controller:
             self.saved_command = command
 
         # デバッグログ
-        print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
+        # print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
 
         # 5フレームに1回、保存した命令を反映
         if count > 0 and count % 5 == 0:
@@ -109,6 +101,9 @@ class Controller:
         map_data = self.state.get_map_data()
         new_map_data = self.system.map_update(map_data, count)
         self.state.set_map_data(new_map_data)
+
+        new_lean = self.system.get_map_date(count)
+        self.stageobject.map_update(new_lean)
 
     def title_system(self):
         self.command_update()
@@ -187,11 +182,15 @@ class Controller:
         if game_state == GameState.TITLE:
             title_state = self.state.get_title_state()
             self.renderer.draw_Title(title_state)
+
         elif game_state == GameState.OP:
             self.renderer.draw_Opening()
+
         elif game_state == GameState.STAGE:
             self.renderer.draw_Stage()
-            self.renderer.stage_render(self.state.get_map_data())
+            map_data = self.stageobject.get_draw_data()
+            
+            self.renderer.stage_render(map_data)
             self.renderer.draw_Player(
                 self.state.get_player_x(),
                 self.state.get_player_y()

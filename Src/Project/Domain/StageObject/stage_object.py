@@ -1,5 +1,6 @@
 import pygame
 from enum import Enum, auto
+from pathlib import Path
 
 
 class ObjectType(Enum):
@@ -9,7 +10,7 @@ class ObjectType(Enum):
 class StageObject:
     def __init__(self, object_type):
         self._object_type: ObjectType = object_type
-        self._image_path: str = ""
+        self._image_path: Path = None
         self._x: int = 0
         self._y: int = 0
         self._width: int = 0
@@ -19,12 +20,12 @@ class StageObject:
         return self._object_type
 
     # _image_pathのgetterとsetter
-    def get_image_path(self) -> str:
+    def get_image_path(self) -> Path:
         return self._image_path
     
-    def set_image_path(self, image_path: str) -> None:
-        if not isinstance(image_path, str):
-            raise TypeError(f"受け取った型 {type(image_path).__name__} : str型を指定してください。")
+    def set_image_path(self, image_path: Path) -> None:
+        if not isinstance(image_path, Path):
+            raise TypeError(f"受け取った型 {type(image_path).__name__} : Path型を指定してください。")
         self._image_path = image_path
 
     # _xのgetterとsetter

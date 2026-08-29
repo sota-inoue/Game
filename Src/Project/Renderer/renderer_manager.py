@@ -3,6 +3,8 @@ from Renderer.touch_renderer import TouchDisplay
 from Renderer.game_renderer import GameDisplay
 from Renderer.stage_renderer import StageObjectDraw, PlayerDraw
 from Renderer.ui_renderer import UIRenderer
+
+from Renderer.image_manager import ImageManager
 from System.file_load_system import load_image
 
 from Domain.config import GRAY
@@ -16,15 +18,14 @@ from Domain.asset_paths import (
 
 class Renderer:
     def __init__(self,DISPLAY_WIDTH,DISPLAY_HEIGHT,TOUCH_WIDTH,TOUCH_HEIGHT):
+        image = ImageManager()
         PLAYER_IMAGE = load_image(PLAYER_IMAGE_PATH)
-        ENEMY_IMAGE = load_image(ENEMY_IMAGE_PATH)
-        OBSTACLE_IMAGE = load_image(OBSTACLE_IMAGE_PATH)
         self.game_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)
         self.touch_surface = pygame.Surface((TOUCH_WIDTH, TOUCH_HEIGHT), depth=16)
 
         self.touch = TouchDisplay(TOUCH_WIDTH, TOUCH_HEIGHT)
         self.game = GameDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-        self.stage = StageObjectDraw(DISPLAY_WIDTH, DISPLAY_HEIGHT, ENEMY_IMAGE, OBSTACLE_IMAGE)
+        self.stage = StageObjectDraw(image)
         self.ui = UIRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT)
         self.player = PlayerDraw(DISPLAY_WIDTH, DISPLAY_HEIGHT, PLAYER_IMAGE)
 
