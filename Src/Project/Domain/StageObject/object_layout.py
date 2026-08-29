@@ -56,7 +56,7 @@ class Coordinate:
             LaneCoordinate(self.lane_width[6], self.lane_x[6], lane_y[6])   # Lane7
         ]
 
-    def get_Coordinate(self, x, y):
+    def get_coordinate(self, x, y):
         # 指定されたマスの座標を返す
         #
         # x座標 : 0〜4で指定する
@@ -65,7 +65,7 @@ class Coordinate:
         # ゲーム上のyは、
         #   y = 0 が一番手前
         #   y = 6 が一番奥
-        return self.lanes[y].get_Coordinate(x)
+        return self.lanes[y].get_coordinate(x)
 
     def get_enemy_size(self, y):
         # 指定されたレーンの敵のサイズを返す
@@ -105,7 +105,7 @@ class LaneCoordinate:
         self.obstacle_width = width//10
         self.obstacle_height = self.obstacle_width
 
-    def get_Coordinate(self, x):
+    def get_coordinate(self, x):
         # 指定された横マス番号の座標を返す
         # x座標 : 0〜4で指定する
         return self.cell_x[x], self.cell_y
@@ -117,3 +117,71 @@ class LaneCoordinate:
     def get_obstacle_size(self):
         # 障害物の横幅と縦幅を返す
         return (self.obstacle_width, self.obstacle_height)
+
+
+from Domain.StageObject.stage_object import StageObject
+
+
+class ObjectLayout:
+    def __init__(self, whith, height):
+        self.locate = Coordinate(whith, height)
+
+    def position_update(self, map_data: list[list[StageObject | None]]) -> list[list[StageObject | None]]:
+
+        # 引数がlist型であるか確認する
+        if not isinstance(map_data, list):
+            raise TypeError("map_dataはlist型で指定してください")
+
+        # レーン数を取得する
+        lane_num = len(map_data)
+
+        # マップデータが空の場合は処理を終了する
+        if lane_num == 0:
+            return
+
+        # 1レーンあたりのマス数を取得する
+        cell_num = len(map_data[0])
+
+        # 各レーンを順番に確認する
+        i = 0
+        while i < lane_num:
+            j = 0
+            # レーン内の各マスを順番に確認する
+            while j < cell_num:
+
+                # 現在のマスにあるオブジェクトを取得する
+                obj = map_data[i][j]
+
+                # オブジェクトが存在しない場合は次のマスへ進む
+                if obj is None:
+                    j += 1
+                    continue
+
+                # オブジェクトを描画する基準座標を取得する
+                x, y0 = self.locate.get_coordinate(j, i)
+
+                # オブジェクトのパラメータに応じて描画サイズを取得する
+                if obj.get_is_jumpable() is True:
+                    w, h = self.locate.get_obstacle_size(i)
+                elif obj.get_is_jumpable() is False:
+                    w, h = self.locate.get_enemy_size(i)
+
+                # 対応していないオブジェクトの場合は次のマスへ進む
+                else:
+                    j += 1
+                    continue
+
+                # オブジェクトの高さを基準に描画位置を補正する
+                y = y0 - h // 2
+
+                # 計算した描画座標とサイズをオブジェクトに保存する
+                obj.set_x(x)
+                obj.set_y(y)
+                obj.set_width(w)
+                obj.set_height(h)
+
+                # 次のマスへ進む
+                j += 1
+
+            # 次のレーンへ進む
+            i += 1
