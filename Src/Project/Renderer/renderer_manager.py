@@ -16,10 +16,12 @@ class Renderer:
         self.touch_surface = pygame.Surface((TOUCH_WIDTH, TOUCH_HEIGHT), depth=16)
 
         self.object = StageObjectDraw(self.game_surface, self.image)
+        self.ui = UIRenderer(self.game_surface, self.image)
+
+        self.game = GameDisplay(self.game_surface, self.image)
 
         self.touch = TouchDisplay(TOUCH_WIDTH, TOUCH_HEIGHT)
-        self.game = GameDisplay(DISPLAY_WIDTH, DISPLAY_HEIGHT)
-        self.ui = UIRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        
 
     def get_game(self):
         return self.game_surface
@@ -32,26 +34,24 @@ class Renderer:
         self.touch.draw_Controller(self.touch_surface)
     
     def draw_Title(self, title_state):
-        self.game.draw_Title(self.game_surface, title_state)
+        self.game.draw_title(title_state)
 
     def draw_Opening(self):
-        self.game.draw_Opening(self.game_surface)
+        self.game.draw_opening
     
     def draw_Over(self):
-        self.game.draw_Over(self.game_surface)
+        self.game.draw_over()
     
     def draw_Clear(self):
-        self.game.draw_Clear(self.game_surface)
-
-
+        self.game.draw_clear()
 
     def draw_Stage(self):
-        self.game_surface.fill(GRAY)
+        self.game.draw_stage1_bg()
 
     def draw_stage_object(self, player_data ,map_data):
         self.object.draw(player_data ,map_data)
 
     def draw_UI(self, hp):
-        self.ui.health_draw(self.game_surface, hp)
+        self.ui.health_draw(hp)
 
     
