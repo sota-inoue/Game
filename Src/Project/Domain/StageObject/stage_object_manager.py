@@ -1,8 +1,6 @@
 from Domain.StageObject.player import Player
 
-from Domain.StageObject.object_converter import ObjectConverter
-
-from Domain.StageObject.object_layout import ObjectLayout
+from System.map_system import Map
 
 from System.player_position_system import PositionSystem
 
@@ -14,8 +12,8 @@ class StageObjectManager:
             for _ in range(7)
         ]
         self._player = Player(width)
-        self._converter = ObjectConverter()
-        self._layout = ObjectLayout(width, height)
+
+        self._map = Map(width, height)
 
         self.position_system = PositionSystem()
 
@@ -30,7 +28,7 @@ class StageObjectManager:
         self._player.set_grid_x(new_grid_x)
         self._player.set_grid_y(new_grid_y)
 
-    def player_hit_check(self) -> None:\
+    def player_hit_check(self) -> None:
         # プレイヤーのマス目上の位置を取得する
         grid_x = self._player.get_grid_x()
         grid_y = self._player.get_grid_y()
@@ -55,7 +53,9 @@ class StageObjectManager:
     def get_urgency_level(self) -> int:
         return self._player.get_urgency_level()
 
-
+    def map_update(self, count: int):
+        self._map.map_update(self._objects, count)
+    
     def get_player_draw_data(self) -> dict:
         return {
             "x": self._player.get_x(),
@@ -64,22 +64,8 @@ class StageObjectManager:
             "height": self._player.get_height(),
             "image_path": self._player.get_image_path()
         }
-        
 
-
-    def map_update(self, data: list[int]) -> None:
-        # レーンを1つ手前へ移動する
-        i = 0
-        while i < len(self._objects) - 1:
-            self._objects[i] = self._objects[i + 1]
-            i += 1
-        # 数値データをオブジェクトへ変換する
-        new_lane = self._converter.convert(data)
-        # 最後のレーンに新しいレーンを設定する
-        self._objects[-1] = new_lane
-        # 各オブジェクトの座標とサイズを更新する
-        self._layout.position_update(self._objects)
-
+    
     def get_draw_data(self) -> list[list[dict | None]]:
         draw_data = []
         i = 0

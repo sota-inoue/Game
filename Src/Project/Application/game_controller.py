@@ -81,8 +81,7 @@ class Controller:
 
     def map_updata(self):
         count = self.state.get_count()
-        new_lean = self.system.get_map_date(count)
-        self.stageobject.map_update(new_lean)
+        self.stageobject.map_update(count)
 
 
     def title_system(self):

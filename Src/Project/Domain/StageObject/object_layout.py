@@ -126,7 +126,7 @@ class ObjectLayout:
     def __init__(self, whith, height):
         self.locate = Coordinate(whith, height)
 
-    def position_update(self, map_data: list[list[StageObject | None]]) -> list[list[StageObject | None]]:
+    def position_update(self, map_data: list[list[StageObject | None]]):
 
         # 引数がlist型であるか確認する
         if not isinstance(map_data, list):

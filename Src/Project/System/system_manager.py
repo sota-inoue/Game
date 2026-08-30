@@ -1,5 +1,4 @@
 from System.player_system import Player
-from System.map_system import Map
 from System.player_position_system import PositionSystem
 from System.command_change_system import CommandChangeSystem
 from System.sound_system import SoundSystem
@@ -10,7 +9,7 @@ class System:
         self.player_system = Player(DISPLAY_WIDTH, DISPLAY_HEIGHT)
         self.position_system = PositionSystem()
         self.change_command_system = CommandChangeSystem()
-        self.map = Map()
+        
         self.sound = SoundSystem()
 
     def command_update(self, input_x, input_y):
@@ -21,9 +20,6 @@ class System:
 
     def player_set_locate(self, command):
         self.player_system.set_locate(command)
-
-    def get_map_date(self, count):
-        return self.map.get_map_date(count)
 
     def player_position_update(self, command, position_x, position_y):
         return self.position_system.update(command, position_x, position_y)
