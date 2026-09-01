@@ -33,7 +33,7 @@ class Controller:
             self.display.TOUCH_SCREEN_WIDTH,
             self.display.TOUCH_SCREEN_HEIGHT
         )
-        self.system = System(self.display.GAME_SCREEN_WIDTH, self.display.GAME_SCREEN_HEIGHT)
+        self.system = System()
 
         self.stageobject = StageObjectManager(self.display.GAME_SCREEN_WIDTH, self.display.GAME_SCREEN_HEIGHT)
 
@@ -70,18 +70,6 @@ class Controller:
             if self.saved_command != Command.STAY:
                 self.system.play_PushButton()
             self.saved_command = Command.STAY
-
-    def player_move(self):
-        player_x, player_y = self.system.player_update()
-        self.stageobject.set_player_locate(player_x, player_y)
-
-    def player_position_update(self):
-        command = self.state.get_game_command()
-        self.stageobject.player_hitbox_update(command)
-
-    def map_updata(self):
-        count = self.state.get_count()
-        self.stageobject.map_update(count)
 
 
     def title_system(self):
@@ -131,14 +119,13 @@ class Controller:
 
         elif game_state == GameState.STAGE:
             self.command_update()
-            self.player_move()
+            self.stageobject.set_player_locate()
 
             if count > 0 and count % 5 == 0:
-                cmd = self.state.get_game_command()
-                self.system.player_set_locate(cmd)
-                self.player_position_update()
-                self.stageobject.player_hit_check()
-                self.map_updata()
+                command = self.state.get_game_command()
+                self.stageobject.player_hitbox_update(command)
+                self.stageobject.player_hit_check(count)
+                self.stageobject.map_update(count)
 
             if count == 100:
                 self.state.set_game_state(GameState.CLEAR)

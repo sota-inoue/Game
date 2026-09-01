@@ -2,60 +2,45 @@ from Domain.StageObject.player import Player
 
 from System.map_system import Map
 
-from System.player_position_system import PositionSystem
+from System.player_position import PlayerPosition
+
+from System.player_move import PlayerMove
+
+from System.player_hit_check import PlayerHitCheck
 
 class StageObjectManager:
     def __init__(self, width, height):
         # 7レーン × 5マスのオブジェクトデータを生成する
-        self._objects = [
-            [None for _ in range(5)]
-            for _ in range(7)
-        ]
+        self._objects = [ [None for _ in range(5)] for _ in range(7)]
+
         self._player = Player(width)
 
         self._map = Map(width, height)
 
-        self.position_system = PositionSystem()
+        self.player_position = PlayerPosition()
 
-    def set_player_locate(self, x: int,y: int) -> None:
-        self._player.set_x(x)
-        self._player.set_y(y)
+        self.player_hit_check_system = PlayerHitCheck()
 
-    def player_hitbox_update(self, cmd):
-        grid_x = self._player.get_grid_x()
-        grid_y = self._player.get_grid_y()
-        new_grid_x, new_grid_y = self.position_system.update(cmd, grid_x, grid_y)
-        self._player.set_grid_x(new_grid_x)
-        self._player.set_grid_y(new_grid_y)
+        self.player_move = PlayerMove(width, height)
+        self.player_move.update(self._player)
 
-    def player_hit_check(self) -> None:
-        # プレイヤーのマス目上の位置を取得する
-        grid_x = self._player.get_grid_x()
-        grid_y = self._player.get_grid_y()
+    def set_player_locate(self) -> None:
+        self.player_move.update(self._player)
 
-        # プレイヤーと同じ位置のオブジェクトを取得する
-        front_lane = self._objects[0]
-        obj = front_lane[grid_x]
+    def player_hitbox_update(self, cmd) -> None:
+        self.player_position.update(cmd, self._player)
 
-        # オブジェクトが存在しない場合は処理を終了する
-        if obj is None:
-            return
-        
-        # ジャンプ中かつ飛び越えられるオブジェクトの場合は接触しない
-        if grid_y == 1 and obj.get_is_jumpable():
-            return
+    def player_hit_check(self, count: int) -> None:
+        self.player_hit_check_system.update(count, self._player, self._objects)
 
-        # オブジェクトの攻撃力を取得し、プレイヤーのHPを計算し更新する
-        damage = obj.get_damage()
-        urgency_level = self._player.get_urgency_level() + damage
-        self._player.set_urgency_level(urgency_level)
+    def map_update(self, count: int) -> None:
+        self._map.map_update(self._objects, count)
+
+
 
     def get_urgency_level(self) -> int:
         return self._player.get_urgency_level()
 
-    def map_update(self, count: int):
-        self._map.map_update(self._objects, count)
-    
     def get_player_draw_data(self) -> dict:
         return {
             "x": self._player.get_x(),
