@@ -24,36 +24,9 @@ class GameState(Enum):
 
 class State:
     def __init__(self):
-        self.input_x = 0
-        self.input_y = 0
-        self.count = 0
         self.game_state = GameState.TITLE
         self.game_command = Command.STAY
         self.title_state = TitleState.START
-
-    # input_x
-    def get_input_x(self):
-        return self.input_x
-
-    def set_input_x(self, x: int):
-        if not isinstance(x, int):
-            raise TypeError(
-                f"input_xにはint型を指定してください。"
-                f"受け取った値: {x}、型: {type(x).__name__}"
-            )
-        self.input_x = x
-
-    # input_y
-    def get_input_y(self):
-        return self.input_y
-
-    def set_input_y(self, y: int):
-        if not isinstance(y, int):
-            raise TypeError(
-                f"input_yにはint型を指定してください。"
-                f"受け取った値: {y}、型: {type(y).__name__}"
-            )
-        self.input_y = y
 
     # game_state
     def get_game_state(self):
@@ -66,7 +39,6 @@ class State:
                 f"受け取った値: {game_state}、型: {type(game_state).__name__}"
             )
         if self.game_state != game_state:
-            self.count = 0
             self.game_state = game_state
 
     # game_command
@@ -91,18 +63,6 @@ class State:
                 f"title_stateにはTitleState型を指定してください。"
                 f"受け取った値: {title_state}、型: {type(title_state).__name__}"
             )
-        self.count = 0
         self.title_state = title_state
 
-    # count
-    def get_count(self):
-        return self.count
-
-    def set_count(self, count: int):
-        if not isinstance(count, int):
-            raise TypeError(
-                f"countにはint型を指定してください。"
-                f"受け取った値: {count}、型: {type(count).__name__}"
-            )
-        self.count = count
 

@@ -43,4 +43,8 @@ class Display:
             self.pygame.game_draw(game_surface)
             self.pygame.touch_draw(touch_surface)
             pygame.display.flip()
+
+    def fb_close(self):
+        self.fb.close()
+
         

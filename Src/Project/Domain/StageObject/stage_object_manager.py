@@ -24,10 +24,10 @@ class StageObjectManager:
         self.player_move = PlayerMove(width, height)
         self.player_move.update(self._player)
 
-    def set_player_locate(self) -> None:
+    def player_locate_update(self) -> None:
         self.player_move.update(self._player)
 
-    def player_hitbox_update(self, cmd) -> None:
+    def player_position_update(self, cmd) -> None:
         self.player_position.update(cmd, self._player)
 
     def player_hit_check(self, count: int) -> None:

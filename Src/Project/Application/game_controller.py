@@ -37,45 +37,24 @@ class Controller:
 
         self.stageobject = StageObjectManager(self.display.GAME_SCREEN_WIDTH, self.display.GAME_SCREEN_HEIGHT)
 
-        # デバッグ用の変数
-        self.saved_command = Command.STAY
-        self.saved_map_data = None
-
         #self.system.play_TitleBGM()
         self.loop_flug = True
-
-    def get_event(self):
-        x, y = self.input.get_input()
-        self.state.set_input_x(x)
-        self.state.set_input_y(y)
+        self.count = 0
 
 
     def command_update(self):
-        input_x = self.state.get_input_x()
-        input_y = self.state.get_input_y()
-        command = self.system.command_update(input_x, input_y)
-        count = self.state.get_count()
+        self.input.command_update()
 
-        # 入力があった場合だけ一時保存
-        if command != Command.STAY:
-            self.saved_command = command
+        # self.input.debug_log(self.count)
 
-        # デバッグログ
-        # print(f"{count:03d} : input = ({input_x}, {input_y}) : saved = {self.saved_command.name} ")
-
-        # 5フレームに1回、保存した命令を反映
-        if count > 0 and count % 5 == 0:
-            
-            self.state.set_game_command(self.saved_command)
-            if self.saved_command != Command.STAY:
+        if self.count % 5 == 0:
+            if self.input.get_is_click():
                 self.system.play_PushButton()
-            self.saved_command = Command.STAY
-
+            command = self.input.get_command()
+            self.state.set_game_command(command)
 
     def title_system(self):
-        self.command_update()
-        count = self.state.get_count()
-        if count <= 0 or count % 5 != 0:
+        if self.count <= 0 or self.count % 5 != 0:
             return
 
         title_state = self.state.get_title_state()
@@ -107,40 +86,32 @@ class Controller:
 
     def system_update(self):
         game_state = self.state.get_game_state()
-        count = self.state.get_count()
 
         if game_state == GameState.TITLE:
             self.title_system()
 
         elif game_state == GameState.OP:
-            if count == 20:
+            if self.count == 20:
                 self.state.set_game_state(GameState.STAGE)
                 self.state.set_game_command(Command.STAY)
 
         elif game_state == GameState.STAGE:
-            self.command_update()
-            self.stageobject.set_player_locate()
+            self.stageobject.player_locate_update()
 
-            if count > 0 and count % 5 == 0:
+            if self.count > 0 and self.count % 5 == 0:
                 command = self.state.get_game_command()
-                self.stageobject.player_hitbox_update(command)
-                self.stageobject.player_hit_check(count)
-                self.stageobject.map_update(count)
+                self.stageobject.player_position_update(command)
+                self.stageobject.player_hit_check(self.count)
+                self.stageobject.map_update(self.count)
 
-            if count == 100:
+            if self.count == 100:
                 self.state.set_game_state(GameState.CLEAR)
 
-                # デバッグログ
-                # print(
-                #     f"command = {self.state.get_game_command().name} : "
-                #     f"position = {self.state.get_player_position()} : "
-                #     f"map = {self.saved_map_data} : "
-                #     f"collision = {self.state.get_collision()} : "
-                #     f"urgency = {self.state.get_urgency_level()}"
-                #     )
-
-        count = self.state.get_count()
-        self.state.set_count(count + 1)
+        new_game_state = self.state.get_game_state()
+        if game_state != new_game_state:
+            self.count = 0
+        else:
+            self.count += 1
 
     def draw(self):
         game_state = self.state.get_game_state()
@@ -174,17 +145,17 @@ class Controller:
         )
 
     def loop(self):
-        self.get_event()
+        self.command_update()
         self.system_update()
         self.draw()
         self.output()
         if self.state.get_game_state()== GameState.CLEAR:
-            if self.state.get_count() > 30:
+            if self.count > 30:
                 return False
         return self.loop_flug
 
     
     def close(self):
         if self.mode:
-            self.fb.close()
+            self.display.fb_close()
         pygame.quit()

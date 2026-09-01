@@ -30,6 +30,8 @@ class PlayerPosition:
         player.set_player_position_x(next_position_x)
         player.set_player_position_y(next_position_y)
 
+        # self.debug_log(command, player)
+
 
     def get_next_position_x(self, command: Command, player_position_x: Player_Position_x) -> Player_Position_x:
         if command == Command.LEFT:
@@ -58,10 +60,8 @@ class PlayerPosition:
                 return Player_Position_x.X5
             else:
                 raise ValueError("Invalid player position_x")
-        elif command == Command.STAY:
-            return player_position_x
         else:
-            raise ValueError("Invalid player position_x")
+            return player_position_x
 
     def get_next_position_y(self) -> Player_Position_y:
         if self.is_jumping == True:
@@ -76,3 +76,12 @@ class PlayerPosition:
             next_position_y = Player_Position_y.Y1
 
         return next_position_y
+
+    def debug_log(self, command: Command, player: Player) -> None:
+        position_x = player.get_player_position_x()
+        position_y = player.get_player_position_y()
+
+        print(
+            f": command = {command.name} "
+            f": position = ({position_x.name}, {position_y.name})"
+        )

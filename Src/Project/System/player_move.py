@@ -42,31 +42,35 @@ class PlayerMove:
 
         # 横方向の状態がLEFTの場合、左方向へ移動する
         elif player_state_x == Player_Move_State_x.LEFT:
-                    # 一番左にいる場合は、これ以上左に移動できないため横移動を停止する
-            if x == self.X1:
+            # 一番左にいる場合は、これ以上左に移動できないため横移動を停止する
+            if x <= self.X1:
+                x = self.X1
                 player.set_state_x(Player_Move_State_x.STAY)
-            # プレイヤーを左方向へ移動させる
-            x -= self.speed_x
-            # 次の移動先に到達、または通り過ぎた場合
-            if x <= target_x:
-                # 座標を次の移動先に補正する
-                x = target_x
-                # 横方向の移動状態を停止に戻す
-                player.set_state_x(Player_Move_State_x.STAY)
+            else:
+                # プレイヤーを左方向へ移動させる
+                x -= self.speed_x
+                # 次の移動先に到達、または通り過ぎた場合
+                if x <= target_x:
+                    # 座標を次の移動先に補正する
+                    x = target_x
+                    # 横方向の移動状態を停止に戻す
+                    player.set_state_x(Player_Move_State_x.STAY)
         
         # 横方向の状態がRIGHTの場合、右方向へ移動する
         elif player_state_x == Player_Move_State_x.RIGHT:
             # 一番右にいる場合は、これ以上右に移動できないため横移動を停止する
-            if x == self.X5:
+            if x >= self.X5:
+                x = self.X5
                 player.set_state_x(Player_Move_State_x.STAY)
-            # プレイヤーを右方向へ移動させる
-            x += self.speed_x
-            # 次の移動先に到達、または通り過ぎた場合
-            if x >= target_x:
-                # 座標を次の移動先に補正する
-                x = target_x
-                # 横方向の移動状態を停止に戻す
-                player.set_state_x(Player_Move_State_x.STAY)
+            else:
+                # プレイヤーを右方向へ移動させる
+                x += self.speed_x
+                # 次の移動先に到達、または通り過ぎた場合
+                if x >= target_x:
+                    # 座標を次の移動先に補正する
+                    x = target_x
+                    # 横方向の移動状態を停止に戻す
+                    player.set_state_x(Player_Move_State_x.STAY)
 
         player.set_x(x)
 
