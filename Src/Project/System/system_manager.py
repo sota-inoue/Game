@@ -34,8 +34,11 @@ class System:
     def player_hit_check(self, count: int, player: Player, objects: list[list[StageObject | None]] ) -> None:
         self.hit_check.update(count, player, objects)
 
-    def map_update(self, count: int, objects: list[list[StageObject | None]] ) -> None:
-        self._map.map_update(objects, count)
+    def map_update(self, count: int, objects: list[list[StageObject | None]] ) -> bool:
+        return self._map.stage1_update(objects, count)
+
+    def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:
+        self._map.object_hit_check(objects)
 
     def player_attack(self, player: Player, objects: list[list[StageObject | None]]) -> list[StageObject | None]:
         obj = self.attack.attack(player, objects)

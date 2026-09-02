@@ -109,33 +109,28 @@ class AttackObjectFactory:
         if ep == 0:
             return [None for _ in range(5)]
         elif ep == 1:
-            # 位置
-            x1 = px + (ex - px) * 1 // 2
-            y1 = self.lane_y[1]
-            w1 = self.ohuda_width[1]
-            h1 = w1
-
-            x = [x1,ex,ex,ex,ex]
-            y = [y1,ey,ey,ey,ey]
-            w = [w1,ew,ew,ew,ew]
-            h = [h1,eh,eh,eh,eh]
-            paths = [self._ohuda_path, enemy_path, enemy_path, enemy_path, enemy_path]
+            return [None for _ in range(5)]
         elif ep == 2:
             x1 = px + (ex - px) * 1 // 3
             y1 = self.lane_y[1]
             w1 = self.ohuda_width[1]
             h1 = w1
 
-            x2 = px + (ex - px) * 2 // 3
-            y2 = self.lane_y[2]
-            w2 = self.ohuda_width[2]
+            x2 = px + (ex - px) * 1 // 3
+            y2 = self.lane_y[1]
+            w2 = self.ohuda_width[1]
             h2 = w2
 
-            x = [x1,x2,ex,ex,ex]
-            y = [y1,y2,ey,ey,ey]
-            w = [w1,w2,ew,ew,ew]
-            h = [h1,h2,eh,eh,eh]
-            paths = [self._ohuda_path, self._ohuda_path, enemy_path, enemy_path, enemy_path]
+            x3 = px + (ex - px) * 2 // 3
+            y3 = self.lane_y[2]
+            w3 = self.ohuda_width[2]
+            h3 = w3
+
+            x = [x1,x2,x3,ex,ex]
+            y = [y1,y2,y3,ey,ey]
+            w = [w1,w2,w3,ew,ew]
+            h = [h1,h2,h3,eh,eh]
+            paths = [self._ohuda_path, self._ohuda_path, self._ohuda_path, enemy_path, enemy_path]
 
         elif ep == 3:
             x1 = px + (ex - px) * 1 // 4

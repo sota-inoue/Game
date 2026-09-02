@@ -33,6 +33,8 @@ class State:
         # 7レーン × 5マスのオブジェクトデータを生成する
         self._objects = [ [None for _ in range(5)] for _ in range(7)]
         self._player = Player(width)
+
+        self.attack_count = 0
         self._attack = [None for _ in range(5)]
 
 
@@ -48,8 +50,8 @@ class State:
     def get_urgency_level(self) -> int:
         return self._player.get_urgency_level()
 
-    def get_attack_draw_data(self, count: int) -> dict | None:
-        index = count % 5
+    def get_attack_draw_data(self) -> dict | None:
+        index = self.attack_count
         obj = self._attack[index]
         if obj is None:
             return None
@@ -60,9 +62,11 @@ class State:
             "height": obj.get_height(),
             "image_path": obj.get_image_path()
         }
+        self.attack_count += 1
         # 5個目の描画データを取得した後にリセット
         if index == 4:
             self._attack = [None for _ in range(5)]
+            self.attack_count = 0
         return data
 
     def get_player_draw_data(self) -> dict:

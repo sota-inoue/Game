@@ -15,6 +15,8 @@ class PlayerAttack:
             obj = stage_objects[y][x]
             # 敵が見つかった場合は探索を終了する
             if obj is not None and obj.get_object_type() == ObjectType.ENEMY:
+                if y < 1:
+                    return
                 break
             y += 1
 
@@ -30,9 +32,8 @@ class PlayerAttack:
         hp = target_obj.get_hp() - player.get_power()
         target_obj.set_hp(hp)
 
-        # HPが0以下になった敵をマップ上から削除する
-        if target_obj.get_hp() <= 0:
-            stage_objects[y][x] = None
+        
+        stage_objects[y][x].set_is_hit(True)
 
         return attacked_obj
 

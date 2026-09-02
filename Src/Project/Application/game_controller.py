@@ -80,22 +80,24 @@ class Controller:
             player = self.state.get_player_data()
             objects = self.state.get_objects_data()
 
+            if self.count % 5 == 3:
+                self.system.object_hit_check(objects)
+
             if self.count == 0 or self.count % 5 == 0:
+
+                if not self.system.map_update(self.count, objects):
+                    self.state.set_game_state(GameState.CLEAR)
                 
                 self.system.player_position_update(command, player)
 
                 self.system.player_hit_check(self.count, player, objects)
 
-                self.system.map_update(self.count, objects)
-
                 if command == Command.ATTACK:
                     attack = self.system.player_attack(player, objects)
                     self.state.set_attack_data(attack)
+
             
             self.system.player_locate_update(player)
-
-            if self.count == 100:
-                self.state.set_game_state(GameState.CLEAR)
 
         new_game_state = self.state.get_game_state()
         if game_state != new_game_state:
@@ -118,7 +120,7 @@ class Controller:
 
             map_data = self.state.get_draw_data()
             player_data = self.state.get_player_draw_data()
-            attack_date = self.state.get_attack_draw_data(self.count)
+            attack_date = self.state.get_attack_draw_data()
 
             self.renderer.draw_stage_object(player_data, attack_date, map_data)
 

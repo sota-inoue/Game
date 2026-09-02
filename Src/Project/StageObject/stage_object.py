@@ -110,6 +110,13 @@ class Enemy(StageObject):
         self.set_image_path(image_path)
         self._is_jumpable: bool = is_jumpable
         self.set_id(id)
+        self.is_hit: bool = False
+
+    def set_is_hit(self, is_hit: bool) -> None:
+        self.is_hit = is_hit
+
+    def get_is_hit(self) -> bool:
+        return self.is_hit
 
     # _hpのgetterとsetter
     def get_hp(self) -> int:
