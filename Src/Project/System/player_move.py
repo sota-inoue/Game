@@ -27,7 +27,7 @@ class PlayerMove:
         player_state_y = player.get_state_y()
 
         # 目標座標取得
-        player_position_x = player.get_player_position_x()
+        player_position_x = player.get_position_x()
         target_x = self.get_target_x(player_position_x)
 
         x = player.get_x()

@@ -5,6 +5,8 @@ class Command(Enum):
     LEFT = auto()
     JUMP = auto()
     RIGHT = auto()
+    ATTACK = auto()
+    POSE = auto()
     STAY = auto()
 
 

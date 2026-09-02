@@ -26,7 +26,7 @@ class Map:
         # レーンを1つ手前へ移動する
         i = 0
         while i < len(objects) - 1:
-            objects[i] = objects[i + 1]
+            objects[i] = objects[i + 1].copy()
             i += 1
 
         # 最後のレーンに新しいレーンを設定する

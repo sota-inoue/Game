@@ -38,11 +38,21 @@ class Player(StageObject):
         self.set_width(player_width)
         self.set_height(player_height)
 
+        self._power: int = 1
         self._urgency_level: int = 0
         self._state_x: Player_Move_State_x = Player_Move_State_x.STAY
         self._state_y: Player_Move_State_y = Player_Move_State_y.STAY
         self._plaer_position_x: Player_Position_x = Player_Position_x.X3
         self._player_position_y: Player_Position_y = Player_Position_y.Y1
+
+    # power
+    def get_power(self):
+        return self._power
+
+    def set_power(self, power: int):
+        if not isinstance(power, int):
+            raise TypeError(f"受け取った値: {type(power).__name__}: int型を指定してください。")
+        self._power = power
 
     # urgency_level
     def get_urgency_level(self):
@@ -79,19 +89,19 @@ class Player(StageObject):
         
 
     # _player_position_xのgetterとsetter
-    def get_player_position_x(self):
+    def get_position_x(self):
         return self._plaer_position_x
     
-    def set_player_position_x(self, position_x: Player_Position_x):
+    def set_position_x(self, position_x: Player_Position_x):
         if not isinstance(position_x, Player_Position_x):
             raise TypeError(f"受け取った値: {type(position_x).__name__}: Player_Position_x型を指定してください。")
         self._plaer_position_x = position_x
     
     # _player_position_yのgetterとsetter
-    def get_player_position_y(self):
+    def get_position_y(self):
         return self._player_position_y  
     
-    def set_player_position_y(self, position_y: Player_Position_y):
+    def set_position_y(self, position_y: Player_Position_y):
         if not isinstance(position_y, Player_Position_y):
             raise TypeError(f"受け取った値: {type(position_y).__name__}: Player_Position_y型を指定してください。")
         self._player_position_y = position_y

@@ -8,8 +8,8 @@ class PlayerHitCheck:
     def update(self, count: int, player: Player, stage_data: list[list[StageObject | None]]) -> None:
 
          # プレイヤーの現在のマス位置を取得する
-        player_position_x = player.get_player_position_x()
-        player_position_y = player.get_player_position_y()
+        player_position_x = player.get_position_x()
+        player_position_y = player.get_position_y()
 
         # 一番手前のレーンを取得する
         front_lane = stage_data[0]

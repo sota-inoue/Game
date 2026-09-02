@@ -96,13 +96,20 @@ class Controller:
                 self.state.set_game_command(Command.STAY)
 
         elif game_state == GameState.STAGE:
-            self.stageobject.player_locate_update()
-
-            if self.count > 0 and self.count % 5 == 0:
+            if self.count % 5 == 0:
                 command = self.state.get_game_command()
+                
                 self.stageobject.player_position_update(command)
+
                 self.stageobject.player_hit_check(self.count)
+
+                if command == Command.ATTACK:
+                    self.stageobject.player_attack()
+
                 self.stageobject.map_update(self.count)
+            
+
+            self.stageobject.player_locate_update()
 
             if self.count == 100:
                 self.state.set_game_state(GameState.CLEAR)

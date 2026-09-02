@@ -1,12 +1,11 @@
 from Domain.StageObject.player import Player
 
+
 from System.map_system import Map
-
 from System.player_position import PlayerPosition
-
 from System.player_move import PlayerMove
-
 from System.player_hit_check import PlayerHitCheck
+from System.player_attack import PlayerAttack
 
 class StageObjectManager:
     def __init__(self, width, height):
@@ -17,24 +16,28 @@ class StageObjectManager:
 
         self._map = Map(width, height)
 
-        self.player_position = PlayerPosition()
+        self.position = PlayerPosition()
 
-        self.player_hit_check_system = PlayerHitCheck()
+        self.hit_check = PlayerHitCheck()
+        self.attack = PlayerAttack()
 
-        self.player_move = PlayerMove(width, height)
-        self.player_move.update(self._player)
+        self.move = PlayerMove(width, height)
+        self.move.update(self._player)
 
     def player_locate_update(self) -> None:
-        self.player_move.update(self._player)
+        self.move.update(self._player)
 
     def player_position_update(self, cmd) -> None:
-        self.player_position.update(cmd, self._player)
+        self.position.update(cmd, self._player)
 
     def player_hit_check(self, count: int) -> None:
-        self.player_hit_check_system.update(count, self._player, self._objects)
+        self.hit_check.update(count, self._player, self._objects)
 
     def map_update(self, count: int) -> None:
         self._map.map_update(self._objects, count)
+
+    def player_attack(self) -> None:
+        self.attack.attack(self._player, self._objects)
 
 
 

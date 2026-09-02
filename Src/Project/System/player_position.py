@@ -24,11 +24,11 @@ class PlayerPosition:
             self.is_jumping = True
             self.jump_count = 0
 
-        position_x = player.get_player_position_x()
+        position_x = player.get_position_x()
         next_position_x = self.get_next_position_x(command, position_x)
         next_position_y = self.get_next_position_y()
-        player.set_player_position_x(next_position_x)
-        player.set_player_position_y(next_position_y)
+        player.set_position_x(next_position_x)
+        player.set_position_y(next_position_y)
 
         # self.debug_log(command, player)
 
@@ -82,6 +82,6 @@ class PlayerPosition:
         position_y = player.get_player_position_y()
 
         print(
-            f": command = {command.name} "
+            f" command = {command.name} "
             f": position = ({position_x.name}, {position_y.name})"
         )
