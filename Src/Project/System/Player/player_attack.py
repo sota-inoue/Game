@@ -1,5 +1,5 @@
-from Domain.StageObject.stage_object import StageObject, ObjectType
-from Domain.StageObject.player import Player
+from StageObject.stage_object import StageObject, ObjectType
+from StageObject.player import Player
 import copy
 
 

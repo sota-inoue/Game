@@ -117,7 +117,7 @@ class LaneCoordinate:
         return (self.obstacle_width, self.obstacle_height)
 
 
-from Domain.StageObject.stage_object import StageObject
+from StageObject.stage_object import StageObject
 
 
 class ObjectLayout:

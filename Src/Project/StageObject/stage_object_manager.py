@@ -1,4 +1,4 @@
-from Domain.StageObject.player import Player
+from StageObject.player import Player
 
 from System.Map.map_system import Map
 from System.Player.player_position import PlayerPosition

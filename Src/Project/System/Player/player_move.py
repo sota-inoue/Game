@@ -1,4 +1,4 @@
-from Domain.StageObject.player import Player, Player_Move_State_x, Player_Move_State_y, Player_Position_x, Player_Position_y
+from StageObject.player import Player, Player_Move_State_x, Player_Move_State_y, Player_Position_x, Player_Position_y
 
 class PlayerMove:
     def __init__(self, width, height):

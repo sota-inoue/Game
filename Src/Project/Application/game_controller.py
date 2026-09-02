@@ -16,7 +16,7 @@ from System.system_manager import System
 # 画面への出力処理を管理するクラス
 from Display.display_manager import Display
 
-from Domain.StageObject.stage_object_manager import StageObjectManager
+from StageObject.stage_object_manager import StageObjectManager
 
 
 

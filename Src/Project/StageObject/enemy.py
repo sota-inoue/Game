@@ -1,6 +1,6 @@
-from Domain.StageObject.stage_object import Enemy
+from StageObject.stage_object import Enemy
 
-from Domain.StageObject.object_parameters import(
+from Domain.object_parameters import(
     OJISAN_HP,
     OJISAN_DAMAGE,
     OJISAN_IS_JUMPABLE,

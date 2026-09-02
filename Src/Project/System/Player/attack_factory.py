@@ -1,9 +1,9 @@
-from Domain.StageObject.stage_object import StageObject, Attack
-from Domain.StageObject.player import Player, Player_Position_x
+from StageObject.stage_object import StageObject, Attack
+from StageObject.player import Player, Player_Position_x
 from pathlib import Path
 
 from Domain.asset_paths import OJISAN_DAMAGED_IMAGE, OHUDA_IMAGE
-from Domain.StageObject.object_parameters import OJISAN_ID
+from Domain.object_parameters import OJISAN_ID
 
 class AttackObjectFactory:
     def __init__(self, width: int, height: int) -> None:

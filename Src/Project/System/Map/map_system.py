@@ -4,7 +4,7 @@ from System.file_load_system import load_text
 from System.Map.object_converter import ObjectConverter
 from System.Map.object_layout import ObjectLayout
 
-from Domain.StageObject.stage_object import StageObject
+from StageObject.stage_object import StageObject
 
 from Domain.asset_paths import STAGE1_PATH
 

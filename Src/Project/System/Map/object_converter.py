@@ -1,7 +1,7 @@
-from Domain.StageObject.enemy import Ojisan
-from Domain.StageObject.obstacle import Banana
+from StageObject.enemy import Ojisan
+from StageObject.obstacle import Banana
 
-from Domain.StageObject.stage_object import StageObject
+from StageObject.stage_object import StageObject
 
 
 class ObjectConverter:
