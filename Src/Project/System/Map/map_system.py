@@ -1,11 +1,10 @@
 
 from System.file_load_system import load_text
 
-from Domain.StageObject.object_converter import ObjectConverter
+from System.Map.object_converter import ObjectConverter
+from System.Map.object_layout import ObjectLayout
 
 from Domain.StageObject.stage_object import StageObject
-
-from Domain.StageObject.object_layout import ObjectLayout
 
 from Domain.asset_paths import STAGE1_PATH
 

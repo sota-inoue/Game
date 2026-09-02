@@ -1,11 +1,11 @@
 from Domain.StageObject.player import Player
 
-from System.map_system import Map
-from System.player_position import PlayerPosition
-from System.player_move import PlayerMove
-from System.player_hit_check import PlayerHitCheck
-from System.player_attack import PlayerAttack
-from System.attack_layout import AttackObjectFactory
+from System.Map.map_system import Map
+from System.Player.player_position import PlayerPosition
+from System.Player.player_move import PlayerMove
+from System.Player.player_hit_check import PlayerHitCheck
+from System.Player.player_attack import PlayerAttack
+from System.Player.attack_factory import AttackObjectFactory
 
 class StageObjectManager:
     def __init__(self, width, height):
