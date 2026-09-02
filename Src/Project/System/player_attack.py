@@ -1,9 +1,10 @@
 from Domain.StageObject.stage_object import StageObject, ObjectType
 from Domain.StageObject.player import Player
+import copy
 
 
 class PlayerAttack:
-    def attack(self, player: Player, stage_objects: list[list[StageObject | None]]) -> None:
+    def attack(self, player: Player, stage_objects: list[list[StageObject | None]]) -> StageObject | None:
 
         # プレイヤーがいる横方向のマス位置を取得する
         # PlayerPositionは1始まりのため、配列の添字に合わせて1を引く
@@ -19,10 +20,11 @@ class PlayerAttack:
 
         # 同じ列に敵がいない場合は攻撃処理を終了する
         if y >= len(stage_objects):
-            return
+            return None
 
         # 攻撃対象の敵を取得する
         target_obj = stage_objects[y][x]
+        attacked_obj = copy.copy(target_obj)
 
         # プレイヤーの攻撃力分だけ敵のHPを減らす
         hp = target_obj.get_hp() - player.get_power()
@@ -31,4 +33,6 @@ class PlayerAttack:
         # HPが0以下になった敵をマップ上から削除する
         if target_obj.get_hp() <= 0:
             stage_objects[y][x] = None
+
+        return attacked_obj
 

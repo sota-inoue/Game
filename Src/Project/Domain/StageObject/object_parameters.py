@@ -1,9 +1,11 @@
 
 # ぶつかりおじさんのパラメータ
+OJISAN_ID = 1
 OJISAN_HP = 1
 OJISAN_DAMAGE = 10
 OJISAN_IS_JUMPABLE = False
 
 # バナナのパラメータ
+BANANA_ID = 51
 BANANA_DAMAGE  = 10
 BANANA_IS_JUMPABLE = True

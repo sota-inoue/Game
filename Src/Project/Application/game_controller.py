@@ -98,17 +98,12 @@ class Controller:
         elif game_state == GameState.STAGE:
             if self.count % 5 == 0:
                 command = self.state.get_game_command()
-                
                 self.stageobject.player_position_update(command)
-
                 self.stageobject.player_hit_check(self.count)
-
+                self.stageobject.map_update(self.count)
                 if command == Command.ATTACK:
                     self.stageobject.player_attack()
-
-                self.stageobject.map_update(self.count)
             
-
             self.stageobject.player_locate_update()
 
             if self.count == 100:
@@ -135,8 +130,9 @@ class Controller:
 
             map_data = self.stageobject.get_draw_data()
             player_data = self.stageobject.get_player_draw_data()
+            attack_date = self.stageobject.get_attack_draw_data(self.count)
 
-            self.renderer.draw_stage_object(player_data, map_data)
+            self.renderer.draw_stage_object(player_data, attack_date, map_data)
 
             self.renderer.draw_UI(self.stageobject.get_urgency_level())
 

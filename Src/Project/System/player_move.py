@@ -11,7 +11,7 @@ class PlayerMove:
         self.X5 = width * 5 // 6
         
         # Y1 = 地面
-        self.Y1 = height - width // 10
+        self.Y1 = height - (width // 20)
         # Y2 = ジャンプ時の最高到達点
         self.Y2 = self.Y1 - width // 10
 

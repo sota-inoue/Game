@@ -33,8 +33,8 @@ URGENCY_FRAME18 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage18.JPG"
 URGENCY_FRAME19 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage19.JPG"
 URGENCY_FRAME20 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage20.JPG"
 
-
-
+OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
+OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"
 
 DECIDE_BUTTON_SOUND_PATH = BASE_DIR / "Sound" / "Se" / "decide_button.mp3"
 BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Morning.mp3"

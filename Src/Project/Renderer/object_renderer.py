@@ -8,9 +8,36 @@ class StageObjectDraw:
         self._image = image
         
 
-    def draw(self, player_data: dict, map_data: list[ list [ dict|None ] ]) -> None:
+    def draw(
+            self, 
+            player_data: dict, 
+            attack_date: dict | None , 
+            map_data: list[ list [ dict|None ] ]
+        ) -> None:
         self.object_draw(map_data)
         self.player_draw(player_data)
+        self.attck_draw(attack_date)
+
+    def attck_draw(self, draw_data: dict | None) -> None:
+
+        if draw_data == None:
+            return
+        
+        x = draw_data["x"]
+        y = draw_data["y"]
+        width = draw_data["width"]
+        height = draw_data["height"]
+            
+        # 画像を取得する
+        image = self._image.get_image(draw_data["image_path"])
+            
+        # 描画サイズに変更する
+        image = pygame.transform.scale(image, (width, height))
+            
+        # x, yを中心座標として画像を描画する
+        self._surface.blit(image, (x - (width // 2) , y - height ))
+
+    
 
     def player_draw(self, draw_data: dict) -> None:
         x = draw_data["x"]
@@ -25,7 +52,7 @@ class StageObjectDraw:
         image = pygame.transform.scale(image, (width, height))
         
         # x, yを中心座標として画像を描画する
-        self._surface.blit(image, (x - (width // 2) , y - (height // 2) ))
+        self._surface.blit(image, (x - (width // 2) , y - height ))
 
 
     def object_draw(self, draw_data: list[ list [ dict|None ] ] ) -> None:
@@ -60,7 +87,7 @@ class StageObjectDraw:
                     image = pygame.transform.scale(image, (width, height))
                             
                     # x, yを中心座標として画像を描画する
-                    self._surface.blit(image, (x - (width // 2) , y - (height // 2) ))
+                    self._surface.blit(image, (x - (width // 2) , y - height ))
 
                 # 次のマスへ進む
                 j += 1

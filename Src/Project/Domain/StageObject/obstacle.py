@@ -2,7 +2,8 @@ from Domain.StageObject.stage_object import Obstacle
 
 from Domain.StageObject.object_parameters import(
     BANANA_DAMAGE,
-    BANANA_IS_JUMPABLE
+    BANANA_IS_JUMPABLE,
+    BANANA_ID
 )
 
 from Domain.asset_paths import OBSTACLE_IMAGE_PATH
@@ -12,5 +13,6 @@ class Banana(Obstacle):
         super().__init__(
             damage=BANANA_DAMAGE,
             image_path=OBSTACLE_IMAGE_PATH,
-            is_jumpable=BANANA_IS_JUMPABLE
+            is_jumpable=BANANA_IS_JUMPABLE,
+            id=BANANA_ID
         )

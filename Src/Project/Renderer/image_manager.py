@@ -11,7 +11,7 @@ from Domain.asset_paths import (
     URGENCY_FRAME6, URGENCY_FRAME7, URGENCY_FRAME8, URGENCY_FRAME9, URGENCY_FRAME10, 
     URGENCY_FRAME11, URGENCY_FRAME12, URGENCY_FRAME13, URGENCY_FRAME14, URGENCY_FRAME15, 
     URGENCY_FRAME16, URGENCY_FRAME17, URGENCY_FRAME18, URGENCY_FRAME19, URGENCY_FRAME20, 
-    STAGE1_BACK_GRAUND
+    STAGE1_BACK_GRAUND, OHUDA_IMAGE, OJISAN_DAMAGED_IMAGE
 )
 
 
@@ -47,23 +47,23 @@ class ImageManager:
         self.load(URGENCY_FRAME20)
         self.load(STAGE1_BACK_GRAUND)
 
+        self.load(OHUDA_IMAGE)
+        self.load(OJISAN_DAMAGED_IMAGE)
 
-    def load(self, path: Path) -> None:
-        # 引数の型を確認する
-        if not isinstance(path, Path):
-            raise TypeError(f"受け取った型 {type(path).__name__} : pathはPath型で指定してください")
+
+
+    def load(self, path: Path | None) -> None:
+
+        if path is None:
+            image = pygame.Surface((10, 10))
+            image.fill((0, 0, 0))
+            self._images[path] = image
+            return
 
         # 画像を読み込んで保存する
         self._images[path] = load_image(path)
 
-    def get_image(self, path: Path) -> pygame.Surface:
-        # 引数の型を確認する
-        if not isinstance(path, Path):
-            raise TypeError(f"受け取った型 {type(path).__name__} : pathはPath型で指定してください")
-
-        # 指定されたパスの画像が存在するか確認する
-        if path not in self._images:
-            raise KeyError(f"画像が読み込まれていません: {path}")
+    def get_image(self, path: Path | None) -> pygame.Surface:
 
         # パスに対応する画像を返す
         return self._images[path]
