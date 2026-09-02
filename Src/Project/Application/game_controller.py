@@ -16,37 +16,31 @@ from System.system_manager import System
 # 画面への出力処理を管理するクラス
 from Display.display_manager import Display
 
-from StageObject.stage_object_manager import StageObjectManager
-
 
 
 class Controller:
     def __init__(self,mode):
         self.mode = mode
         pygame.init()
-        self.state = State()
+        
         self.display = Display(mode)
-        self.input = Input(mode)
-        self.renderer = Renderer(
-            self.display.GAME_SCREEN_WIDTH,
-            self.display.GAME_SCREEN_HEIGHT,
-            self.display.TOUCH_SCREEN_WIDTH,
-            self.display.TOUCH_SCREEN_HEIGHT
-        )
-        self.system = System()
+        GAME_SCREEN_WIDTH = self.display.GAME_SCREEN_WIDTH
+        GAME_SCREEN_HEIGHT = self.display.GAME_SCREEN_HEIGHT
+        TOUCH_SCREEN_WIDTH = self.display.TOUCH_SCREEN_WIDTH
+        TOUCH_SCREEN_HEIGHT = self.display.TOUCH_SCREEN_HEIGHT
 
-        self.stageobject = StageObjectManager(self.display.GAME_SCREEN_WIDTH, self.display.GAME_SCREEN_HEIGHT)
+        self.input = Input(mode)
+        self.renderer = Renderer(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, TOUCH_SCREEN_WIDTH, TOUCH_SCREEN_HEIGHT)
+        self.system = System(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT)
+        self.state = State(GAME_SCREEN_WIDTH)
 
         #self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
 
-
     def command_update(self):
         self.input.command_update()
-
         # self.input.debug_log(self.count)
-
         if self.count % 5 == 0:
             if self.input.get_is_click():
                 self.system.play_PushButton()
@@ -54,35 +48,20 @@ class Controller:
             self.state.set_game_command(command)
 
     def title_system(self):
-        if self.count <= 0 or self.count % 5 != 0:
+        if self.count % 5 != 0:
             return
-
+        
         title_state = self.state.get_title_state()
         cmd = self.state.get_game_command()
-
-        if title_state == TitleState.START:
-            if cmd == Command.JUMP:
-                self.state.set_game_state(GameState.OP)
-                self.state.set_game_command(Command.STAY)
-
-            elif cmd == Command.RIGHT:
-                self.state.set_title_state(TitleState.SETTING)
-
-        elif title_state == TitleState.SETTING:
-            if cmd == Command.RIGHT:
-                self.state.set_title_state(TitleState.EXIT)
-
-            elif cmd == Command.LEFT:
-                self.state.set_title_state(TitleState.START)
-
-        elif title_state == TitleState.EXIT:
-            if cmd == Command.JUMP:
-                self.loop_flug = False
-
-            elif cmd == Command.LEFT:
-                self.state.set_title_state(TitleState.SETTING)
-
-
+        new_state = self.system.title_update(cmd, title_state)
+        if new_state == TitleState.EXIT_DECIDE:
+            self.loop_flug = False
+        elif new_state == TitleState.START_DECIDE:
+            self.state.set_game_command(Command.STAY)
+            self.state.set_title_state(TitleState.START)
+            self.state.set_game_state(GameState.OP)
+        else:
+            self.state.set_title_state(new_state)
 
     def system_update(self):
         game_state = self.state.get_game_state()
@@ -96,15 +75,24 @@ class Controller:
                 self.state.set_game_command(Command.STAY)
 
         elif game_state == GameState.STAGE:
-            if self.count % 5 == 0:
-                command = self.state.get_game_command()
-                self.stageobject.player_position_update(command)
-                self.stageobject.player_hit_check(self.count)
-                self.stageobject.map_update(self.count)
+
+            command = self.state.get_game_command()
+            player = self.state.get_player_data()
+            objects = self.state.get_objects_data()
+
+            if self.count == 0 or self.count % 5 == 0:
+                
+                self.system.player_position_update(command, player)
+
+                self.system.player_hit_check(self.count, player, objects)
+
+                self.system.map_update(self.count, objects)
+
                 if command == Command.ATTACK:
-                    self.stageobject.player_attack()
+                    attack = self.system.player_attack(player, objects)
+                    self.state.set_attack_data(attack)
             
-            self.stageobject.player_locate_update()
+            self.system.player_locate_update(player)
 
             if self.count == 100:
                 self.state.set_game_state(GameState.CLEAR)
@@ -128,13 +116,13 @@ class Controller:
         elif game_state == GameState.STAGE:
             self.renderer.draw_Stage()
 
-            map_data = self.stageobject.get_draw_data()
-            player_data = self.stageobject.get_player_draw_data()
-            attack_date = self.stageobject.get_attack_draw_data(self.count)
+            map_data = self.state.get_draw_data()
+            player_data = self.state.get_player_draw_data()
+            attack_date = self.state.get_attack_draw_data(self.count)
 
             self.renderer.draw_stage_object(player_data, attack_date, map_data)
 
-            self.renderer.draw_UI(self.stageobject.get_urgency_level())
+            self.renderer.draw_UI(self.state.get_urgency_level())
 
         elif game_state == GameState.CLEAR:
             self.renderer.draw_Clear()
