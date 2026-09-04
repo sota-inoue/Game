@@ -36,7 +36,8 @@ class State:
 
         self.attack_count = 0
         self._attack = [None for _ in range(5)]
-
+        self.op_page = 1
+        self.is_first_play = True
 
     def get_objects_data(self):
         return self._objects
@@ -141,4 +142,26 @@ class State:
             )
         self.title_state = title_state
 
+    # op_page
+    def get_op_page(self) -> int:
+        return self.op_page
 
+    def set_op_page(self, page: int):
+        if not isinstance(page, int):
+            raise TypeError(
+                f"op_pageにはint型を指定してください。"
+                f"受け取った値: {page}、型: {type(page).__name__}"
+            )
+        self.op_page = page
+
+    # is_first_play
+    def get_is_first_play(self) -> bool:
+        return self.is_first_play
+
+    def set_is_first_play(self, is_first_play: bool):
+        if not isinstance(is_first_play, bool):
+            raise TypeError(
+                f"is_first_playにはbool型を指定してください。"
+                f"受け取った値: {is_first_play}、型: {type(is_first_play).__name__}"
+            )
+        self.is_first_play = is_first_play

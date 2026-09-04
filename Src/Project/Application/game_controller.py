@@ -37,6 +37,7 @@ class Controller:
         #self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
+        self.prev_command = Command.STAY
 
     def command_update(self):
         self.input.command_update()
@@ -59,9 +60,26 @@ class Controller:
         elif new_state == TitleState.START_DECIDE:
             self.state.set_game_command(Command.STAY)
             self.state.set_title_state(TitleState.START)
-            self.state.set_game_state(GameState.OP)
+            if self.state.get_is_first_play():
+                self.state.set_is_first_play(False)
+                self.state.set_op_page(1)
+                self.state.set_game_state(GameState.OP)
+                self.prev_command = cmd  # 遷移時の入力による即時ページスキップを防止
+            else:
+                self.state.set_game_state(GameState.STAGE)        
         else:
             self.state.set_title_state(new_state)
+
+    def op_system(self):
+        cmd = self.state.get_game_command()
+        # ボタンが新たに押された瞬間（押し下げ）のみページ送りを行う
+        if cmd != Command.STAY and self.prev_command == Command.STAY:
+            current_page = self.state.get_op_page()
+            if current_page < 3:
+                self.state.set_op_page(current_page + 1)
+            else:
+                self.state.set_game_state(GameState.STAGE)
+            self.state.set_game_command(Command.STAY)
 
     def system_update(self):
         game_state = self.state.get_game_state()
@@ -70,9 +88,7 @@ class Controller:
             self.title_system()
 
         elif game_state == GameState.OP:
-            if self.count == 20:
-                self.state.set_game_state(GameState.STAGE)
-                self.state.set_game_command(Command.STAY)
+            self.op_system()
 
         elif game_state == GameState.STAGE:
 
@@ -99,6 +115,7 @@ class Controller:
             
             self.system.player_locate_update(player)
 
+        self.prev_command = self.state.get_game_command()
         new_game_state = self.state.get_game_state()
         if game_state != new_game_state:
             self.count = 0
@@ -113,7 +130,7 @@ class Controller:
             self.renderer.draw_Title(title_state)
 
         elif game_state == GameState.OP:
-            self.renderer.draw_Opening()
+            self.renderer.draw_Opening(self.state.get_op_page())
 
         elif game_state == GameState.STAGE:
             self.renderer.draw_Stage()

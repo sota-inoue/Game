@@ -12,7 +12,7 @@ class OPRenderer:
         self.op_images = {}
 
         base_dir = os.path.join("Assets", "Image", "OP")
-        for i in range(1, 5):
+        for i in range(1, 4):
             path = os.path.join(base_dir, f"op_{i}.png")
             image = load_image(path)
             if image is not None and isinstance(image, pygame.Surface):
