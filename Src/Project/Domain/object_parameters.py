@@ -1,7 +1,7 @@
 
 # ぶつかりおじさんのパラメータ
 OJISAN_ID = 1
-OJISAN_HP = 1
+OJISAN_HP = 2
 OJISAN_DAMAGE = 10
 OJISAN_IS_JUMPABLE = False
 

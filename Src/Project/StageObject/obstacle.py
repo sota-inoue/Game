@@ -1,6 +1,6 @@
-from Domain.StageObject.stage_object import Obstacle
+from StageObject.stage_object import Obstacle
 
-from Domain.StageObject.object_parameters import(
+from Domain.object_parameters import(
     BANANA_DAMAGE,
     BANANA_IS_JUMPABLE,
     BANANA_ID
