@@ -5,6 +5,7 @@ from Renderer.object_renderer import StageObjectDraw
 from Renderer.ui_renderer import UIRenderer
 
 from Renderer.image_manager import ImageManager
+from Renderer.op_renderer import OPRenderer
 
 from Domain.config import GRAY
 
@@ -17,6 +18,7 @@ class Renderer:
 
         self.object = StageObjectDraw(self.game_surface, self.image)
         self.ui = UIRenderer(self.game_surface, self.image)
+        self.op_renderer = OPRenderer(DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
         self.game = GameDisplay(self.game_surface, self.image)
 
@@ -36,9 +38,9 @@ class Renderer:
     def draw_Title(self, title_state):
         self.game.draw_title(title_state)
 
-    def draw_Opening(self):
-        self.game.draw_opening
-    
+    def draw_Opening(self, op_page: int = 1):
+        self.op_renderer.draw(self.game_surface, op_page)
+
     def draw_Over(self):
         self.game.draw_over()
     
