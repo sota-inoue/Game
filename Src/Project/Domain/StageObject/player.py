@@ -1,6 +1,31 @@
+from enum import Enum, auto
+
 from Domain.StageObject.stage_object import StageObject, ObjectType
 
 from Domain.asset_paths import PLAYER_IMAGE_PATH
+
+class Player_Move_State_x(Enum):
+    STAY = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+class Player_Move_State_y(Enum):
+    STAY = auto()
+    JUMP = auto()
+    DOWN = auto()
+
+class Player_Position_x(Enum):
+    X1 = auto()
+    X2 = auto()
+    X3 = auto()
+    X4 = auto()
+    X5 = auto()
+
+class Player_Position_y(Enum):
+    Y1 = auto()
+    Y2 = auto()
+
+
 
 class Player(StageObject):
     def __init__(self, width) -> None:
@@ -13,11 +38,22 @@ class Player(StageObject):
         self.set_width(player_width)
         self.set_height(player_height)
 
+        self._power: int = 1
         self._urgency_level: int = 0
-        self._player_grid_x: int = 2
-        self._player_grid_y: int = 0
+        self._state_x: Player_Move_State_x = Player_Move_State_x.STAY
+        self._state_y: Player_Move_State_y = Player_Move_State_y.STAY
+        self._plaer_position_x: Player_Position_x = Player_Position_x.X3
+        self._player_position_y: Player_Position_y = Player_Position_y.Y1
 
-        
+    # power
+    def get_power(self):
+        return self._power
+
+    def set_power(self, power: int):
+        if not isinstance(power, int):
+            raise TypeError(f"受け取った値: {type(power).__name__}: int型を指定してください。")
+        self._power = power
+
     # urgency_level
     def get_urgency_level(self):
         return self._urgency_level
@@ -33,29 +69,39 @@ class Player(StageObject):
     
         self._urgency_level = urgency_level
 
-    # _player_grid_xのgetterとsetter
-    def get_grid_x(self) -> int:
-        return self._player_grid_x
+    # _state_xのgetterとsetter
+    def get_state_x(self):
+        return self._state_x
 
-    def set_grid_x(self, grid_x: int) -> None:
-        if not isinstance(grid_x, int):
-            raise TypeError(f"受け取った型 {type(grid_x).__name__} : int型を指定してください。")
-        if grid_x < 0:
-            grid_x = 0
-        elif grid_x > 4:
-            grid_x = 4
-        self._player_grid_x = grid_x
+    def set_state_x(self, state_x: Player_Move_State_x):
+        if not isinstance(state_x, Player_Move_State_x):
+            raise TypeError(f"受け取った値: {type(state_x).__name__}: Player_Move_State_x型を指定してください。")
+        self._state_x = state_x
 
+    # _state_yのgetterとsetter
+    def get_state_y(self):
+        return self._state_y
 
-    # _player_grid_yのgetterとsetter
-    def get_grid_y(self) -> int:
-        return self._player_grid_y
+    def set_state_y(self, state_y: Player_Move_State_y):
+        if not isinstance(state_y, Player_Move_State_y):
+            raise TypeError(f"受け取った値: {type(state_y).__name__}: Player_Move_State_y型を指定してください。")
+        self._state_y = state_y
+        
 
-    def set_grid_y(self, grid_y: int) -> None:
-        if not isinstance(grid_y, int):
-            raise TypeError(f"受け取った型 {type(grid_y).__name__} : int型を指定してください。")
-        if grid_y < 0:
-            grid_y = 0
-        elif grid_y > 1:
-            grid_y = 1
-        self._player_grid_y = grid_y
+    # _player_position_xのgetterとsetter
+    def get_position_x(self):
+        return self._plaer_position_x
+    
+    def set_position_x(self, position_x: Player_Position_x):
+        if not isinstance(position_x, Player_Position_x):
+            raise TypeError(f"受け取った値: {type(position_x).__name__}: Player_Position_x型を指定してください。")
+        self._plaer_position_x = position_x
+    
+    # _player_position_yのgetterとsetter
+    def get_position_y(self):
+        return self._player_position_y  
+    
+    def set_position_y(self, position_y: Player_Position_y):
+        if not isinstance(position_y, Player_Position_y):
+            raise TypeError(f"受け取った値: {type(position_y).__name__}: Player_Position_y型を指定してください。")
+        self._player_position_y = position_y

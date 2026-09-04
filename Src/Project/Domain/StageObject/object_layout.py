@@ -5,12 +5,12 @@ class Coordinate:
         # 手前のレーンほど大きく、奥のレーンほど小さくする
         self.lane_width = [
             width,
-            width * 9 // 10,
             width * 8 // 10,
-            width * 7 // 10,
             width * 6 // 10,
             width * 5 // 10,
             width * 4 // 10,
+            width * 3 // 10,
+            width * 2 // 10,
         ]
 
         # 各レーンの左上X座標
@@ -26,22 +26,20 @@ class Coordinate:
             (width - self.lane_width[6]) // 2,
         ]
 
-        # 各レーンのY座標
-        #   
-        # width // 20: 一番下のレーンの余白
-        #
-        # width * 3 // 20: 奥側のレーン全体を少し上に配置するための基準値
-        #
+        
+        # lane_y1は一番下のレーンのy座標（基準値）： (width // 20) は一番下のレーンの余白
+        lane_y1 = height - (width // 20)
         # height * n // 50: レーンごとの縦方向の間隔を作るための値
-        #
+
+        # 各レーンのY座標
         lane_y = [
-            (height - width // 20),
-            ((height - width // 20) - (height * 7 // 50)),
-            ((height - width // 20) - (height * 13 // 50)),
-            ((height - width // 20) - (height * 18 // 50)),
-            ((height - width // 20) - (height * 22 // 50)),
-            ((height - width // 20) - (height * 25 // 50)),
-            ((height - width // 20) - (height * 27 // 50))
+            lane_y1,
+            lane_y1 - (height * 8 // 50),
+            lane_y1 - (height * 15 // 50),
+            lane_y1 - (height * 21 // 50),
+            lane_y1 - (height * 26 // 50),
+            lane_y1 - (height * 30 // 50),
+            lane_y1 - (height * 33 // 50),
         ]
 
         # 各レーンの座標情報を作成して配列に保存
@@ -126,7 +124,7 @@ class ObjectLayout:
     def __init__(self, whith, height):
         self.locate = Coordinate(whith, height)
 
-    def position_update(self, map_data: list[list[StageObject | None]]) -> list[list[StageObject | None]]:
+    def position_update(self, map_data: list[list[StageObject | None]]):
 
         # 引数がlist型であるか確認する
         if not isinstance(map_data, list):
@@ -158,7 +156,7 @@ class ObjectLayout:
                     continue
 
                 # オブジェクトを描画する基準座標を取得する
-                x, y0 = self.locate.get_coordinate(j, i)
+                x, y = self.locate.get_coordinate(j, i)
 
                 # オブジェクトのパラメータに応じて描画サイズを取得する
                 if obj.get_is_jumpable() is True:
@@ -170,9 +168,6 @@ class ObjectLayout:
                 else:
                     j += 1
                     continue
-
-                # オブジェクトの高さを基準に描画位置を補正する
-                y = y0 - h // 2
 
                 # 計算した描画座標とサイズをオブジェクトに保存する
                 obj.set_x(x)

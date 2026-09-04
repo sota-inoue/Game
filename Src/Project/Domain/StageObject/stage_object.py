@@ -7,11 +7,13 @@ class ObjectType(Enum):
     OBSTACLE = auto()
     ENEMY = auto()
     PLAYER = auto()
+    ATTACK = auto()
 
 class StageObject:
     def __init__(self, object_type):
         self._object_type: ObjectType = object_type
-        self._image_path: Path = None
+        self._id: int = 0
+        self._image_path:Path | None = None
         self._x: int = 0
         self._y: int = 0
         self._width: int = 0
@@ -20,13 +22,20 @@ class StageObject:
     def get_object_type(self) -> ObjectType:
         return self._object_type
 
+    # _idのgetterとsetter
+    def get_id(self) -> int:
+        return self._id
+
+    def set_id(self, id: int) -> None:
+        if not isinstance(id, int):
+            raise TypeError(f"受け取った型 {type(id).__name__} : int型を指定してください。")
+        self._id = id
+
     # _image_pathのgetterとsetter
     def get_image_path(self) -> Path:
         return self._image_path
     
-    def set_image_path(self, image_path: Path) -> None:
-        if not isinstance(image_path, Path):
-            raise TypeError(f"受け取った型 {type(image_path).__name__} : Path型を指定してください。")
+    def set_image_path(self, image_path: Path | None) -> None:
         self._image_path = image_path
 
     # _xのgetterとsetter
@@ -67,11 +76,12 @@ class StageObject:
 
 
 class Obstacle(StageObject):
-    def __init__(self, damage : int, image_path : str, is_jumpable: bool) -> None:
+    def __init__(self, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
         super().__init__(object_type=ObjectType.OBSTACLE)
         self._damage: int = damage
         self.set_image_path(image_path)
         self._is_jumpable: bool = is_jumpable
+        self.set_id(id)
 
     # _damageのgetterとsetter
     def get_damage(self) -> int:
@@ -93,12 +103,13 @@ class Obstacle(StageObject):
 
 
 class Enemy(StageObject):
-    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool) -> None:
+    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
         super().__init__(object_type=ObjectType.ENEMY)
         self._hp: int = hp
         self._damage: int = damage
         self.set_image_path(image_path)
         self._is_jumpable: bool = is_jumpable
+        self.set_id(id)
 
     # _hpのgetterとsetter
     def get_hp(self) -> int:
@@ -127,4 +138,12 @@ class Enemy(StageObject):
             raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
         self._is_jumpable = is_jumpable
 
-    
+class Attack(StageObject):
+    def __init__(self, x : int, y : int, width : int, height : int, image_path : str) -> None:
+        super().__init__(object_type=ObjectType.ATTACK)
+        self.set_x(x)
+        self.set_y(y)
+        self.set_width(width)
+        self.set_height(height)
+        self.set_image_path(image_path)
+

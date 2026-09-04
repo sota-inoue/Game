@@ -48,8 +48,8 @@ class Renderer:
     def draw_Stage(self):
         self.game.draw_stage1_bg()
 
-    def draw_stage_object(self, player_data ,map_data):
-        self.object.draw(player_data ,map_data)
+    def draw_stage_object(self, player_data, attack_date,map_data):
+        self.object.draw(player_data, attack_date, map_data)
 
     def draw_UI(self, hp):
         self.ui.health_draw(hp)

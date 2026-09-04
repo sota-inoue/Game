@@ -1,60 +1,74 @@
 from Domain.StageObject.player import Player
 
-from Domain.StageObject.object_converter import ObjectConverter
-
-from Domain.StageObject.object_layout import ObjectLayout
-
-from System.player_position_system import PositionSystem
+from System.map_system import Map
+from System.player_position import PlayerPosition
+from System.player_move import PlayerMove
+from System.player_hit_check import PlayerHitCheck
+from System.player_attack import PlayerAttack
+from System.attack_layout import AttackObjectFactory
 
 class StageObjectManager:
     def __init__(self, width, height):
         # 7レーン × 5マスのオブジェクトデータを生成する
-        self._objects = [
-            [None for _ in range(5)]
-            for _ in range(7)
-        ]
+        self._objects = [ [None for _ in range(5)] for _ in range(7)]
         self._player = Player(width)
-        self._converter = ObjectConverter()
-        self._layout = ObjectLayout(width, height)
+        self._attack = [None for _ in range(5)]
 
-        self.position_system = PositionSystem()
+        self._map = Map(width, height)
 
-    def set_player_locate(self, x: int,y: int) -> None:
-        self._player.set_x(x)
-        self._player.set_y(y)
+        self.position = PlayerPosition()
 
-    def player_hitbox_update(self, cmd):
-        grid_x = self._player.get_grid_x()
-        grid_y = self._player.get_grid_y()
-        new_grid_x, new_grid_y = self.position_system.update(cmd, grid_x, grid_y)
-        self._player.set_grid_x(new_grid_x)
-        self._player.set_grid_y(new_grid_y)
+        self.hit_check = PlayerHitCheck()
+        self.attack = PlayerAttack()
+        self.attack_factory = AttackObjectFactory(width, height)
 
-    def player_hit_check(self) -> None:\
-        # プレイヤーのマス目上の位置を取得する
-        grid_x = self._player.get_grid_x()
-        grid_y = self._player.get_grid_y()
+        self.move = PlayerMove(width, height)
+        self.move.update(self._player)
 
-        # プレイヤーと同じ位置のオブジェクトを取得する
-        front_lane = self._objects[0]
-        obj = front_lane[grid_x]
+    def player_locate_update(self) -> None:
+        self.move.update(self._player)
 
-        # オブジェクトが存在しない場合は処理を終了する
-        if obj is None:
-            return
-        
-        # ジャンプ中かつ飛び越えられるオブジェクトの場合は接触しない
-        if grid_y == 1 and obj.get_is_jumpable():
-            return
+    def player_position_update(self, cmd) -> None:
+        self.position.update(cmd, self._player)
 
-        # オブジェクトの攻撃力を取得し、プレイヤーのHPを計算し更新する
-        damage = obj.get_damage()
-        urgency_level = self._player.get_urgency_level() + damage
-        self._player.set_urgency_level(urgency_level)
+    def player_hit_check(self, count: int) -> None:
+        self.hit_check.update(count, self._player, self._objects)
+
+    def map_update(self, count: int) -> None:
+        self._map.map_update(self._objects, count)
+
+    def player_attack(self) -> None:
+        obj = self.attack.attack(self._player, self._objects)
+        attack = self.attack_factory.get_attack_object(self._player, obj)
+        self._attack = attack
+
+
 
     def get_urgency_level(self) -> int:
         return self._player.get_urgency_level()
 
+    def get_attack_draw_data(self, count: int) -> dict | None:
+
+        index = count % 5
+        obj = self._attack[index]
+
+        if obj is None:
+            return None
+
+        data = {
+            "x": obj.get_x(),
+            "y": obj.get_y(),
+            "width": obj.get_width(),
+            "height": obj.get_height(),
+            "image_path": obj.get_image_path()
+        }
+
+        # 5個目の描画データを取得した後にリセット
+        if index == 4:
+            self._attack = [None for _ in range(5)]
+
+        return data
+    
 
     def get_player_draw_data(self) -> dict:
         return {
@@ -64,22 +78,8 @@ class StageObjectManager:
             "height": self._player.get_height(),
             "image_path": self._player.get_image_path()
         }
-        
 
-
-    def map_update(self, data: list[int]) -> None:
-        # レーンを1つ手前へ移動する
-        i = 0
-        while i < len(self._objects) - 1:
-            self._objects[i] = self._objects[i + 1]
-            i += 1
-        # 数値データをオブジェクトへ変換する
-        new_lane = self._converter.convert(data)
-        # 最後のレーンに新しいレーンを設定する
-        self._objects[-1] = new_lane
-        # 各オブジェクトの座標とサイズを更新する
-        self._layout.position_update(self._objects)
-
+    
     def get_draw_data(self) -> list[list[dict | None]]:
         draw_data = []
         i = 0
