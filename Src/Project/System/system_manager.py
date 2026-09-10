@@ -1,6 +1,6 @@
 from StageObject.player import Player
 from StageObject.stage_object import StageObject
-from Domain.state import Command, TitleState
+from Domain.state import Command, TitleState, StageState
 
 from System.title_system import TitleSystem
 
@@ -34,8 +34,8 @@ class System:
     def player_hit_check(self, count: int, player: Player, objects: list[list[StageObject | None]] ) -> None:
         self.hit_check.update(count, player, objects)
 
-    def map_update(self, count: int, objects: list[list[StageObject | None]] ) -> bool:
-        return self._map.stage1_update(objects, count)
+    def map_update(self, count: int, objects: list[list[StageObject | None]], state: StageState ) -> bool:
+        return self._map.stage_update(objects, count, state)
 
     def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:
         self._map.object_hit_check(objects)

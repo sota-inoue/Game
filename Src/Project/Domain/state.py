@@ -9,6 +9,14 @@ class Command(Enum):
     POSE = auto()
     STAY = auto()
 
+class GameState(Enum):
+    TITLE = auto()
+    OP = auto()
+    STAGE = auto()
+    OVER = auto()
+    CLEAR = auto()
+    ENDING = auto()
+
 class TitleState(Enum):
     START = auto()
     START_DECIDE = auto()
@@ -17,18 +25,31 @@ class TitleState(Enum):
     EXIT = auto()
     EXIT_DECIDE = auto()
 
-class GameState(Enum):
+class OverState(Enum):
+    CONTINUE = auto()
+    CONTINUE_DECIDE = auto()
     TITLE = auto()
-    OP = auto()
-    STAGE = auto()
-    OVER = auto()
-    CLEAR = auto()
+    TITLE_DECIDE = auto()
+
+class ClearState(Enum):
+    NEXT = auto()
+    NEXT_DECIDE = auto()
+    TITLE = auto()
+    TITLE_DECIDE = auto()
+
+class StageState(Enum):
+    STAGE1 = auto()
+    STAGE2 = auto()
+    STAGE3 = auto()
 
 class State:
     def __init__(self, width):
         self.game_state = GameState.TITLE
         self.game_command = Command.STAY
         self.title_state = TitleState.START
+        self._over_state = OverState.CONTINUE
+        self._clear_state = ClearState.NEXT
+        self._stage_state = StageState.STAGE1
 
         # 7レーン × 5マスのオブジェクトデータを生成する
         self._objects = [ [None for _ in range(5)] for _ in range(7)]
@@ -38,6 +59,25 @@ class State:
         self._attack = [None for _ in range(5)]
         self.op_page = 1
         self.is_first_play = True
+
+    def title_reset(self):
+        self.game_state = GameState.TITLE
+        self.game_command = Command.STAY
+        self.title_state = TitleState.START
+        self._over_state = OverState.CONTINUE
+        self._clear_state = ClearState.NEXT
+        self._stage_state = StageState.STAGE1
+        self._objects = [ [None for _ in range(5)] for _ in range(7)]
+        self._player.reset()
+        self.attack_count = 0
+        self._attack = [None for _ in range(5)]
+
+    def stage_reset(self):
+        self._objects = [ [None for _ in range(5)] for _ in range(7)]
+        self._player.reset()
+        self.attack_count = 0
+        self._attack = [None for _ in range(5)]
+
 
     def get_objects_data(self):
         return self._objects
@@ -141,6 +181,43 @@ class State:
                 f"受け取った値: {title_state}、型: {type(title_state).__name__}"
             )
         self.title_state = title_state
+
+
+    # over_state
+    def get_over_state(self) -> OverState:
+        return self._over_state
+
+    def set_over_state(self, state: OverState) -> None:
+        if not isinstance(state, OverState):
+            raise TypeError(
+                f"title_stateにはOverState型を指定してください。"
+                f"受け取った値: {state}、型: {type(state).__name__}"
+            )
+        self._over_state = state
+
+    # clear_state
+    def get_clear_state(self) -> ClearState:
+        return self._clear_state
+
+    def set_clear_state(self, state: ClearState) -> None:
+        if not isinstance(state, ClearState):
+            raise TypeError(
+                f"title_stateにはOverState型を指定してください。"
+                f"受け取った値: {state}、型: {type(state).__name__}"
+            )
+        self._clear_state = state
+
+    # stage_state
+    def get_stage_state(self) -> StageState:
+        return self._stage_state
+
+    def set_stage_state(self, state: StageState) -> None:
+        if not isinstance(state, StageState):
+            raise TypeError(
+                f"title_stateにはOverState型を指定してください。"
+                f"受け取った値: {state}、型: {type(state).__name__}"
+            )
+        self._stage_state = state
 
     # op_page
     def get_op_page(self) -> int:

@@ -4,7 +4,7 @@ from Renderer.image_manager import ImageManager
 
 from Domain.asset_paths import STAGE1_BACK_GRAUND
 from Domain.config import GRAY
-from Domain.state import TitleState
+from Domain.state import TitleState, ClearState, OverState
 
 
 class GameDisplay:
@@ -51,13 +51,66 @@ class GameDisplay:
         # 選択状態から矢印のX座標を決定する
         if title_state == TitleState.START:
             arrow_x = start_x
-
         elif title_state == TitleState.SETTING:
             arrow_x = setting_x
-
         elif title_state == TitleState.EXIT:
             arrow_x = exit_x
+        else:
+            return
 
+        # 選択位置に矢印を描画する
+        self.draw_text("▼", arrow_x, arrow_y)
+
+    def draw_clear(self, state: ClearState) -> None:
+        # 背景を塗りつぶす
+        self._surface.fill(GRAY)
+
+        # クリア文字を描画する
+        self.draw_text("Game Clear", self._width // 2, self._height // 3)
+
+        # メニューの描画座標を計算する
+        next_x = self._width // 3
+        title_x = self._width * 2 // 3
+        menu_y = self._height * 2 // 3
+        arrow_y = menu_y - 50
+
+        # メニューを描画する
+        self.draw_text("NEXT", next_x, menu_y)
+        self.draw_text("TITLE", title_x, menu_y)
+
+        # 選択状態から矢印のX座標を決定する
+        if state == ClearState.NEXT:
+            arrow_x = next_x
+        elif state == ClearState.TITLE:
+            arrow_x = title_x
+        else:
+            return
+        
+        # 選択位置に矢印を描画する
+        self.draw_text("▼", arrow_x, arrow_y)
+
+    def draw_over(self, state: OverState) -> None:
+        # 背景を塗りつぶす
+        self._surface.fill(GRAY)
+
+        # ゲームオーバー文字を描画する
+        self.draw_text( "Game Over", self._width // 2, self._height // 3)
+
+        # メニューの描画座標を計算する
+        continue_x = self._width // 3
+        title_x = self._width * 2 // 3
+        menu_y = self._height * 2 // 3
+        arrow_y = menu_y - 50
+
+        # メニューを描画する
+        self.draw_text("CONTINUE", continue_x, menu_y)
+        self.draw_text("TITLE", title_x, menu_y)
+
+        # 選択状態から矢印のX座標を決定する
+        if state in (OverState.CONTINUE, OverState.CONTINUE_DECIDE):
+            arrow_x = continue_x
+        elif state in (OverState.TITLE, OverState.TITLE_DECIDE):
+            arrow_x = title_x
         else:
             return
 
@@ -68,13 +121,9 @@ class GameDisplay:
         self._surface.fill(GRAY)
         self.draw_text( "Opening", self._width // 2, self._height // 2 )
 
-    def draw_over(self) -> None:
+    def draw_ending(self) -> None:
         self._surface.fill(GRAY)
-        self.draw_text( "Game Over", self._width // 2, self._height // 2 )
-
-    def draw_clear(self) -> None:
-        self._surface.fill(GRAY)
-        self.draw_text( "Game Clear", self._width // 2, self._height // 2 )
+        self.draw_text( "ENDING", self._width // 2, self._height // 2 )
 
     def draw_stage1_bg(self) -> None:
         # 背景画像を取得する
