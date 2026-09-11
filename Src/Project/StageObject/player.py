@@ -45,6 +45,13 @@ class Player(StageObject):
         self._plaer_position_x: Player_Position_x = Player_Position_x.X3
         self._player_position_y: Player_Position_y = Player_Position_y.Y1
 
+    def reset(self):
+        self._urgency_level: int = 0
+        self._state_x: Player_Move_State_x = Player_Move_State_x.STAY
+        self._state_y: Player_Move_State_y = Player_Move_State_y.STAY
+        self._plaer_position_x: Player_Position_x = Player_Position_x.X3
+        self._player_position_y: Player_Position_y = Player_Position_y.Y1
+
     # power
     def get_power(self):
         return self._power

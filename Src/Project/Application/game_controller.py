@@ -5,7 +5,7 @@ from Domain.state import Command
 from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
-from Domain.state import State, GameState, TitleState, Command
+from Domain.state import State, GameState, TitleState, Command, ClearState, StageState, OverState
 
 # 描画処理を管理するクラス
 from Renderer.renderer_manager import Renderer
@@ -81,6 +81,54 @@ class Controller:
                 self.state.set_game_state(GameState.STAGE)
             self.state.set_game_command(Command.STAY)
 
+    def clear_system(self):
+        state = self.state.get_clear_state()
+        cmd = self.state.get_game_command()
+        stage = self.state.get_stage_state()
+        # 最終ステージならエンディングへ
+        if stage == StageState.STAGE3:
+            self.state.set_game_state(GameState.ENDING)
+        elif state == ClearState.NEXT:
+            if cmd == Command.JUMP:
+                # 次のステージへ進む
+                self.state.set_stage_state(StageState(stage.value + 1))
+                self.state.set_game_state(GameState.STAGE)
+                self.state.stage_reset()
+                player = self.state.get_player_data()
+                self.system.player_locate_update(player)
+            elif cmd == Command.RIGHT:
+                self.state.set_clear_state(ClearState.TITLE)
+        elif state == ClearState.TITLE:
+            if cmd == Command.JUMP:
+                self.state.title_reset()
+                player = self.state.get_player_data()
+                self.system.player_locate_update(player)
+            elif cmd == Command.LEFT:
+                self.state.set_clear_state(ClearState.NEXT)
+
+    def over_system(self):
+        state = self.state.get_over_state()
+        cmd = self.state.get_game_command()
+
+        if state == OverState.CONTINUE:
+            if cmd == Command.JUMP:
+                # ゲームを再開する
+                self.state.stage_reset()
+                player = self.state.get_player_data()
+                self.system.player_locate_update(player)
+                self.state.set_game_state(GameState.STAGE)
+            elif cmd == Command.RIGHT:
+                self.state.set_over_state(OverState.TITLE)
+        elif state == OverState.TITLE:
+            if cmd == Command.JUMP:
+                # タイトル画面へ戻る
+                self.state.title_reset()
+                player = self.state.get_player_data()
+                self.system.player_locate_update(player)
+            elif cmd == Command.LEFT:
+             self.state.set_over_state(OverState.CONTINUE)
+
+
     def system_update(self):
         game_state = self.state.get_game_state()
 
@@ -95,25 +143,29 @@ class Controller:
             command = self.state.get_game_command()
             player = self.state.get_player_data()
             objects = self.state.get_objects_data()
+            stage = self.state.get_stage_state()
 
             if self.count % 5 == 3:
                 self.system.object_hit_check(objects)
 
             if self.count == 0 or self.count % 5 == 0:
-
-                if not self.system.map_update(self.count, objects):
+                if not self.system.map_update(self.count, objects, stage):
                     self.state.set_game_state(GameState.CLEAR)
-                
                 self.system.player_position_update(command, player)
-
                 self.system.player_hit_check(self.count, player, objects)
+                hp = self.state.get_urgency_level()
+                if hp >= 100:
+                    self.state.set_game_state(GameState.OVER)
 
                 if command == Command.ATTACK:
                     attack = self.system.player_attack(player, objects)
                     self.state.set_attack_data(attack)
-
-            
             self.system.player_locate_update(player)
+
+        elif game_state == GameState.OVER:
+            self.over_system()
+        elif game_state == GameState.CLEAR:
+            self.clear_system()
 
         self.prev_command = self.state.get_game_command()
         new_game_state = self.state.get_game_state()
@@ -144,7 +196,15 @@ class Controller:
             self.renderer.draw_UI(self.state.get_urgency_level())
 
         elif game_state == GameState.CLEAR:
-            self.renderer.draw_Clear()
+            clear_state = self.state.get_clear_state()
+            self.renderer.draw_Clear(clear_state)
+
+        elif game_state == GameState.OVER:
+            over_state = self.state.get_over_state()
+            self.renderer.draw_Over(over_state)
+
+        elif game_state == GameState.ENDING:
+            self.renderer.draw_Ending()
 
         self.renderer.touch_render()
 
@@ -159,7 +219,7 @@ class Controller:
         self.system_update()
         self.draw()
         self.output()
-        if self.state.get_game_state()== GameState.CLEAR:
+        if self.state.get_game_state()== GameState.ENDING:
             if self.count > 30:
                 return False
         return self.loop_flug

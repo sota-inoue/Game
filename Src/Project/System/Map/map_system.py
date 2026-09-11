@@ -6,12 +6,17 @@ from System.Map.object_layout import ObjectLayout
 
 from StageObject.stage_object import StageObject, ObjectType
 
-from Domain.asset_paths import STAGE1_PATH
+from Domain.state import StageState
+from Domain.asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
 
 class Map:
     def __init__(self, width: int, height: int):
         self._stage1_data = load_text(STAGE1_PATH)
+        self._stage2_data = load_text(STAGE2_PATH)
+        self._stage3_data = load_text(STAGE3_PATH)
         self._stage1_count = len(self._stage1_data)
+        self._stage2_count = len(self._stage2_data)
+        self._stage3_count = len(self._stage3_data)
         self._converter = ObjectConverter()
         self._layout = ObjectLayout(width, height)
 
@@ -33,15 +38,32 @@ class Map:
                 j += 1
             i += 1
 
-    def stage1_update(self, objects: list[list[StageObject | None]], count: int) -> bool:
+    def stage_update(self, objects: list[list[StageObject | None]], count: int, stage_state: StageState) -> bool:
+
+        if count == 0:
+            return True
 
         index = (count // 5) - 1
 
-        if index >= self._stage1_count:
+        # ステージに対応するデータを取得
+        if stage_state == StageState.STAGE1:
+            stage_data = self._stage1_data
+            stage_count = self._stage1_count
+        elif stage_state == StageState.STAGE2:
+            stage_data = self._stage2_data
+            stage_count = self._stage2_count
+        elif stage_state == StageState.STAGE3:
+            stage_data = self._stage3_data
+            stage_count = self._stage3_count
+        else:
+            return False
+
+        # ステージの最後まで進んだ場合
+        if index >= stage_count:
             return False
 
         # 数値データのマップデータを取得
-        new_data = self._stage1_data[(count // 5) - 1]
+        new_data = stage_data[index]
 
         # 数値データをオブジェクトへ変換する
         new_lane = self._converter.convert(new_data)
