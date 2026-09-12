@@ -1,5 +1,16 @@
-from Domain.state import Command
+from enum import Enum, auto
+
 from Domain.config import TOUCH_WIDTH,TOUCH_HEIGHT
+
+class Command(Enum):
+    LEFT = auto()
+    JUMP = auto()
+    RIGHT = auto()
+    ATTACK = auto()
+    POSE = auto()
+    NONE = auto()
+
+
 
 class CommandConverter:
     def __init__(self):
@@ -21,4 +32,4 @@ class CommandConverter:
             elif self.touch_width * 2 // 3 <= touch_x <= self.touch_width:
                 return Command.RIGHT
 
-        return Command.STAY
+        return Command.NONE

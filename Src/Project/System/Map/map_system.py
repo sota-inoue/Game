@@ -41,7 +41,7 @@ class Map:
     def stage_update(self, objects: list[list[StageObject | None]], count: int, stage_state: StageState) -> bool:
 
         if count == 0:
-            return True
+            return False
 
         index = (count // 5) - 1
 
@@ -56,11 +56,11 @@ class Map:
             stage_data = self._stage3_data
             stage_count = self._stage3_count
         else:
-            return False
+            return True
 
         # ステージの最後まで進んだ場合
         if index >= stage_count:
-            return False
+            return True
 
         # 数値データのマップデータを取得
         new_data = stage_data[index]
@@ -96,4 +96,4 @@ class Map:
 
         # 各オブジェクトの座標とサイズを更新する
         self._layout.position_update(objects)
-        return True
+        return False

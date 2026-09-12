@@ -8,7 +8,7 @@ from Renderer.image_manager import ImageManager
 from Renderer.op_renderer import OPRenderer
 
 from Domain.config import GRAY
-from Domain.state import TitleState, ClearState, OverState
+from Domain.game_flag import TitleState, GameOverState, ClearState
 
 
 class Renderer:
@@ -36,10 +36,12 @@ class Renderer:
     def touch_render(self):
         self.touch.draw_Controller(self.touch_surface)
 
+
+
     def draw_Opening(self, op_page: int = 1):
         self.op_renderer.draw(self.game_surface, op_page)
 
-    def draw_Over(self, state: OverState):
+    def draw_Over(self, state: GameOverState):
         self.game.draw_over(state)
 
     def draw_Title(self, state: TitleState):
@@ -51,13 +53,17 @@ class Renderer:
     def draw_Ending(self):
         self.game.draw_ending()
 
+    
+
     def draw_Stage(self):
         self.game.draw_stage1_bg()
 
     def draw_stage_object(self, player_data, attack_date,map_data):
         self.object.draw(player_data, attack_date, map_data)
 
-    def draw_UI(self, hp):
+
+
+    def draw_urgency_level(self, hp):
         self.ui.health_draw(hp)
 
     

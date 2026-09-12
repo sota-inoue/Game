@@ -1,55 +1,14 @@
-from enum import Enum, auto
 from StageObject.player import Player
+from Domain.game_flag import GameFlag, GameState, TitleState, OpeningState, GameOverState, ClearState, StageState
+from Input.command_converter import Command
 
-class Command(Enum):
-    LEFT = auto()
-    JUMP = auto()
-    RIGHT = auto()
-    ATTACK = auto()
-    POSE = auto()
-    STAY = auto()
 
-class GameState(Enum):
-    TITLE = auto()
-    OP = auto()
-    STAGE = auto()
-    OVER = auto()
-    CLEAR = auto()
-    ENDING = auto()
-
-class TitleState(Enum):
-    START = auto()
-    START_DECIDE = auto()
-    SETTING = auto()
-    SETTINGT_DECIDE = auto()
-    EXIT = auto()
-    EXIT_DECIDE = auto()
-
-class OverState(Enum):
-    CONTINUE = auto()
-    CONTINUE_DECIDE = auto()
-    TITLE = auto()
-    TITLE_DECIDE = auto()
-
-class ClearState(Enum):
-    NEXT = auto()
-    NEXT_DECIDE = auto()
-    TITLE = auto()
-    TITLE_DECIDE = auto()
-
-class StageState(Enum):
-    STAGE1 = auto()
-    STAGE2 = auto()
-    STAGE3 = auto()
 
 class State:
     def __init__(self, width):
-        self.game_state = GameState.TITLE
-        self.game_command = Command.STAY
-        self.title_state = TitleState.START
-        self._over_state = OverState.CONTINUE
-        self._clear_state = ClearState.NEXT
-        self._stage_state = StageState.STAGE1
+        self.game_command = Command.NONE
+
+        self._game_flag = GameFlag()
 
         # 7レーン × 5マスのオブジェクトデータを生成する
         self._objects = [ [None for _ in range(5)] for _ in range(7)]
@@ -57,20 +16,10 @@ class State:
 
         self.attack_count = 0
         self._attack = [None for _ in range(5)]
-        self.op_page = 1
-        self.is_first_play = True
 
     def title_reset(self):
-        self.game_state = GameState.TITLE
-        self.game_command = Command.STAY
-        self.title_state = TitleState.START
-        self._over_state = OverState.CONTINUE
-        self._clear_state = ClearState.NEXT
-        self._stage_state = StageState.STAGE1
-        self._objects = [ [None for _ in range(5)] for _ in range(7)]
-        self._player.reset()
-        self.attack_count = 0
-        self._attack = [None for _ in range(5)]
+        self.stage_reset()
+        self._game_flag.reset()
 
     def stage_reset(self):
         self._objects = [ [None for _ in range(5)] for _ in range(7)]
@@ -84,6 +33,44 @@ class State:
 
     def get_player_data(self):
         return self._player
+
+    def get_game_flag(self):
+        return self._game_flag
+
+    # ==================================================
+    # フラグのGetter
+    # ==================================================
+
+    def get_game_state(self) -> GameState:
+        return self._game_flag.get_game_state()
+
+    def get_title_state(self) -> TitleState:
+        return self._game_flag.get_title_state()
+
+    def get_opening_state(self) -> OpeningState:
+        return self._game_flag.get_opening_state()
+
+    def get_gameover_state(self) -> GameOverState:
+        return self._game_flag.get_gameover_state()
+
+    def get_clear_state(self) -> ClearState:
+        return self._game_flag.get_clear_state()
+
+    def get_stage_state(self) -> StageState:
+        return self._game_flag.get_stage_state()
+
+    # ==================================================
+    # フラグのSetter
+    # ==================================================
+
+    def set_is_gameclear(self, value: bool) -> None:
+        self._game_flag.set_is_gameclear(value)
+
+    def set_is_gameover(self, value: bool) -> None:
+        self._game_flag.set_is_gameover(value)
+
+
+
 
     def set_attack_data(self, data):
         self._attack = data
@@ -145,19 +132,6 @@ class State:
         return draw_data
     
 
-    # game_state
-    def get_game_state(self):
-        return self.game_state
-
-    def set_game_state(self, game_state: GameState):
-        if not isinstance(game_state, GameState):
-            raise TypeError(
-                f"game_stateにはGameState型を指定してください。"
-                f"受け取った値: {game_state}、型: {type(game_state).__name__}"
-            )
-        if self.game_state != game_state:
-            self.game_state = game_state
-
     # game_command
     def get_game_command(self):
         return self.game_command
@@ -170,75 +144,4 @@ class State:
             )
         self.game_command = game_command
 
-    # title_state
-    def get_title_state(self):
-        return self.title_state
 
-    def set_title_state(self, title_state: TitleState):
-        if not isinstance(title_state, TitleState):
-            raise TypeError(
-                f"title_stateにはTitleState型を指定してください。"
-                f"受け取った値: {title_state}、型: {type(title_state).__name__}"
-            )
-        self.title_state = title_state
-
-
-    # over_state
-    def get_over_state(self) -> OverState:
-        return self._over_state
-
-    def set_over_state(self, state: OverState) -> None:
-        if not isinstance(state, OverState):
-            raise TypeError(
-                f"title_stateにはOverState型を指定してください。"
-                f"受け取った値: {state}、型: {type(state).__name__}"
-            )
-        self._over_state = state
-
-    # clear_state
-    def get_clear_state(self) -> ClearState:
-        return self._clear_state
-
-    def set_clear_state(self, state: ClearState) -> None:
-        if not isinstance(state, ClearState):
-            raise TypeError(
-                f"title_stateにはOverState型を指定してください。"
-                f"受け取った値: {state}、型: {type(state).__name__}"
-            )
-        self._clear_state = state
-
-    # stage_state
-    def get_stage_state(self) -> StageState:
-        return self._stage_state
-
-    def set_stage_state(self, state: StageState) -> None:
-        if not isinstance(state, StageState):
-            raise TypeError(
-                f"title_stateにはOverState型を指定してください。"
-                f"受け取った値: {state}、型: {type(state).__name__}"
-            )
-        self._stage_state = state
-
-    # op_page
-    def get_op_page(self) -> int:
-        return self.op_page
-
-    def set_op_page(self, page: int):
-        if not isinstance(page, int):
-            raise TypeError(
-                f"op_pageにはint型を指定してください。"
-                f"受け取った値: {page}、型: {type(page).__name__}"
-            )
-        self.op_page = page
-
-    # is_first_play
-    def get_is_first_play(self) -> bool:
-        return self.is_first_play
-
-    def set_is_first_play(self, is_first_play: bool):
-        if not isinstance(is_first_play, bool):
-            raise TypeError(
-                f"is_first_playにはbool型を指定してください。"
-                f"受け取った値: {is_first_play}、型: {type(is_first_play).__name__}"
-            )
-        self.is_first_play = is_first_play

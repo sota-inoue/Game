@@ -1,11 +1,13 @@
 import pygame
-from Domain.state import Command
+
+from Input.command_converter import Command
 
 # 入力処理を管理するクラス
 from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
-from Domain.state import State, GameState, TitleState, Command, ClearState, StageState, OverState
+from Domain.state import State
+from Domain.game_flag import GameState
 
 # 描画処理を管理するクラス
 from Renderer.renderer_manager import Renderer
@@ -37,175 +39,152 @@ class Controller:
         #self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
-        self.prev_command = Command.STAY
 
     def command_update(self):
+        # 入力状態を更新する
         self.input.command_update()
-        # self.input.debug_log(self.count)
+
+        # 5カウントごとに入力結果をゲーム内部へ反映する
         if self.count % 5 == 0:
+
+            # ボタンが押された場合は効果音を再生する
             if self.input.get_is_click():
                 self.system.play_PushButton()
+
+            # 現在の入力コマンドを取得して保存する
             command = self.input.get_command()
             self.state.set_game_command(command)
 
-    def title_system(self):
-        if self.count % 5 != 0:
-            return
-        
-        title_state = self.state.get_title_state()
-        cmd = self.state.get_game_command()
-        new_state = self.system.title_update(cmd, title_state)
-        if new_state == TitleState.EXIT_DECIDE:
-            self.loop_flug = False
-        elif new_state == TitleState.START_DECIDE:
-            self.state.set_game_command(Command.STAY)
-            self.state.set_title_state(TitleState.START)
-            if self.state.get_is_first_play():
-                self.state.set_is_first_play(False)
-                self.state.set_op_page(1)
-                self.state.set_game_state(GameState.OP)
-                self.prev_command = cmd  # 遷移時の入力による即時ページスキップを防止
-            else:
-                self.state.set_game_state(GameState.STAGE)        
-        else:
-            self.state.set_title_state(new_state)
+    def progress_update(self):
+        # 現在のゲーム進行状態と操作情報を取得する
+        game_state = self.state.get_game_state()
+        game_flag = self.state.get_game_flag()
+        command = self.state.get_game_command()
 
-    def op_system(self):
-        cmd = self.state.get_game_command()
-        # ボタンが新たに押された瞬間（押し下げ）のみページ送りを行う
-        if cmd != Command.STAY and self.prev_command == Command.STAY:
-            current_page = self.state.get_op_page()
-            if current_page < 3:
-                self.state.set_op_page(current_page + 1)
-            else:
-                self.state.set_game_state(GameState.STAGE)
-            self.state.set_game_command(Command.STAY)
+        # 現在のゲーム状態に応じた進行処理を行う
+        if game_state == GameState.TITLE:
+            self.loop_flug = self.system.title_update(command, game_flag)
+        elif game_state == GameState.OPENING:
+            self.system.opening_update(command, game_flag)
+        elif game_state == GameState.STAGE:
+            self.system.stage_update(game_flag)
+        elif game_state == GameState.GAMEOVER:
+            self.system.gameover_update(command, game_flag)
+        elif game_state == GameState.CLEAR:
+            self.system.gameclear_update(command, game_flag)
 
-    def clear_system(self):
-        state = self.state.get_clear_state()
-        cmd = self.state.get_game_command()
+        # 進行処理後のゲーム状態を取得する
+        new_game_state = self.state.get_game_state()
+
+        # ゲーム状態が変化した場合のみ遷移後の初期化を行う
+        if game_state != new_game_state:
+            self.count = 0
+            # ステージへ遷移した場合
+            if new_game_state == GameState.STAGE:
+                self.state.set_game_command(Command.NONE)
+                self.state.stage_reset()
+                player = self.state.get_player_data()
+                self.system.player_locate_update(player)
+            # タイトル画面へ遷移した場合
+            elif new_game_state == GameState.TITLE:
+                self.state.title_reset()
+ 
+    def stage_update(self):
+        # ステージ処理に必要な内部データを取得する
+        command = self.state.get_game_command()
+        player = self.state.get_player_data()
+        objects = self.state.get_objects_data()
         stage = self.state.get_stage_state()
-        # 最終ステージならエンディングへ
-        if stage == StageState.STAGE3:
-            self.state.set_game_state(GameState.ENDING)
-        elif state == ClearState.NEXT:
-            if cmd == Command.JUMP:
-                # 次のステージへ進む
-                self.state.set_stage_state(StageState(stage.value + 1))
-                self.state.set_game_state(GameState.STAGE)
-                self.state.stage_reset()
-                player = self.state.get_player_data()
-                self.system.player_locate_update(player)
-            elif cmd == Command.RIGHT:
-                self.state.set_clear_state(ClearState.TITLE)
-        elif state == ClearState.TITLE:
-            if cmd == Command.JUMP:
-                self.state.title_reset()
-                player = self.state.get_player_data()
-                self.system.player_locate_update(player)
-            elif cmd == Command.LEFT:
-                self.state.set_clear_state(ClearState.NEXT)
 
-    def over_system(self):
-        state = self.state.get_over_state()
-        cmd = self.state.get_game_command()
+        # 敵オブジェクトとお札の当たり判定の処理を行う
+        if self.count % 5 == 3:
+            self.system.object_hit_check(objects)
 
-        if state == OverState.CONTINUE:
-            if cmd == Command.JUMP:
-                # ゲームを再開する
-                self.state.stage_reset()
-                player = self.state.get_player_data()
-                self.system.player_locate_update(player)
-                self.state.set_game_state(GameState.STAGE)
-            elif cmd == Command.RIGHT:
-                self.state.set_over_state(OverState.TITLE)
-        elif state == OverState.TITLE:
-            if cmd == Command.JUMP:
-                # タイトル画面へ戻る
-                self.state.title_reset()
-                player = self.state.get_player_data()
-                self.system.player_locate_update(player)
-            elif cmd == Command.LEFT:
-             self.state.set_over_state(OverState.CONTINUE)
+        # 5カウントごとにゲーム内部の主要な更新処理を行う
+        if self.count == 0 or self.count % 5 == 0:
+            # マップを更新し、ステージクリア条件を判定する
+            is_gameclear = self.system.map_update(self.count, objects, stage)
+            self.state.set_is_gameclear(is_gameclear)
+
+            # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
+            self.system.player_position_update(command, player)
+
+            # プレイヤーとステージオブジェクトの当たり判定を行う
+            self.system.player_hit_check(self.count, player, objects)
+
+            # 現在の切迫度からゲームオーバー条件を判定する
+            hp = self.state.get_urgency_level()
+            is_gameover = hp >= 100
+            self.state.set_is_gameover(is_gameover)
+
+            # 攻撃入力があった場合は攻撃データを生成する
+            if command == Command.ATTACK:
+                attack = self.system.player_attack(player, objects)
+                self.state.set_attack_data(attack)
+
+        # プレイヤーの描画座標を毎カウント更新する
+        self.system.player_locate_update(player)
 
 
     def system_update(self):
+        # 5カウントごとにゲーム全体の進行状態を更新する
+        if self.count % 5 == 0:
+            self.progress_update()
+
+        # 進行状態更新後に現在のゲーム状態を取得する
         game_state = self.state.get_game_state()
 
-        if game_state == GameState.TITLE:
-            self.title_system()
+        # ステージ中の場合のみステージ内部処理を実行する
+        if game_state == GameState.STAGE:
+            self.stage_update()
 
-        elif game_state == GameState.OP:
-            self.op_system()
-
-        elif game_state == GameState.STAGE:
-
-            command = self.state.get_game_command()
-            player = self.state.get_player_data()
-            objects = self.state.get_objects_data()
-            stage = self.state.get_stage_state()
-
-            if self.count % 5 == 3:
-                self.system.object_hit_check(objects)
-
-            if self.count == 0 or self.count % 5 == 0:
-                if not self.system.map_update(self.count, objects, stage):
-                    self.state.set_game_state(GameState.CLEAR)
-                self.system.player_position_update(command, player)
-                self.system.player_hit_check(self.count, player, objects)
-                hp = self.state.get_urgency_level()
-                if hp >= 100:
-                    self.state.set_game_state(GameState.OVER)
-
-                if command == Command.ATTACK:
-                    attack = self.system.player_attack(player, objects)
-                    self.state.set_attack_data(attack)
-            self.system.player_locate_update(player)
-
-        elif game_state == GameState.OVER:
-            self.over_system()
-        elif game_state == GameState.CLEAR:
-            self.clear_system()
-
-        self.prev_command = self.state.get_game_command()
-        new_game_state = self.state.get_game_state()
-        if game_state != new_game_state:
-            self.count = 0
-        else:
-            self.count += 1
+        # ゲーム全体で使用するカウントを更新する
+        self.count += 1
 
     def draw(self):
+        # 現在のゲーム進行状態を取得する
         game_state = self.state.get_game_state()
 
+        # タイトル画面を描画する
         if game_state == GameState.TITLE:
             title_state = self.state.get_title_state()
             self.renderer.draw_Title(title_state)
 
-        elif game_state == GameState.OP:
-            self.renderer.draw_Opening(self.state.get_op_page())
+        # オープニング画面を描画する
+        elif game_state == GameState.OPENING:
+            opening_state = self.state.get_opening_state()
+            self.renderer.draw_Opening(opening_state.value)
 
+        # ゲームステージを描画する
         elif game_state == GameState.STAGE:
+            # ステージの背景を描画する
             self.renderer.draw_Stage()
 
+            # ステージ内の描画に必要なデータを取得する
             map_data = self.state.get_draw_data()
             player_data = self.state.get_player_draw_data()
-            attack_date = self.state.get_attack_draw_data()
+            attack_data = self.state.get_attack_draw_data()
 
-            self.renderer.draw_stage_object(player_data, attack_date, map_data)
+            # プレイヤー、攻撃、ステージオブジェクトを描画する
+            self.renderer.draw_stage_object(player_data, attack_data, map_data)
 
-            self.renderer.draw_UI(self.state.get_urgency_level())
+            # 切迫度などのUIを描画する
+            urgency_level = self.state.get_urgency_level()
+            self.renderer.draw_urgency_level(urgency_level)
 
+        # ゲームクリア画面を描画する
         elif game_state == GameState.CLEAR:
             clear_state = self.state.get_clear_state()
             self.renderer.draw_Clear(clear_state)
 
-        elif game_state == GameState.OVER:
-            over_state = self.state.get_over_state()
+        # ゲームオーバー画面を描画する
+        elif game_state == GameState.GAMEOVER:
+            over_state = self.state.get_gameover_state()
             self.renderer.draw_Over(over_state)
 
+        # エンディング画面を描画する
         elif game_state == GameState.ENDING:
             self.renderer.draw_Ending()
-
         self.renderer.touch_render()
 
     def output(self):

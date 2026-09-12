@@ -4,7 +4,7 @@ from Renderer.image_manager import ImageManager
 
 from Domain.asset_paths import STAGE1_BACK_GRAUND
 from Domain.config import GRAY
-from Domain.state import TitleState, ClearState, OverState
+from Domain.game_flag import TitleState, GameOverState, ClearState
 
 
 class GameDisplay:
@@ -89,7 +89,7 @@ class GameDisplay:
         # 選択位置に矢印を描画する
         self.draw_text("▼", arrow_x, arrow_y)
 
-    def draw_over(self, state: OverState) -> None:
+    def draw_over(self, state: GameOverState) -> None:
         # 背景を塗りつぶす
         self._surface.fill(GRAY)
 
@@ -107,9 +107,9 @@ class GameDisplay:
         self.draw_text("TITLE", title_x, menu_y)
 
         # 選択状態から矢印のX座標を決定する
-        if state in (OverState.CONTINUE, OverState.CONTINUE_DECIDE):
+        if state == GameOverState.CONTINUE:
             arrow_x = continue_x
-        elif state in (OverState.TITLE, OverState.TITLE_DECIDE):
+        elif state == GameOverState.TITLE:
             arrow_x = title_x
         else:
             return

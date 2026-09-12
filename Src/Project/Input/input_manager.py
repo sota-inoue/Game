@@ -1,8 +1,8 @@
 from Input.device_input import find_device, device_input
 from Input.pygame_input import pygame_input
 from Input.coord_converter import driver_to_game, pygame_to_game
-from Input.command_converter import CommandConverter
-from Domain.state import Command
+from Input.command_converter import CommandConverter, Command
+from Input.command_converter import Command
 
 class Input:
     def __init__(self, mode):
@@ -16,7 +16,7 @@ class Input:
         self.command_converter = CommandConverter()
 
         self._is_click: bool = False
-        self._saved_command: Command = Command.STAY
+        self._saved_command: Command = Command.NONE
 
         self._input_x: int = -1
         self._input_y: int = -1
@@ -27,7 +27,7 @@ class Input:
     def get_command(self) -> Command:
         command = self._saved_command
 
-        self._saved_command = Command.STAY
+        self._saved_command = Command.NONE
         self._is_click = False
 
         return command
@@ -50,7 +50,7 @@ class Input:
         command = self.command_converter.convert(self._input_x, self._input_y)
 
         # 有効なコマンドでなければ終了
-        if command == Command.STAY:
+        if command == Command.NONE:
             return
 
         self._is_click = True

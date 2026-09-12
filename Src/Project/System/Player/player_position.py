@@ -1,4 +1,4 @@
-from Domain.state import Command
+from Input.command_converter import Command
 from StageObject.player import Player, Player_Move_State_x, Player_Move_State_y, Player_Position_x, Player_Position_y
 
 class PlayerPosition:
