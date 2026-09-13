@@ -11,8 +11,13 @@ from Domain.asset_paths import (
     URGENCY_FRAME6, URGENCY_FRAME7, URGENCY_FRAME8, URGENCY_FRAME9, URGENCY_FRAME10, 
     URGENCY_FRAME11, URGENCY_FRAME12, URGENCY_FRAME13, URGENCY_FRAME14, URGENCY_FRAME15, 
     URGENCY_FRAME16, URGENCY_FRAME17, URGENCY_FRAME18, URGENCY_FRAME19, URGENCY_FRAME20, 
-    STAGE1_BACK_GRAUND, OHUDA_IMAGE, OJISAN_DAMAGED_IMAGE
-)
+    STAGE1_BACK_GRAUND, OHUDA_IMAGE, OJISAN_DAMAGED_IMAGE,
+    TITLE_SELECT_PLAY,TITLE_SELECT_SETTING,TITLE_SELECT_EXIT,
+    GAMECLEAR_SELECT_NEXT,GAMECLEAR_SELECT_TITLE,
+    GAMEOVER_SELECT_CONTINUE,GAMEOVER_SELECT_TITLE,
+    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
+    TOUCH_SCREEN
+    )
 
 
 class ImageManager:
@@ -21,38 +26,45 @@ class ImageManager:
         self._images: dict[str, pygame.Surface] = {}
 
         # 使用する画像を読み込む
-        self.load(ENEMY_IMAGE_PATH)
-        self.load(OBSTACLE_IMAGE_PATH)
-        self.load(PLAYER_IMAGE_PATH)
+        self._load(ENEMY_IMAGE_PATH)
+        self._load(OBSTACLE_IMAGE_PATH)
+        self._load(PLAYER_IMAGE_PATH)
+        self._load(URGENCY_FRAME1)
+        self._load(URGENCY_FRAME2)
+        self._load(URGENCY_FRAME3)
+        self._load(URGENCY_FRAME4)
+        self._load(URGENCY_FRAME5)
+        self._load(URGENCY_FRAME6)
+        self._load(URGENCY_FRAME7)
+        self._load(URGENCY_FRAME8)
+        self._load(URGENCY_FRAME9)
+        self._load(URGENCY_FRAME10)
+        self._load(URGENCY_FRAME11)
+        self._load(URGENCY_FRAME12)
+        self._load(URGENCY_FRAME13)
+        self._load(URGENCY_FRAME14)
+        self._load(URGENCY_FRAME15)
+        self._load(URGENCY_FRAME16)
+        self._load(URGENCY_FRAME17)
+        self._load(URGENCY_FRAME18)
+        self._load(URGENCY_FRAME19)
+        self._load(URGENCY_FRAME20)
+        self._load(STAGE1_BACK_GRAUND)
+        self._load(OHUDA_IMAGE)
+        self._load(OJISAN_DAMAGED_IMAGE)
+        self._load(TITLE_SELECT_PLAY)
+        self._load(TITLE_SELECT_SETTING)
+        self._load(TITLE_SELECT_EXIT)
+        self._load(GAMECLEAR_SELECT_NEXT)
+        self._load(GAMECLEAR_SELECT_TITLE)
+        self._load(GAMEOVER_SELECT_CONTINUE)
+        self._load(GAMEOVER_SELECT_TITLE)
+        self._load(OPNING_PAGE_1)
+        self._load(OPNING_PAGE_2)
+        self._load(OPNING_PAGE_3)
+        self._load(TOUCH_SCREEN)
 
-        self.load(URGENCY_FRAME1)
-        self.load(URGENCY_FRAME2)
-        self.load(URGENCY_FRAME3)
-        self.load(URGENCY_FRAME4)
-        self.load(URGENCY_FRAME5)
-        self.load(URGENCY_FRAME6)
-        self.load(URGENCY_FRAME7)
-        self.load(URGENCY_FRAME8)
-        self.load(URGENCY_FRAME9)
-        self.load(URGENCY_FRAME10)
-        self.load(URGENCY_FRAME11)
-        self.load(URGENCY_FRAME12)
-        self.load(URGENCY_FRAME13)
-        self.load(URGENCY_FRAME14)
-        self.load(URGENCY_FRAME15)
-        self.load(URGENCY_FRAME16)
-        self.load(URGENCY_FRAME17)
-        self.load(URGENCY_FRAME18)
-        self.load(URGENCY_FRAME19)
-        self.load(URGENCY_FRAME20)
-        self.load(STAGE1_BACK_GRAUND)
-
-        self.load(OHUDA_IMAGE)
-        self.load(OJISAN_DAMAGED_IMAGE)
-
-
-
-    def load(self, path: Path | None) -> None:
+    def _load(self, path: Path | None) -> None:
 
         if path is None:
             image = pygame.Surface((10, 10))

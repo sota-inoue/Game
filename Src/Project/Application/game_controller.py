@@ -153,7 +153,7 @@ class Controller:
         # オープニング画面を描画する
         elif game_state == GameState.OPENING:
             opening_state = self.state.get_opening_state()
-            self.renderer.draw_Opening(opening_state.value)
+            self.renderer.draw_Opening(opening_state)
 
         # ゲームステージを描画する
         elif game_state == GameState.STAGE:
@@ -185,13 +185,19 @@ class Controller:
         # エンディング画面を描画する
         elif game_state == GameState.ENDING:
             self.renderer.draw_Ending()
-        self.renderer.touch_render()
+
+        # self.renderer.touch_render()
+        self.renderer.touch_iamge_render()
 
     def output(self):
-        self.display.update(
-            self.renderer.get_game(),
-            self.renderer.get_touch()
-        )
+        # ゲーム画面の描画結果を取得する
+        game_display = self.renderer.get_game()
+
+        # タッチ操作画面の描画結果を取得する
+        touch_display = self.renderer.get_touch()
+
+        # 取得した2つの画面をディスプレイに反映する
+        self.display.update(game_display, touch_display)
 
     def loop(self):
         self.command_update()

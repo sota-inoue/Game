@@ -22,7 +22,6 @@ class OpeningState(Enum):
     OPENING_PAGE1 = auto()
     OPENING_PAGE2 = auto()
     OPENING_PAGE3 = auto()
-    OPENING_PAGE4 = auto()
 
 
 # ゲームオーバー画面の選択状態

@@ -60,10 +60,8 @@ class ProgressSystem:
                 flag.set_opening_state(OpeningState.OPENING_PAGE3)
 
             elif state == OpeningState.OPENING_PAGE3:
-                flag.set_opening_state(OpeningState.OPENING_PAGE4)
-
-            elif state == OpeningState.OPENING_PAGE4:
                 flag.set_game_state(GameState.STAGE)
+
 
 
     def clear_update(self, command: Command, flag: GameFlag) -> None:

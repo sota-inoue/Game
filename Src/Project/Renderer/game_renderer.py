@@ -2,9 +2,15 @@ import pygame
 
 from Renderer.image_manager import ImageManager
 
-from Domain.asset_paths import STAGE1_BACK_GRAUND
+from Domain.asset_paths import (
+    STAGE1_BACK_GRAUND,
+    TITLE_SELECT_PLAY, TITLE_SELECT_SETTING, TITLE_SELECT_EXIT,
+    GAMECLEAR_SELECT_NEXT, GAMECLEAR_SELECT_TITLE,
+    GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
+    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3
+)
 from Domain.config import GRAY
-from Domain.game_flag import TitleState, GameOverState, ClearState
+from Domain.game_flag import TitleState, GameOverState, ClearState, OpeningState
 
 
 class GameDisplay:
@@ -13,6 +19,28 @@ class GameDisplay:
     def __init__(self, surface: pygame.Surface, image: ImageManager):
         self._surface = surface
         self._image = image
+
+        self._title_images: dict[TitleState, pygame.Surface] = {
+            TitleState.START: self._image.get_image(TITLE_SELECT_PLAY),
+            TitleState.SETTING: self._image.get_image(TITLE_SELECT_SETTING),
+            TitleState.EXIT: self._image.get_image(TITLE_SELECT_EXIT),
+        }
+
+        self._gameover_images: dict[ClearState, pygame.Surface] = {
+            ClearState.NEXT: self._image.get_image(GAMECLEAR_SELECT_NEXT),
+            ClearState.TITLE: self._image.get_image(GAMECLEAR_SELECT_TITLE),
+        }
+
+        self._gameover_images: dict[GameOverState, pygame.Surface] = {
+            GameOverState.CONTINUE: self._image.get_image(GAMEOVER_SELECT_CONTINUE),
+            GameOverState.TITLE: self._image.get_image(GAMEOVER_SELECT_TITLE),
+        }
+
+        self._opning_images: dict[OpeningState, pygame.Surface] ={
+            OpeningState.OPENING_PAGE1: self._image.get_image(OPNING_PAGE_1),
+            OpeningState.OPENING_PAGE2: self._image.get_image(OPNING_PAGE_2),
+            OpeningState.OPENING_PAGE3: self._image.get_image(OPNING_PAGE_3),
+        }
 
         self._width = surface.get_width()
         self._height = surface.get_height()
@@ -28,98 +56,47 @@ class GameDisplay:
         # 指定された座標を文字列の中心として描画する
         self._surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
-    def draw_title(self, title_state: TitleState) -> None:
-        # 背景を塗りつぶす
-        self._surface.fill(GRAY)
+    def draw_title(self, state: TitleState) -> None:
+        # 現在の選択状態に対応するタイトル画像を取得する
+        image = self._title_images[state]
 
-        # タイトルを描画する
-        self.draw_text( "Title", self._width // 2, self._height // 3 )
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (self._width, self._height))
 
-        # メニューの描画座標を計算する
-        start_x = self._width // 4
-        setting_x = self._width // 2
-        exit_x = self._width * 3 // 4
+        # タイトル画面を描画する
+        self._surface.blit(image, (0, 0))
 
-        menu_y = self._height * 2 // 3
-        arrow_y = menu_y - 50
-
-        # メニューを描画する
-        self.draw_text("START", start_x, menu_y)
-        self.draw_text("SETTING", setting_x, menu_y)
-        self.draw_text("EXIT", exit_x, menu_y)
-
-        # 選択状態から矢印のX座標を決定する
-        if title_state == TitleState.START:
-            arrow_x = start_x
-        elif title_state == TitleState.SETTING:
-            arrow_x = setting_x
-        elif title_state == TitleState.EXIT:
-            arrow_x = exit_x
-        else:
-            return
-
-        # 選択位置に矢印を描画する
-        self.draw_text("▼", arrow_x, arrow_y)
 
     def draw_clear(self, state: ClearState) -> None:
-        # 背景を塗りつぶす
-        self._surface.fill(GRAY)
+        # 現在の選択状態に対応するゲームクリア画像を取得する
+        image = self._clear_images[state]
 
-        # クリア文字を描画する
-        self.draw_text("Game Clear", self._width // 2, self._height // 3)
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (self._width, self._height))
 
-        # メニューの描画座標を計算する
-        next_x = self._width // 3
-        title_x = self._width * 2 // 3
-        menu_y = self._height * 2 // 3
-        arrow_y = menu_y - 50
+        # ゲームクリア画面を描画する
+        self._surface.blit(image, (0, 0))
 
-        # メニューを描画する
-        self.draw_text("NEXT", next_x, menu_y)
-        self.draw_text("TITLE", title_x, menu_y)
-
-        # 選択状態から矢印のX座標を決定する
-        if state == ClearState.NEXT:
-            arrow_x = next_x
-        elif state == ClearState.TITLE:
-            arrow_x = title_x
-        else:
-            return
-        
-        # 選択位置に矢印を描画する
-        self.draw_text("▼", arrow_x, arrow_y)
 
     def draw_over(self, state: GameOverState) -> None:
-        # 背景を塗りつぶす
-        self._surface.fill(GRAY)
+        # 現在の選択状態に対応するゲームオーバー画像を取得する
+        image = self._gameover_images[state]
 
-        # ゲームオーバー文字を描画する
-        self.draw_text( "Game Over", self._width // 2, self._height // 3)
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (self._width, self._height))
+        
+        # ゲームオーバー画面を描画する
+        self._surface.blit(image, (0, 0))
 
-        # メニューの描画座標を計算する
-        continue_x = self._width // 3
-        title_x = self._width * 2 // 3
-        menu_y = self._height * 2 // 3
-        arrow_y = menu_y - 50
+    def draw_opning(self, state: OpeningState) -> None:
+        # 現在の状態に対応するオープニング画像を取得する
+        image = self._opning_images[state]
 
-        # メニューを描画する
-        self.draw_text("CONTINUE", continue_x, menu_y)
-        self.draw_text("TITLE", title_x, menu_y)
-
-        # 選択状態から矢印のX座標を決定する
-        if state == GameOverState.CONTINUE:
-            arrow_x = continue_x
-        elif state == GameOverState.TITLE:
-            arrow_x = title_x
-        else:
-            return
-
-        # 選択位置に矢印を描画する
-        self.draw_text("▼", arrow_x, arrow_y)
-
-    def draw_opening(self) -> None:
-        self._surface.fill(GRAY)
-        self.draw_text( "Opening", self._width // 2, self._height // 2 )
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (self._width, self._height))
+        
+        # ゲームオーバー画面を描画する
+        self._surface.blit(image, (0, 0))
 
     def draw_ending(self) -> None:
         self._surface.fill(GRAY)
