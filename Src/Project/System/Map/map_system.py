@@ -6,7 +6,7 @@ from System.Map.object_layout import ObjectLayout
 
 from StageObject.stage_object import StageObject, ObjectType
 
-from Domain.state import StageState
+from Domain.game_flag import StageState
 from Domain.asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
 
 class Map:

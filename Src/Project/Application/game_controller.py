@@ -6,7 +6,7 @@ from Input.command_converter import Command
 from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
-from Domain.state import State
+from Application.state import State
 from Domain.game_flag import GameState
 
 # 描画処理を管理するクラス
