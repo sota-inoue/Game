@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from StageObject.stage_object import StageObject, ObjectType
+from Domain.stage_object import StageObject, ObjectType
 
 from Domain.asset_paths import PLAYER_IMAGE_PATH
 

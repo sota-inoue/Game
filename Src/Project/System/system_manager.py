@@ -1,5 +1,5 @@
-from StageObject.player import Player
-from StageObject.stage_object import StageObject
+from Domain.player import Player
+from Domain.stage_object import StageObject
 from Input.command_converter import Command
 
 from Domain.game_flag import GameFlag, StageState

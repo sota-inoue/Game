@@ -1,5 +1,5 @@
-from StageObject.stage_object import StageObject, Attack
-from StageObject.player import Player, Player_Position_x
+from Domain.stage_object import StageObject, Attack
+from Domain.player import Player, Player_Position_x
 from pathlib import Path
 
 from Domain.asset_paths import OJISAN_DAMAGED_IMAGE, OHUDA_IMAGE

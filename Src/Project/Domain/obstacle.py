@@ -1,5 +1,5 @@
 #StageObject/obstacle.py
-from StageObject.stage_object import Obstacle
+from Domain.stage_object import Obstacle
 
 from Domain.object_parameters import(
     BANANA_DAMAGE,

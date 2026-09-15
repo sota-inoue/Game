@@ -1,5 +1,5 @@
 #StageObject/enemy.py
-from StageObject.stage_object import Enemy
+from Domain.stage_object import Enemy
 
 from Domain.object_parameters import(
     OJISAN_HP,

@@ -1,4 +1,4 @@
-from StageObject.player import Player
+from Domain.player import Player
 from Domain.game_flag import GameFlag, GameState, TitleState, OpeningState, GameOverState, ClearState, StageState
 from Input.command_converter import Command
 
