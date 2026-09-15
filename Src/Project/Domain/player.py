@@ -2,7 +2,7 @@ from enum import Enum, auto
 
 from Domain.stage_object import StageObject, ObjectType
 
-from Domain.asset_paths import PLAYER_IMAGE_PATH
+from asset_paths import PLAYER_IMAGE_PATH
 
 class Player_Move_State_x(Enum):
     STAY = auto()

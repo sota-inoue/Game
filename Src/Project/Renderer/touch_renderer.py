@@ -2,8 +2,8 @@ import pygame
 
 from Renderer.image_manager import ImageManager
 
-from Domain.asset_paths import TOUCH_SCREEN
-from Domain.config import GRAY
+from asset_paths import TOUCH_SCREEN
+from config import GRAY
 
 
 class TouchDisplay:

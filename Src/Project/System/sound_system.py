@@ -1,7 +1,7 @@
 import pygame
 
 from System.file_load_system import load_audio, load_bgm
-from Domain.asset_paths import (
+from asset_paths import (
     DECIDE_BUTTON_SOUND_PATH,
     BGM_PATH,
 )

@@ -32,7 +32,7 @@ from Domain.object_parameters import(
     CIVILIAN_ID
 )
 
-from Domain.asset_paths import ENEMY_IMAGE_PATH
+from asset_paths import ENEMY_IMAGE_PATH
 
 class Ojisan(Enemy):
     def __init__(self) -> None:

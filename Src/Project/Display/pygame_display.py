@@ -1,6 +1,6 @@
 import pygame
 
-from Domain.config import (
+from config import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     TOUCH_SCREEN_TOP_X,

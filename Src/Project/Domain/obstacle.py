@@ -13,7 +13,7 @@ from Domain.object_parameters import(
     CARRY_CASE_OBSTACLE_ID
 )
 
-from Domain.asset_paths import OBSTACLE_IMAGE_PATH
+from asset_paths import OBSTACLE_IMAGE_PATH
 
 class Banana(Obstacle):
     def __init__(self) -> None:

@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from Domain.config import TOUCH_WIDTH,TOUCH_HEIGHT
+from config import TOUCH_WIDTH,TOUCH_HEIGHT
 
 class Command(Enum):
     LEFT = auto()

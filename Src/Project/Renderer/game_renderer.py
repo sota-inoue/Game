@@ -2,14 +2,14 @@ import pygame
 
 from Renderer.image_manager import ImageManager
 
-from Domain.asset_paths import (
+from asset_paths import (
     STAGE1_BACK_GRAUND,
     TITLE_SELECT_PLAY, TITLE_SELECT_SETTING, TITLE_SELECT_EXIT,
     GAMECLEAR_SELECT_NEXT, GAMECLEAR_SELECT_TITLE,
     GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
     OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3
 )
-from Domain.config import GRAY
+from config import GRAY
 from Domain.game_flag import TitleState, GameOverState, ClearState, OpeningState
 
 

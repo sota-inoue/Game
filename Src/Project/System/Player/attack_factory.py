@@ -2,7 +2,7 @@ from Domain.stage_object import StageObject, Attack
 from Domain.player import Player, Player_Position_x
 from pathlib import Path
 
-from Domain.asset_paths import OJISAN_DAMAGED_IMAGE, OHUDA_IMAGE
+from asset_paths import OJISAN_DAMAGED_IMAGE, OHUDA_IMAGE
 from Domain.object_parameters import OJISAN_ID
 
 class AttackObjectFactory:

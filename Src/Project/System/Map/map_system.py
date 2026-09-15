@@ -7,7 +7,7 @@ from System.Map.object_layout import ObjectLayout
 from Domain.stage_object import StageObject, ObjectType
 
 from Domain.game_flag import StageState
-from Domain.asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
+from asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
 
 class Map:
     def __init__(self, width: int, height: int):

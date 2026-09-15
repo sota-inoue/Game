@@ -3,7 +3,7 @@ from pathlib import Path
 
 from System.file_load_system import load_image
 
-from Domain.asset_paths import (
+from asset_paths import (
     ENEMY_IMAGE_PATH,
     OBSTACLE_IMAGE_PATH,
     PLAYER_IMAGE_PATH,

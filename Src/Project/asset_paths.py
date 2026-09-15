@@ -2,7 +2,7 @@ from pathlib import Path
 
 # パスの設定
 
-BASE_DIR = Path(__file__).resolve().parent.parent / "Assets"
+BASE_DIR = Path(__file__).resolve().parent / "Assets"
 
 STAGE1_PATH = BASE_DIR / "Map" / "stage1.txt"
 STAGE2_PATH = BASE_DIR / "Map" / "stage2.txt"
