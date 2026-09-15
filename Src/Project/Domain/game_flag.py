@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 # ゲーム全体の進行状態
-class GameState(Enum):
+class GamePhase(Enum):
     TITLE = auto()
     OPENING = auto()
     STAGE = auto()
@@ -11,48 +11,48 @@ class GameState(Enum):
 
 
 # タイトル画面の選択状態
-class TitleState(Enum):
+class TitleSceneSelection(Enum):
     START = auto()
     SETTING = auto()
     EXIT = auto()
 
 
 # オープニング画面の進行状態
-class OpeningState(Enum):
-    OPENING_PAGE1 = auto()
-    OPENING_PAGE2 = auto()
-    OPENING_PAGE3 = auto()
+class OpeningPage(Enum):
+    PAGE_1 = auto()
+    PAGE_2 = auto()
+    PAGE_3 = auto()
 
 
 # ゲームオーバー画面の選択状態
-class GameOverState(Enum):
+class GameOverSceneSelection(Enum):
     CONTINUE = auto()
     TITLE = auto()
 
 
 # クリア画面の選択状態
-class ClearState(Enum):
+class GameClearSceneSelection(Enum):
     NEXT = auto()
     TITLE = auto()
 
 
 # 現在のステージ
-class StageState(Enum):
-    STAGE1 = auto()
-    STAGE2 = auto()
-    STAGE3 = auto()
+class StageNumber(Enum):
+    STAGE_1 = auto()
+    STAGE_2 = auto()
+    STAGE_3 = auto()
 
 
 # ゲームの進行に関するフラグを保持するクラス
 class GameFlag:
     def __init__(self):
         """各画面・ゲーム進行の状態"""
-        self._game_state: GameState = GameState.TITLE
-        self._title_state: TitleState = TitleState.START
-        self._opening_state: OpeningState = OpeningState.OPENING_PAGE1
-        self._gameover_state: GameOverState = GameOverState.CONTINUE
-        self._clear_state: ClearState = ClearState.NEXT
-        self._stage_state: StageState = StageState.STAGE1
+        self._game_phase: GamePhase = GamePhase.TITLE
+        self._title_selection: TitleSceneSelection = TitleSceneSelection.START
+        self._opening_page: OpeningPage = OpeningPage.PAGE_1
+        self._gameover_selection: GameOverSceneSelection = GameOverSceneSelection.CONTINUE
+        self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.NEXT
+        self._stage_number: StageNumber = StageNumber.STAGE_1
 
         """ゲーム進行の判定に使用するフラグ"""
         # 画面がタッチされたか
@@ -65,68 +65,68 @@ class GameFlag:
 
     # 各フラグを初期状態に戻す
     def reset(self) -> None:
-        self._game_state = GameState.TITLE
-        self._title_state = TitleState.START
-        self._opening_state = OpeningState.OPENING_PAGE1
-        self._gameover_state = GameOverState.CONTINUE
-        self._clear_state = ClearState.NEXT
-        self._stage_state = StageState.STAGE1
+        self._game_phase = GamePhase.TITLE
+        self._title_selection = TitleSceneSelection.START
+        self._opening_page = OpeningPage.PAGE_1
+        self._gameover_selection = GameOverSceneSelection.CONTINUE
+        self._gameclear_selection = GameClearSceneSelection.NEXT
+        self._stage_number = StageNumber.STAGE_1
         self._is_gameclear = False
         self._is_gameover = False
 
-    # GameStateのGetterとSetter
-    def get_game_state(self) -> GameState:
-        return self._game_state
+    # GamePhaseのGetterとSetter
+    def get_game_phase(self) -> GamePhase:
+        return self._game_phase
     
-    def set_game_state(self, state: GameState) -> None:
-        if not isinstance(state, GameState):
-            raise TypeError(f"受け取った型: {type(state).__name__} : GameState型を指定してください。")
-        self._game_state = state
+    def set_game_phase(self, state: GamePhase) -> None:
+        if not isinstance(state, GamePhase):
+            raise TypeError(f"受け取った型: {type(state).__name__} : GamePhase型を指定してください。")
+        self._game_phase = state
 
-    # TitleStateのGetterとSetter
-    def get_title_state(self) -> TitleState:
-        return self._title_state
+    # TitleSceneSelectionのGetterとSetter
+    def get_title_selection(self) -> TitleSceneSelection:
+        return self._title_selection
 
-    def set_title_state(self, state: TitleState) -> None:
-        if not isinstance(state, TitleState):
-            raise TypeError(f"受け取った型: {type(state).__name__} : TitleState型を指定してください。")
-        self._title_state = state
+    def set_title_selection(self, state: TitleSceneSelection) -> None:
+        if not isinstance(state, TitleSceneSelection):
+            raise TypeError(f"受け取った型: {type(state).__name__} : TitleSceneSelection型を指定してください。")
+        self._title_selection = state
 
-    # OpeningStateのGetterとSetter
-    def get_opening_state(self) -> OpeningState:
-        return self._opening_state
+    # OpeningPageのGetterとSetter
+    def get_opening_page(self) -> OpeningPage:
+        return self._opening_page
 
-    def set_opening_state(self, state: OpeningState) -> None:
-        if not isinstance(state, OpeningState):
-            raise TypeError(f"受け取った型: {type(state).__name__} : OpeningState型を指定してください。")
-        self._opening_state = state
+    def set_opening_page(self, state: OpeningPage) -> None:
+        if not isinstance(state, OpeningPage):
+            raise TypeError(f"受け取った型: {type(state).__name__} : OpeningPage型を指定してください。")
+        self._opening_page = state
 
-    # GameOverStateのGetterとSetter
-    def get_gameover_state(self) -> GameOverState:
-        return self._gameover_state
+    # GameOverSceneSelectionのGetterとSetter
+    def get_gameover_selection(self) -> GameOverSceneSelection:
+        return self._gameover_selection
 
-    def set_gameover_state(self, state: GameOverState) -> None:
-        if not isinstance(state, GameOverState):
-            raise TypeError(f"受け取った型: {type(state).__name__} : GameOverState型を指定してください。")
-        self._gameover_state = state
+    def set_gameover_selection(self, state: GameOverSceneSelection) -> None:
+        if not isinstance(state, GameOverSceneSelection):
+            raise TypeError(f"受け取った型: {type(state).__name__} : GameOverSceneSelection型を指定してください。")
+        self._gameover_selection = state
 
-    # ClearStateのGetterとSetter
-    def get_clear_state(self) -> ClearState:
-        return self._clear_state
+    # GameClearSceneSelectionのGetterとSetter
+    def get_gameclear_selection(self) -> GameClearSceneSelection:
+        return self._gameclear_selection
 
-    def set_clear_state(self, state: ClearState) -> None:
-        if not isinstance(state, ClearState):
-            raise TypeError(f"受け取った型: {type(state).__name__} : ClearState型を指定してください。")
-        self._clear_state = state
+    def set_gameclear_selection(self, state: GameClearSceneSelection) -> None:
+        if not isinstance(state, GameClearSceneSelection):
+            raise TypeError(f"受け取った型: {type(state).__name__} : GameClearSceneSelection型を指定してください。")
+        self._gameclear_selection = state
     
-    # StageStateのGetterとSetter
-    def get_stage_state(self) -> StageState:
-        return self._stage_state
+    # StageNumberのGetterとSetter
+    def get_stage_number(self) -> StageNumber:
+        return self._stage_number
 
-    def set_stage_state(self, state: StageState) -> None:
-        if not isinstance(state, StageState):
-            raise TypeError(f"受け取った型: {type(state).__name__} : StageState型を指定してください。")
-        self._stage_state = state
+    def set_stage_number(self, state: StageNumber) -> None:
+        if not isinstance(state, StageNumber):
+            raise TypeError(f"受け取った型: {type(state).__name__} : StageNumber型を指定してください。")
+        self._stage_number = state
 
     # is_gameclearのGetterとSetter
     def get_is_gameclear(self) -> bool:

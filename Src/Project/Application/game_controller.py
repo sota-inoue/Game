@@ -7,7 +7,7 @@ from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
 from Application.state import State
-from Domain.game_flag import GameState
+from Domain.game_flag import GamePhase
 
 # ゲームの進行や内部処理を管理するクラス
 from System.system_manager import System
@@ -51,36 +51,36 @@ class Controller:
 
     def progress_update(self):
         # 現在のゲーム進行状態と操作情報を取得する
-        game_state = self.state.get_game_state()
+        game_state = self.state.get_game_phase()
         game_flag = self.state.get_game_flag()
         command = self.state.get_game_command()
 
         # 現在のゲーム状態に応じた進行処理を行う
-        if game_state == GameState.TITLE:
+        if game_state == GamePhase.TITLE:
             self.loop_flug = self.system.title_update(command, game_flag)
-        elif game_state == GameState.OPENING:
+        elif game_state == GamePhase.OPENING:
             self.system.opening_update(command, game_flag)
-        elif game_state == GameState.STAGE:
+        elif game_state == GamePhase.STAGE:
             self.system.stage_update(game_flag)
-        elif game_state == GameState.GAMEOVER:
+        elif game_state == GamePhase.GAMEOVER:
             self.system.gameover_update(command, game_flag)
-        elif game_state == GameState.CLEAR:
+        elif game_state == GamePhase.CLEAR:
             self.system.gameclear_update(command, game_flag)
 
         # 進行処理後のゲーム状態を取得する
-        new_game_state = self.state.get_game_state()
+        new_game_state = self.state.get_game_phase()
 
         # ゲーム状態が変化した場合のみ遷移後の初期化を行う
         if game_state != new_game_state:
             self.count = 0
             # ステージへ遷移した場合
-            if new_game_state == GameState.STAGE:
+            if new_game_state == GamePhase.STAGE:
                 self.state.set_game_command(Command.NONE)
                 self.state.stage_reset()
                 player = self.state.get_player_data()
                 self.system.player_locate_update(player)
             # タイトル画面へ遷移した場合
-            elif new_game_state == GameState.TITLE:
+            elif new_game_state == GamePhase.TITLE:
                 self.state.title_reset()
  
     def stage_update(self):
@@ -88,7 +88,7 @@ class Controller:
         command = self.state.get_game_command()
         player = self.state.get_player_data()
         objects = self.state.get_objects_data()
-        stage = self.state.get_stage_state()
+        stage = self.state.get_stage_number()
 
         # 敵オブジェクトとお札の当たり判定の処理を行う
         if self.count % 5 == 3:
@@ -126,10 +126,10 @@ class Controller:
             self.progress_update()
 
         # 進行状態更新後に現在のゲーム状態を取得する
-        game_state = self.state.get_game_state()
+        game_state = self.state.get_game_phase()
 
         # ステージ中の場合のみステージ内部処理を実行する
-        if game_state == GameState.STAGE:
+        if game_state == GamePhase.STAGE:
             self.stage_update()
 
         # ゲーム全体で使用するカウントを更新する
@@ -137,22 +137,22 @@ class Controller:
 
     def draw(self):
         # 現在のゲーム進行状態を取得する
-        game_state = self.state.get_game_state()
+        game_state = self.state.get_game_phase()
 
         # タイトル画面を描画する
-        if game_state == GameState.TITLE:
-            title_state = self.state.get_title_state()
-            self._display.draw_Title(title_state)
+        if game_state == GamePhase.TITLE:
+            title = self.state.get_title_scene_selection()
+            self._display.draw_title(title)
 
         # オープニング画面を描画する
-        elif game_state == GameState.OPENING:
-            opening_state = self.state.get_opening_state()
-            self._display.draw_Opening(opening_state)
+        elif game_state == GamePhase.OPENING:
+            opening= self.state.get_opening_page()
+            self._display.draw_opening(opening)
 
         # ゲームステージを描画する
-        elif game_state == GameState.STAGE:
+        elif game_state == GamePhase.STAGE:
             # ステージの背景を描画する
-            self._display.draw_Stage()
+            self._display.draw_stage()
 
             # ステージ内の描画に必要なデータを取得する
             map_data = self.state.get_draw_data()
@@ -167,18 +167,18 @@ class Controller:
             self._display.draw_urgency_level(urgency_level)
 
         # ゲームクリア画面を描画する
-        elif game_state == GameState.CLEAR:
-            clear_state = self.state.get_clear_state()
-            self._display.draw_Clear(clear_state)
+        elif game_state == GamePhase.CLEAR:
+            clear = self.state.get_gameclear_scene_selection()
+            self._display.draw_game_clear(clear)
 
         # ゲームオーバー画面を描画する
-        elif game_state == GameState.GAMEOVER:
-            over_state = self.state.get_gameover_state()
-            self._display.draw_Over(over_state)
+        elif game_state == GamePhase.GAMEOVER:
+            over = self.state.get_gameover_scene_selection()
+            self._display.draw_game_over(over)
 
         # エンディング画面を描画する
-        elif game_state == GameState.ENDING:
-            self._display.draw_Ending()
+        elif game_state == GamePhase.ENDING:
+            self._display.draw_ending()
 
         # self.renderer.touch_render()
         self._display.touch_iamge_render()
@@ -188,7 +188,7 @@ class Controller:
         self.system_update()
         self.draw()
         self._display.output()
-        if self.state.get_game_state()== GameState.ENDING:
+        if self.state.get_game_phase()== GamePhase.ENDING:
             if self.count > 30:
                 return False
         return self.loop_flug
@@ -196,5 +196,5 @@ class Controller:
     
     def close(self):
         if self.mode:
-            self.display.fb_close()
+            self._display.fb_close()
         pygame.quit()

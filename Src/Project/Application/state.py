@@ -1,5 +1,8 @@
 from Domain.player import Player
-from Domain.game_flag import GameFlag, GameState, TitleState, OpeningState, GameOverState, ClearState, StageState
+from Domain.game_flag import (
+    GameFlag, GamePhase, TitleSceneSelection, OpeningPage,
+    GameOverSceneSelection, GameClearSceneSelection, StageNumber
+)
 from Input.command_converter import Command
 
 
@@ -41,23 +44,23 @@ class State:
     # フラグのGetter
     # ==================================================
 
-    def get_game_state(self) -> GameState:
-        return self._game_flag.get_game_state()
+    def get_game_phase(self) -> GamePhase:
+        return self._game_flag.get_game_phase()
 
-    def get_title_state(self) -> TitleState:
-        return self._game_flag.get_title_state()
+    def get_title_scene_selection(self) -> TitleSceneSelection:
+        return self._game_flag.get_title_selection()
 
-    def get_opening_state(self) -> OpeningState:
-        return self._game_flag.get_opening_state()
+    def get_opening_page(self) -> OpeningPage:
+        return self._game_flag.get_opening_page()
 
-    def get_gameover_state(self) -> GameOverState:
-        return self._game_flag.get_gameover_state()
+    def get_gameover_scene_selection(self) -> GameOverSceneSelection:
+        return self._game_flag.get_gameover_selection()
 
-    def get_clear_state(self) -> ClearState:
-        return self._game_flag.get_clear_state()
+    def get_gameclear_scene_selection(self) -> GameClearSceneSelection:
+        return self._game_flag.get_gameclear_selection()
 
-    def get_stage_state(self) -> StageState:
-        return self._game_flag.get_stage_state()
+    def get_stage_number(self) -> StageNumber:
+        return self._game_flag.get_stage_number()
 
     # ==================================================
     # フラグのSetter

@@ -3,7 +3,7 @@ from Display.Renderer.renderer_manager import RendererManager
 
 from Display.Output.output_manager import OutputManager
 
-from Domain.game_flag import TitleState, GameOverState, ClearState, OpeningState
+from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 class DisplayManager:
     def __init__(self, mode: bool):
@@ -34,22 +34,22 @@ class DisplayManager:
         self._output.output(game_display, touch_display)
 
 
-    def draw_Opening(self, state: OpeningState):
+    def draw_opening(self, state: OpeningPage):
         self._renderer.draw_Opening(state)
 
-    def draw_Over(self, state: GameOverState):
+    def draw_game_over(self, state: GameOverSceneSelection):
         self._renderer.draw_Over(state)
 
-    def draw_Title(self, state: TitleState):
+    def draw_title(self, state: TitleSceneSelection):
         self._renderer.draw_Title(state)
     
-    def draw_Clear(self, state: ClearState):
+    def draw_game_clear(self, state: GameClearSceneSelection):
         self._renderer.draw_Clear(state)
 
-    def draw_Ending(self):
+    def draw_ending(self):
         self._renderer.draw_Ending()
 
-    def draw_Stage(self):
+    def draw_stage(self):
         self._renderer.draw_Stage()
 
 
@@ -65,3 +65,7 @@ class DisplayManager:
 
     def touch_iamge_render(self):
         self._renderer.touch_iamge_render()
+
+
+    def fb_close(self):
+        self._output.fb_close()

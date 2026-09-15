@@ -2,7 +2,7 @@ from Domain.player import Player
 from Domain.stage_object import StageObject
 from Input.command_converter import Command
 
-from Domain.game_flag import GameFlag, StageState
+from Domain.game_flag import GameFlag, StageNumber
 
 from System.sound_system import SoundSystem
 from System.Map.map_system import Map
@@ -36,7 +36,7 @@ class System:
     def player_hit_check(self, count: int, player: Player, objects: list[list[StageObject | None]] ) -> None:
         self.hit_check.update(count, player, objects)
 
-    def map_update(self, count: int, objects: list[list[StageObject | None]], state: StageState) -> bool:
+    def map_update(self, count: int, objects: list[list[StageObject | None]], state: StageNumber) -> bool:
         return self._map.stage_update(objects, count, state)
 
     def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:

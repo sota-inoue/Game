@@ -6,7 +6,7 @@ from Display.Renderer.ui_renderer import UIRenderer
 
 from Display.Renderer.image_manager import ImageManager
 
-from Domain.game_flag import TitleState, GameOverState, ClearState, OpeningState
+from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 
 class RendererManager:
@@ -30,16 +30,16 @@ class RendererManager:
         return self._touch_surface
 
 
-    def draw_Opening(self, state: OpeningState):
+    def draw_Opening(self, state: OpeningPage):
         self._game.draw_opning(state)
 
-    def draw_Over(self, state: GameOverState):
+    def draw_Over(self, state: GameOverSceneSelection):
         self._game.draw_over(state)
 
-    def draw_Title(self, state: TitleState):
+    def draw_Title(self, state: TitleSceneSelection):
         self._game.draw_title(state)
     
-    def draw_Clear(self, state: ClearState):
+    def draw_Clear(self, state: GameClearSceneSelection):
         self._game.draw_clear(state)
 
     def draw_Ending(self):

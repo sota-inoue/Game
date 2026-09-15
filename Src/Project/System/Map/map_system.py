@@ -6,7 +6,7 @@ from System.Map.object_layout import ObjectLayout
 
 from Domain.stage_object import StageObject, ObjectType
 
-from Domain.game_flag import StageState
+from Domain.game_flag import StageNumber
 from asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
 
 class Map:
@@ -38,7 +38,7 @@ class Map:
                 j += 1
             i += 1
 
-    def stage_update(self, objects: list[list[StageObject | None]], count: int, stage_state: StageState) -> bool:
+    def stage_update(self, objects: list[list[StageObject | None]], count: int, stage_state: StageNumber) -> bool:
 
         if count == 0:
             return False
@@ -46,13 +46,13 @@ class Map:
         index = (count // 5) - 1
 
         # ステージに対応するデータを取得
-        if stage_state == StageState.STAGE1:
+        if stage_state == StageNumber.STAGE_1:
             stage_data = self._stage1_data
             stage_count = self._stage1_count
-        elif stage_state == StageState.STAGE2:
+        elif stage_state == StageNumber.STAGE_2:
             stage_data = self._stage2_data
             stage_count = self._stage2_count
-        elif stage_state == StageState.STAGE3:
+        elif stage_state == StageNumber.STAGE_3:
             stage_data = self._stage3_data
             stage_count = self._stage3_count
         else:

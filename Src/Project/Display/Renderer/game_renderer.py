@@ -10,7 +10,7 @@ from asset_paths import (
     OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3
 )
 from config import GRAY
-from Domain.game_flag import TitleState, GameOverState, ClearState, OpeningState
+from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 
 class GameDisplay:
@@ -20,26 +20,26 @@ class GameDisplay:
         self._surface = surface
         self._image = image
 
-        self._title_images: dict[TitleState, pygame.Surface] = {
-            TitleState.START: self._image.get_image(TITLE_SELECT_PLAY),
-            TitleState.SETTING: self._image.get_image(TITLE_SELECT_SETTING),
-            TitleState.EXIT: self._image.get_image(TITLE_SELECT_EXIT),
+        self._title_images: dict[TitleSceneSelection, pygame.Surface] = {
+            TitleSceneSelection.START: self._image.get_image(TITLE_SELECT_PLAY),
+            TitleSceneSelection.SETTING: self._image.get_image(TITLE_SELECT_SETTING),
+            TitleSceneSelection.EXIT: self._image.get_image(TITLE_SELECT_EXIT),
         }
 
-        self._gameover_images: dict[ClearState, pygame.Surface] = {
-            ClearState.NEXT: self._image.get_image(GAMECLEAR_SELECT_NEXT),
-            ClearState.TITLE: self._image.get_image(GAMECLEAR_SELECT_TITLE),
+        self._gameclear_images: dict[GameClearSceneSelection, pygame.Surface] = {
+            GameClearSceneSelection.NEXT: self._image.get_image(GAMECLEAR_SELECT_NEXT),
+            GameClearSceneSelection.TITLE: self._image.get_image(GAMECLEAR_SELECT_TITLE),
         }
 
-        self._gameover_images: dict[GameOverState, pygame.Surface] = {
-            GameOverState.CONTINUE: self._image.get_image(GAMEOVER_SELECT_CONTINUE),
-            GameOverState.TITLE: self._image.get_image(GAMEOVER_SELECT_TITLE),
+        self._gameover_images: dict[GameOverSceneSelection, pygame.Surface] = {
+            GameOverSceneSelection.CONTINUE: self._image.get_image(GAMEOVER_SELECT_CONTINUE),
+            GameOverSceneSelection.TITLE: self._image.get_image(GAMEOVER_SELECT_TITLE),
         }
 
-        self._opning_images: dict[OpeningState, pygame.Surface] ={
-            OpeningState.OPENING_PAGE1: self._image.get_image(OPNING_PAGE_1),
-            OpeningState.OPENING_PAGE2: self._image.get_image(OPNING_PAGE_2),
-            OpeningState.OPENING_PAGE3: self._image.get_image(OPNING_PAGE_3),
+        self._opning_images: dict[OpeningPage, pygame.Surface] ={
+            OpeningPage.PAGE_1: self._image.get_image(OPNING_PAGE_1),
+            OpeningPage.PAGE_2: self._image.get_image(OPNING_PAGE_2),
+            OpeningPage.PAGE_3: self._image.get_image(OPNING_PAGE_3),
         }
 
         self._width = surface.get_width()
@@ -56,7 +56,7 @@ class GameDisplay:
         # 指定された座標を文字列の中心として描画する
         self._surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
-    def draw_title(self, state: TitleState) -> None:
+    def draw_title(self, state: TitleSceneSelection) -> None:
         # 現在の選択状態に対応するタイトル画像を取得する
         image = self._title_images[state]
 
@@ -67,9 +67,9 @@ class GameDisplay:
         self._surface.blit(image, (0, 0))
 
 
-    def draw_clear(self, state: ClearState) -> None:
+    def draw_clear(self, state: GameClearSceneSelection) -> None:
         # 現在の選択状態に対応するゲームクリア画像を取得する
-        image = self._clear_images[state]
+        image = self._gameclear_images[state]
 
         # 画面サイズに合わせて画像をリサイズする
         image = pygame.transform.scale(image, (self._width, self._height))
@@ -78,7 +78,7 @@ class GameDisplay:
         self._surface.blit(image, (0, 0))
 
 
-    def draw_over(self, state: GameOverState) -> None:
+    def draw_over(self, state: GameOverSceneSelection) -> None:
         # 現在の選択状態に対応するゲームオーバー画像を取得する
         image = self._gameover_images[state]
 
@@ -88,7 +88,7 @@ class GameDisplay:
         # ゲームオーバー画面を描画する
         self._surface.blit(image, (0, 0))
 
-    def draw_opning(self, state: OpeningState) -> None:
+    def draw_opning(self, state: OpeningPage) -> None:
         # 現在の状態に対応するオープニング画像を取得する
         image = self._opning_images[state]
 
