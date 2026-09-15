@@ -1,5 +1,5 @@
 #StageObject/enemy.py
-from Domain.stage_object import Enemy
+from Domain.stage_object import StageObject, ObjectType
 
 from Domain.object_parameters import(
     OJISAN_HP,
@@ -33,6 +33,62 @@ from Domain.object_parameters import(
 )
 
 from asset_paths import ENEMY_IMAGE_PATH
+
+class Enemy(StageObject):
+    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
+        super().__init__(object_type=ObjectType.ENEMY)
+        self._id: int = id
+        self._hp: int = hp
+        self._damage: int = damage
+        self.set_image_path(image_path)
+        self._is_jumpable: bool = is_jumpable
+        self.set_id(id)
+        self.is_hit: bool = False
+
+    def set_is_hit(self, is_hit: bool) -> None:
+        self.is_hit = is_hit
+
+    def get_is_hit(self) -> bool:
+        return self.is_hit
+
+    # _idのgetterとsetter
+    def get_id(self) -> int:
+        return self._id
+
+    def set_id(self, id: int) -> None:
+        if not isinstance(id, int):
+            raise TypeError(f"受け取った型 {type(id).__name__} : int型を指定してください。")
+        self._id = id
+
+    # _hpのgetterとsetter
+    def get_hp(self) -> int:
+        return self._hp
+    
+    def set_hp(self, hp: int) -> None:
+        if not isinstance(hp, int):
+            raise TypeError(f"受け取った型 {type(hp).__name__} : int型を指定してください。")
+        self._hp = hp
+    
+    # _damageのgetterとsetter
+    def get_damage(self) -> int:
+        return self._damage
+    
+    def set_damage(self, damage: int) -> None:
+        if not isinstance(damage, int):
+            raise TypeError(f"受け取った型 {type(damage).__name__} : int型を指定してください。")
+        self._damage = damage
+
+    # _is_jumpableのgetterとsetter
+    def get_is_jumpable(self) -> bool:
+        return self._is_jumpable
+    
+    def set_is_jumpable(self, is_jumpable: bool) -> None:
+        if not isinstance(is_jumpable, bool):
+            raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
+        self._is_jumpable = is_jumpable
+
+
+        
 
 class Ojisan(Enemy):
     def __init__(self) -> None:
