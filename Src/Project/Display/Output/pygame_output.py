@@ -8,7 +8,7 @@ from config import (
     BLACK
 )
 
-class PyGameDisplay:
+class PyGameOutput:
 
     def __init__(self):
         # pygameウィンドウを生成

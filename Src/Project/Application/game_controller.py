@@ -9,14 +9,11 @@ from Input.input_manager import Input
 from Application.state import State
 from Domain.game_flag import GameState
 
-# 描画処理を管理するクラス
-from Renderer.renderer_manager import Renderer
-
 # ゲームの進行や内部処理を管理するクラス
 from System.system_manager import System
 
 # 画面への出力処理を管理するクラス
-from Display.display_manager import Display
+from Display.display_manager import DisplayManager
 
 
 
@@ -25,14 +22,11 @@ class Controller:
         self.mode = mode
         pygame.init()
         
-        self.display = Display(mode)
-        GAME_SCREEN_WIDTH = self.display.GAME_SCREEN_WIDTH
-        GAME_SCREEN_HEIGHT = self.display.GAME_SCREEN_HEIGHT
-        TOUCH_SCREEN_WIDTH = self.display.TOUCH_SCREEN_WIDTH
-        TOUCH_SCREEN_HEIGHT = self.display.TOUCH_SCREEN_HEIGHT
+        self._display = DisplayManager(mode)
+        GAME_SCREEN_WIDTH = self._display.get_width()
+        GAME_SCREEN_HEIGHT = self._display.get_height()
 
         self.input = Input(mode)
-        self.renderer = Renderer(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, TOUCH_SCREEN_WIDTH, TOUCH_SCREEN_HEIGHT)
         self.system = System(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT)
         self.state = State(GAME_SCREEN_WIDTH)
 
@@ -148,17 +142,17 @@ class Controller:
         # タイトル画面を描画する
         if game_state == GameState.TITLE:
             title_state = self.state.get_title_state()
-            self.renderer.draw_Title(title_state)
+            self._display.draw_Title(title_state)
 
         # オープニング画面を描画する
         elif game_state == GameState.OPENING:
             opening_state = self.state.get_opening_state()
-            self.renderer.draw_Opening(opening_state)
+            self._display.draw_Opening(opening_state)
 
         # ゲームステージを描画する
         elif game_state == GameState.STAGE:
             # ステージの背景を描画する
-            self.renderer.draw_Stage()
+            self._display.draw_Stage()
 
             # ステージ内の描画に必要なデータを取得する
             map_data = self.state.get_draw_data()
@@ -166,44 +160,34 @@ class Controller:
             attack_data = self.state.get_attack_draw_data()
 
             # プレイヤー、攻撃、ステージオブジェクトを描画する
-            self.renderer.draw_stage_object(player_data, attack_data, map_data)
+            self._display.draw_stage_object(player_data, attack_data, map_data)
 
             # 切迫度などのUIを描画する
             urgency_level = self.state.get_urgency_level()
-            self.renderer.draw_urgency_level(urgency_level)
+            self._display.draw_urgency_level(urgency_level)
 
         # ゲームクリア画面を描画する
         elif game_state == GameState.CLEAR:
             clear_state = self.state.get_clear_state()
-            self.renderer.draw_Clear(clear_state)
+            self._display.draw_Clear(clear_state)
 
         # ゲームオーバー画面を描画する
         elif game_state == GameState.GAMEOVER:
             over_state = self.state.get_gameover_state()
-            self.renderer.draw_Over(over_state)
+            self._display.draw_Over(over_state)
 
         # エンディング画面を描画する
         elif game_state == GameState.ENDING:
-            self.renderer.draw_Ending()
+            self._display.draw_Ending()
 
         # self.renderer.touch_render()
-        self.renderer.touch_iamge_render()
-
-    def output(self):
-        # ゲーム画面の描画結果を取得する
-        game_display = self.renderer.get_game()
-
-        # タッチ操作画面の描画結果を取得する
-        touch_display = self.renderer.get_touch()
-
-        # 取得した2つの画面をディスプレイに反映する
-        self.display.update(game_display, touch_display)
+        self._display.touch_iamge_render()
 
     def loop(self):
         self.command_update()
         self.system_update()
         self.draw()
-        self.output()
+        self._display.output()
         if self.state.get_game_state()== GameState.ENDING:
             if self.count > 30:
                 return False

@@ -1,6 +1,6 @@
 import pygame
 
-from Renderer.image_manager import ImageManager
+from Display.Renderer.image_manager import ImageManager
 
 from asset_paths import TOUCH_SCREEN
 from config import GRAY

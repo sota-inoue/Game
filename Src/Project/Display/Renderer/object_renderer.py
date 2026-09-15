@@ -1,5 +1,5 @@
 import pygame
-from Renderer.image_manager import ImageManager
+from Display.Renderer.image_manager import ImageManager
 
 
 class StageObjectDraw:

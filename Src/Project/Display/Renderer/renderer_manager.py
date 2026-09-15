@@ -1,15 +1,15 @@
 import pygame
-from Renderer.touch_renderer import TouchDisplay
-from Renderer.game_renderer import GameDisplay
-from Renderer.object_renderer import StageObjectDraw
-from Renderer.ui_renderer import UIRenderer
+from Display.Renderer.touch_renderer import TouchDisplay
+from Display.Renderer.game_renderer import GameDisplay
+from Display.Renderer.object_renderer import StageObjectDraw
+from Display.Renderer.ui_renderer import UIRenderer
 
-from Renderer.image_manager import ImageManager
+from Display.Renderer.image_manager import ImageManager
 
 from Domain.game_flag import TitleState, GameOverState, ClearState, OpeningState
 
 
-class Renderer:
+class RendererManager:
     def __init__(self,DISPLAY_WIDTH,DISPLAY_HEIGHT,TOUCH_WIDTH,TOUCH_HEIGHT):
         self._image = ImageManager()
         self._game_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)

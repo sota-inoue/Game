@@ -1,5 +1,5 @@
 import pygame
-from Renderer.image_manager import ImageManager
+from Display.Renderer.image_manager import ImageManager
 from asset_paths import (
     URGENCY_FRAME1, URGENCY_FRAME2, URGENCY_FRAME3, URGENCY_FRAME4, URGENCY_FRAME5, 
     URGENCY_FRAME6, URGENCY_FRAME7, URGENCY_FRAME8, URGENCY_FRAME9, URGENCY_FRAME10, 
