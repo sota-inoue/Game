@@ -12,6 +12,20 @@ PLAYER_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "player.png"
 ENEMY_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
 OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
 
+# 各敵キャラクターの画像パス（参照ファイル未確定のためNULL指定）
+OJISAN_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
+STRONG_OJISAN_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "NULL"
+SMARTPHONE_USER_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "NULL"
+FUROCAN_KAIWAI_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "NULL"
+CARRY_CASE_PERSON_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "NULL"
+YANCHA_GROUP_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "NULL"
+CIVILIAN_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "NULL"
+
+# 各障害物の画像パス（参照ファイル未確定のためNULL指定）
+BANANA_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
+COLOR_CONE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "NULL"
+CARRY_CASE_OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "NULL"
+
 STAGE1_BACK_GRAUND = BASE_DIR / "Image" / "Backgrounds" / "stage1_bg.jpg"
 
 URGENCY_FRAME1 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage1.JPG"

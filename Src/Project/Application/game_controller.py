@@ -16,7 +16,8 @@ from System.system_manager import System
 # 画面への出力処理を管理するクラス
 from Display.display_manager import Display
 
-
+# スコア計算処理の読み込み
+from System.score_system import calculate_score
 
 class Controller:
     def __init__(self,mode):
@@ -33,6 +34,8 @@ class Controller:
         self.renderer = Renderer(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT, TOUCH_SCREEN_WIDTH, TOUCH_SCREEN_HEIGHT)
         self.system = System(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT)
         self.state = State(GAME_SCREEN_WIDTH)
+        
+        self.current_score: int = 0
 
         #self.system.play_TitleBGM()
         self.loop_flug = True
@@ -173,6 +176,12 @@ class Controller:
             self.count = 0
         else:
             self.count += 1
+    
+    def update_score(self, amount: int) -> None:
+        self.current_score = calculate_score(self.current_score, amount)
+
+    def get_current_score(self) -> int:
+        return self.current_score
 
     def draw(self):
         game_state = self.state.get_game_state()
