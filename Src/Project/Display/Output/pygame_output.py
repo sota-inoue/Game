@@ -1,6 +1,6 @@
 import pygame
 
-from Domain.config import (
+from config import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     TOUCH_SCREEN_TOP_X,
@@ -8,7 +8,7 @@ from Domain.config import (
     BLACK
 )
 
-class PyGameDisplay:
+class PyGameOutput:
 
     def __init__(self):
         # pygameウィンドウを生成

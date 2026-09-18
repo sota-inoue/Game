@@ -2,7 +2,7 @@ import pygame
 import mmap
 import subprocess
 
-class FbManager:
+class FrameBufferOutput:
     def __init__(self):
         # SPI液晶の画面サイズとフレームバッファ名のインスタン生成と初期化
         self.SPI_FB = None

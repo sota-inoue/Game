@@ -1,5 +1,5 @@
 #StageObject/obstacle.py
-from StageObject.stage_object import Obstacle
+from Domain.stage_object import StageObject, ObjectType
 
 from Domain.object_parameters import(
     BANANA_DAMAGE,
@@ -13,7 +13,43 @@ from Domain.object_parameters import(
     CARRY_CASE_OBSTACLE_ID
 )
 
-from Domain.asset_paths import OBSTACLE_IMAGE_PATH
+from asset_paths import OBSTACLE_IMAGE_PATH
+
+class Obstacle(StageObject):
+    def __init__(self, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
+        super().__init__(object_type=ObjectType.OBSTACLE)
+        self._id: int = id
+        self._damage: int = damage
+        self.set_image_path(image_path)
+        self._is_jumpable: bool = is_jumpable
+        self.set_id(id)
+
+    # _idのgetterとsetter
+    def get_id(self) -> int:
+        return self._id
+
+    def set_id(self, id: int) -> None:
+        if not isinstance(id, int):
+            raise TypeError(f"受け取った型 {type(id).__name__} : int型を指定してください。")
+        self._id = id
+
+    # _damageのgetterとsetter
+    def get_damage(self) -> int:
+        return self._damage
+
+    def set_damage(self, damage: int) -> None:
+        if not isinstance(damage, int):
+            raise TypeError(f"受け取った型 {type(damage).__name__} : int型を指定してください。")
+        self._damage = damage
+
+    # _is_jumpableのgetterとsetter
+    def get_is_jumpable(self) -> bool:
+        return self._is_jumpable
+
+    def set_is_jumpable(self, is_jumpable: bool) -> None:
+        if not isinstance(is_jumpable, bool):
+            raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
+        self._is_jumpable = is_jumpable
 
 class Banana(Obstacle):
     def __init__(self) -> None:

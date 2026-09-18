@@ -2,7 +2,7 @@ from pathlib import Path
 
 # パスの設定
 
-BASE_DIR = Path(__file__).resolve().parent.parent / "Assets"
+BASE_DIR = Path(__file__).resolve().parent / "Assets"
 
 STAGE1_PATH = BASE_DIR / "Map" / "stage1.txt"
 STAGE2_PATH = BASE_DIR / "Map" / "stage2.txt"
@@ -13,6 +13,20 @@ ENEMY_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
 OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
 
 STAGE1_BACK_GRAUND = BASE_DIR / "Image" / "Backgrounds" / "stage1_bg.jpg"
+
+TITLE_SELECT_PLAY = BASE_DIR / "Image" / "SELECT" / "Title" / "Play.jpg"
+TITLE_SELECT_SETTING = BASE_DIR / "Image" / "SELECT" / "Title" / "Setting.jpg"
+TITLE_SELECT_EXIT = BASE_DIR / "Image" / "SELECT" / "Title" / "Exit.jpg"
+
+GAMECLEAR_SELECT_NEXT = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Next.jpg"
+GAMECLEAR_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Title.jpg"
+
+GAMEOVER_SELECT_CONTINUE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Continue.jpg"
+GAMEOVER_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Title.jpg"
+
+OPNING_PAGE_1 = BASE_DIR / "Image" / "OP" / "op_1.png"
+OPNING_PAGE_2 = BASE_DIR / "Image" / "OP" / "op_2.png"
+OPNING_PAGE_3 = BASE_DIR / "Image" / "OP" / "op_3.png"
 
 URGENCY_FRAME1 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage1.JPG"
 URGENCY_FRAME2 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage2.JPG"
@@ -34,6 +48,8 @@ URGENCY_FRAME17 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage17.JPG"
 URGENCY_FRAME18 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage18.JPG"
 URGENCY_FRAME19 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage19.JPG"
 URGENCY_FRAME20 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage20.JPG"
+
+TOUCH_SCREEN = BASE_DIR / "Image" / "UI" / "botanpause.JPG"
 
 OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
 OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"

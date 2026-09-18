@@ -1,5 +1,3 @@
-from Domain.config import DECIDE_BUTTON_SOUND_PATH
-import os
+from Application.app import App
 
-print(DECIDE_BUTTON_SOUND_PATH)
-print(DECIDE_BUTTON_SOUND_PATH.exists())
+App(True)
