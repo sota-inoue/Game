@@ -76,12 +76,14 @@ class StageObject:
 
 
 class Obstacle(StageObject):
-    def __init__(self, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
+    def __init__(self, damage : int, image_path : str, is_jumpable: bool, id: int, add_score: int = 0, sub_score: int = 0) -> None:
         super().__init__(object_type=ObjectType.OBSTACLE)
         self._damage: int = damage
         self.set_image_path(image_path)
         self._is_jumpable: bool = is_jumpable
         self.set_id(id)
+        self._add_score: int = add_score
+        self._sub_score: int = sub_score
 
     # _damageのgetterとsetter
     def get_damage(self) -> int:
@@ -100,16 +102,36 @@ class Obstacle(StageObject):
         if not isinstance(is_jumpable, bool):
             raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
         self._is_jumpable = is_jumpable
+        
+    # _add_scoreのgetterとsetter
+    def get_add_score(self) -> int:
+        return self._add_score
+
+    def set_add_score(self, add_score: int) -> None:
+        if not isinstance(add_score, int):
+            raise TypeError(f"受け取った型 {type(add_score).__name__} : int型を指定してください。")
+        self._add_score = add_score
+
+    # _sub_scoreのgetterとsetter
+    def get_sub_score(self) -> int:
+        return self._sub_score
+
+    def set_sub_score(self, sub_score: int) -> None:
+        if not isinstance(sub_score, int):
+            raise TypeError(f"受け取った型 {type(sub_score).__name__} : int型を指定してください。")
+        self._sub_score = sub_score
 
 
 class Enemy(StageObject):
-    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
+    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool, id: int, add_score: int = 0, sub_score: int = 0) -> None:    
         super().__init__(object_type=ObjectType.ENEMY)
         self._hp: int = hp
         self._damage: int = damage
         self.set_image_path(image_path)
         self._is_jumpable: bool = is_jumpable
         self.set_id(id)
+        self._add_score: int = add_score
+        self._sub_score: int = sub_score
         self.is_hit: bool = False
 
     def set_is_hit(self, is_hit: bool) -> None:
@@ -144,6 +166,24 @@ class Enemy(StageObject):
         if not isinstance(is_jumpable, bool):
             raise TypeError(f"受け取った型 {type(is_jumpable).__name__} : bool型を指定してください。")
         self._is_jumpable = is_jumpable
+        
+    # _add_scoreのgetterとsetter
+    def get_add_score(self) -> int:
+        return self._add_score
+
+    def set_add_score(self, add_score: int) -> None:
+        if not isinstance(add_score, int):
+            raise TypeError(f"受け取った型 {type(add_score).__name__} : int型を指定してください。")
+        self._add_score = add_score
+
+    # _sub_scoreのgetterとsetter
+    def get_sub_score(self) -> int:
+        return self._sub_score
+
+    def set_sub_score(self, sub_score: int) -> None:
+        if not isinstance(sub_score, int):
+            raise TypeError(f"受け取った型 {type(sub_score).__name__} : int型を指定してください。")
+        self._sub_score = sub_score
 
 class Attack(StageObject):
     def __init__(self, x : int, y : int, width : int, height : int, image_path : str) -> None:
