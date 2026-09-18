@@ -6,7 +6,7 @@ authors = [
     {name = "kurage-330",email = "linxiaocou80@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "pygame-ce (>=2.5.7,<3.0.0)"
 ]
