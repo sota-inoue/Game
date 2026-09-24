@@ -61,4 +61,3 @@ class RendererManager:
 
     def touch_iamge_render(self):
         self._touch.draw_controller_image()
-    

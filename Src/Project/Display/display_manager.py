@@ -7,6 +7,7 @@ from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSele
 
 class DisplayManager:
     def __init__(self, mode: bool):
+        self._mode = mode
         self._output = OutputManager(mode)
         GAME_SCREEN_WIDTH = self._output.GAME_SCREEN_WIDTH
         GAME_SCREEN_HEIGHT = self._output.GAME_SCREEN_HEIGHT

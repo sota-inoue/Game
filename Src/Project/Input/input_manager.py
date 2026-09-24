@@ -47,7 +47,7 @@ class Input:
             return
 
         # 変換後の座標からコマンドを取得
-        command = self.command_converter.convert(self._input_x, self._input_y)
+        command = self.command_converter.convert(self._input_x, self._input_y, self.mode)
 
         # 有効なコマンドでなければ終了
         if command == Command.NONE:
