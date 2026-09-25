@@ -15,7 +15,7 @@ class PlayerHitCheck:
         front_lane = stage_data[0]
 
         # プレイヤーと同じ位置のオブジェクトを取得する
-        obj = front_lane[player_position_x.value - 1]
+        obj = front_lane[player_position_x.value]
 
         # 現在の切迫度を取得する
         urgency_level = player.get_urgency_level()

@@ -33,7 +33,7 @@ class Input:
         return command
 
     def command_update(self) -> None:
-
+        # self.debug_log()
         # 入力座標を取得する
         if self.mode:
             x, y = device_input(self.touch)
@@ -47,7 +47,7 @@ class Input:
             return
 
         # 変換後の座標からコマンドを取得
-        command = self.command_converter.convert(self._input_x, self._input_y)
+        command = self.command_converter.convert(self._input_x, self._input_y, self.mode)
 
         # 有効なコマンドでなければ終了
         if command == Command.NONE:
@@ -56,9 +56,8 @@ class Input:
         self._is_click = True
         self._saved_command = command
 
-    def debug_log(self, count: int) -> None:
+    def debug_log(self) -> None:
         print(
-            f"count = {count:03d} "
             f": input = ({self._input_x}, {self._input_y}) "
             f": click = {self._is_click} "
             f": saved = {self._saved_command.name}"

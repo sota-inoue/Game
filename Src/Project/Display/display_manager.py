@@ -7,6 +7,7 @@ from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSele
 
 class DisplayManager:
     def __init__(self, mode: bool):
+        self._mode = mode
         self._output = OutputManager(mode)
         GAME_SCREEN_WIDTH = self._output.GAME_SCREEN_WIDTH
         GAME_SCREEN_HEIGHT = self._output.GAME_SCREEN_HEIGHT
@@ -54,8 +55,11 @@ class DisplayManager:
 
 
 
-    def draw_stage_object(self, player_data, attack_date,map_data):
-        self._renderer.draw_stage_object(player_data, attack_date, map_data)
+    def draw_stage_object(self, player_data, map_data):
+        self._renderer.draw_stage_object(player_data, map_data)
+
+    def draw_stage_middle_object(self, player_data, map_data):
+        self._renderer.draw_stage_middle_object(player_data, map_data)
 
     def draw_urgency_level(self, hp):
         self._renderer.draw_urgency_level(hp)

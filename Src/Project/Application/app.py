@@ -37,7 +37,7 @@ class App:
             self.pre_time = start_time
 
             # 指定したフレームレートになるように処理速度を調整する
-            self.clock.tick(10)
+            self.clock.tick(8)
 
         
 

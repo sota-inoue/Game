@@ -3,19 +3,40 @@ import pygame
 
 
 def load_image(path):
-    # 受け取ったパスをPathオブジェクトに変換する
+    
     path = Path(path)
-    # 指定されたパスが存在するか確認する
+    
     if not path.exists():
         raise FileNotFoundError(f"パスが存在しません: {path}")
     # 指定されたパスが画像ファイルであるか確認する
     if not path.is_file():
         raise FileNotFoundError(f"画像ファイルではありません: {path}")
     try:
-        # 画像を読み込み、透過情報を保持した形式に変換して返す
+        
         return pygame.image.load(path).convert_alpha()
     except pygame.error:
         # Pygameで画像の読み込みに失敗した場合
+        print(f"画像の読み込みに失敗しました: {path}")
+        raise
+
+def load_image(path):
+    # 受け取ったパスをPathオブジェクトに変換する
+    path = Path(path)
+    # 指定されたパスが存在するか確認する
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    if not path.is_file():
+        raise FileNotFoundError(f"画像ファイルではありません: {path}")
+    try:
+        # 画像を読み込み、透過情報を保持した形式に変換して返す
+        image = pygame.image.load(path)
+        # pygameのDisplay Surfaceがある場合のみ変換する
+        if pygame.display.get_surface() is not None:
+            image = image.convert_alpha()
+
+        return image
+
+    except pygame.error:
         print(f"画像の読み込みに失敗しました: {path}")
         raise
 
