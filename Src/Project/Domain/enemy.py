@@ -35,15 +35,25 @@ from Domain.object_parameters import(
 from asset_paths import ENEMY_IMAGE_PATH
 
 class Enemy(StageObject):
-    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool, id: int) -> None:
+    def __init__(self, hp : int, damage : int, image_path : str, is_jumpable: bool, id: int, hit_image: str) -> None:
+
         super().__init__(object_type=ObjectType.ENEMY)
-        self._id: int = id
-        self._hp: int = hp
-        self._damage: int = damage
         self.set_image_path(image_path)
+
+        self._id: int = id
+        self._damage: int = damage
         self._is_jumpable: bool = is_jumpable
-        self.set_id(id)
+
+        self._hp: int = hp
+
         self.is_hit: bool = False
+        self._hit_image_path = hit_image
+
+    # _image_pathのgetterとsetter
+    def get_hit_image_path(self) -> str:
+        return self._hit_image_path
+    
+    
 
     def set_is_hit(self, is_hit: bool) -> None:
         self.is_hit = is_hit
@@ -98,7 +108,8 @@ class Ojisan(Enemy):
             damage=OJISAN_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=OJISAN_IS_JUMPABLE,
-            id=OJISAN_ID
+            id=OJISAN_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: 左右1マスの当たり判定ロジックを後で実装
         # TODO: スコア加算(500)・減算(500)の処理を後で実装
@@ -111,7 +122,8 @@ class StrongOjisan(Enemy):
             damage=STRONG_OJISAN_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=STRONG_OJISAN_IS_JUMPABLE,
-            id=STRONG_OJISAN_ID
+            id=STRONG_OJISAN_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: 左右1マスの当たり判定ロジックを後で実装
         # TODO: スコア加算(1000)・減算(1000)の処理を後で実装
@@ -125,7 +137,8 @@ class SmartphoneUser(Enemy):
             damage=SMARTPHONE_USER_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=SMARTPHONE_USER_IS_JUMPABLE,
-            id=SMARTPHONE_USER_ID
+            id=SMARTPHONE_USER_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: スコア加算(300)・減算(300)の処理を後で実装
 
@@ -138,7 +151,8 @@ class FurocanKaiwai(Enemy):
             damage=FUROCAN_KAIWAI_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=FUROCAN_KAIWAI_IS_JUMPABLE,
-            id=FUROCAN_KAIWAI_ID
+            id=FUROCAN_KAIWAI_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: 左右2マスの当たり判定およびダメージ分岐（本人20、左右5）のロジックを後で実装
         # TODO: スコア加算(1000)・減算(1000)の処理を後で実装
@@ -152,7 +166,8 @@ class CarryCasePerson(Enemy):
             damage=CARRY_CASE_PERSON_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=CARRY_CASE_PERSON_IS_JUMPABLE,
-            id=CARRY_CASE_PERSON_ID
+            id=CARRY_CASE_PERSON_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: 2マス分の当たり判定ロジックを後で実装
         # TODO: スコア加算(0)・減算(500)の処理を後で実装
@@ -166,7 +181,8 @@ class YanchaGroup(Enemy):
             damage=YANCHA_GROUP_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=YANCHA_GROUP_IS_JUMPABLE,
-            id=YANCHA_GROUP_ID
+            id=YANCHA_GROUP_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: 横4マス分の当たり判定ロジックを後で実装
         # TODO: スコア加算(1000)・減算(1000)の処理を後で実装
@@ -179,7 +195,8 @@ class Civilian(Enemy):
             damage=CIVILIAN_DAMAGE,
             image_path=ENEMY_IMAGE_PATH,
             is_jumpable=CIVILIAN_IS_JUMPABLE,
-            id=CIVILIAN_ID
+            id=CIVILIAN_ID,
+            hit_image=ENEMY_IMAGE_PATH
         )
         # TODO: 攻撃不可（判定・ダメージロジック）を後で実装
         # TODO: スコア加算(0)・減算(500)の処理を後で実装

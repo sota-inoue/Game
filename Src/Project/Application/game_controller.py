@@ -23,23 +23,22 @@ class Controller:
         pygame.init()
         
         self._display = DisplayManager(mode)
-        GAME_SCREEN_WIDTH = self._display.get_width()
-        GAME_SCREEN_HEIGHT = self._display.get_height()
 
         self.input = Input(mode)
-        self.system = System(GAME_SCREEN_WIDTH, GAME_SCREEN_HEIGHT)
-        self.state = State(GAME_SCREEN_WIDTH)
+        self.system = System()
+        self.state = State()
 
         #self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
+        self._is_middle_draw = False
 
     def command_update(self):
         # 入力状態を更新する
         self.input.command_update()
 
         # 5カウントごとに入力結果をゲーム内部へ反映する
-        if self.count % 5 == 0:
+        if self.count % 4 == 0:
 
             # ボタンが押された場合は効果音を再生する
             if self.input.get_is_click():
@@ -78,7 +77,6 @@ class Controller:
                 self.state.set_game_command(Command.NONE)
                 self.state.stage_reset()
                 player = self.state.get_player_data()
-                self.system.player_locate_update(player)
             # タイトル画面へ遷移した場合
             elif new_game_state == GamePhase.TITLE:
                 self.state.title_reset()
@@ -91,17 +89,21 @@ class Controller:
         stage = self.state.get_stage_number()
 
         # 敵オブジェクトとお札の当たり判定の処理を行う
-        if self.count % 5 == 3:
-            self.system.object_hit_check(objects)
+        # if self.count % 5 == 3:
+        #     self.system.object_hit_check(objects)
 
-        # 5カウントごとにゲーム内部の主要な更新処理を行う
-        if self.count == 0 or self.count % 5 == 0:
+        # 4カウントごとにゲーム内部の主要な更新処理を行う
+        if self.count == 0 or self.count % 4 == 0:
             # マップを更新し、ステージクリア条件を判定する
             is_gameclear = self.system.map_update(self.count, objects, stage)
             self.state.set_is_gameclear(is_gameclear)
 
+            # マップ更新直後は通常レーンを描画する
+            self._is_middle_draw = False
+
             # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
-            self.system.player_position_update(command, player)
+            self.system.player_move_state_update(command, player)
+
 
             # プレイヤーとステージオブジェクトの当たり判定を行う
             self.system.player_hit_check(self.count, player, objects)
@@ -112,17 +114,18 @@ class Controller:
             self.state.set_is_gameover(is_gameover)
 
             # 攻撃入力があった場合は攻撃データを生成する
-            if command == Command.ATTACK:
-                attack = self.system.player_attack(player, objects)
-                self.state.set_attack_data(attack)
+            # if command == Command.ATTACK:
+            #     attack = self.system.player_attack(player, objects)
+            #     self.state.set_attack_data(attack)
 
         # プレイヤーの描画座標を毎カウント更新する
-        self.system.player_locate_update(player)
+        self.system.player_move(player)
+        self.system.player_position_update(player)
 
 
     def system_update(self):
         # 5カウントごとにゲーム全体の進行状態を更新する
-        if self.count % 5 == 0:
+        if self.count % 4 == 0:
             self.progress_update()
 
         # 進行状態更新後に現在のゲーム状態を取得する
@@ -155,12 +158,19 @@ class Controller:
             self._display.draw_stage()
 
             # ステージ内の描画に必要なデータを取得する
-            map_data = self.state.get_draw_data()
-            player_data = self.state.get_player_draw_data()
-            attack_data = self.state.get_attack_draw_data()
+            map_data = self.state.get_objects_data()
+            player_data = self.state.get_player_data()
+            # attack_data = self.state.get_attack_draw_data()
 
-            # プレイヤー、攻撃、ステージオブジェクトを描画する
-            self._display.draw_stage_object(player_data, attack_data, map_data)
+
+            if self.count % 4 == 2:
+                self._is_middle_draw = True
+
+            if not self._is_middle_draw:
+                self._display.draw_stage_object(player_data, map_data)
+            else:
+                self._display.draw_stage_middle_object(player_data, map_data)
+
 
             # 切迫度などのUIを描画する
             urgency_level = self.state.get_urgency_level()

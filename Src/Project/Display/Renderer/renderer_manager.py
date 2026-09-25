@@ -6,16 +6,23 @@ from Display.Renderer.ui_renderer import UIRenderer
 
 from Display.Renderer.image_manager import ImageManager
 
+from Display.Layout.layout_manager import Layout
+
 from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 
+
 class RendererManager:
-    def __init__(self,DISPLAY_WIDTH,DISPLAY_HEIGHT,TOUCH_WIDTH,TOUCH_HEIGHT):
+    def __init__(self, DISPLAY_WIDTH, DISPLAY_HEIGHT, TOUCH_WIDTH, TOUCH_HEIGHT):
         self._image = ImageManager()
         self._game_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)
         self._touch_surface = pygame.Surface((TOUCH_WIDTH, TOUCH_HEIGHT), depth=16)
 
-        self._object = StageObjectDraw(self._game_surface, self._image)
+
+        self._layout = Layout(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+
+        self._object = StageObjectDraw(self._game_surface, self._image, self._layout)
+
         self._ui = UIRenderer(self._game_surface, self._image)
 
         self._game = GameDisplay(self._game_surface, self._image)
@@ -50,8 +57,12 @@ class RendererManager:
 
 
 
-    def draw_stage_object(self, player_data, attack_date,map_data):
-        self._object.draw(player_data, attack_date, map_data)
+    def draw_stage_object(self, player_data, map_data):
+        self._object.draw(player_data, map_data)
+
+    def draw_stage_middle_object(self, player_data, map_data):
+        self._object.middle_draw( player_data, map_data)
+
 
     def draw_urgency_level(self, hp):
         self._ui.health_draw(hp)

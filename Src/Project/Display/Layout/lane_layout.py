@@ -57,27 +57,29 @@ class LaneLayout:
 
     def get_enemy_layout(self, x: int):
         # 指定された横マス番号に配置する敵の左上座標と描画サイズを返す
-        return (
-            self._enemy_x[x],
-            self._enemy_y,
-            self._enemy_width,
-            self._enemy_height
-        )
+        return {
+            "x": self._enemy_x[x],
+            "y": self._enemy_y,
+            "width": self._enemy_width,
+            "height": self._enemy_height
+        }
+
 
     def get_obstacle_layout(self, x: int):
         # 指定された横マス番号に配置する障害物の左上座標と描画サイズを返す
-        return (
-            self._obstacle_x[x],
-            self._obstacle_y,
-            self._obstacle_width,
-            self._obstacle_height
-        )
+        return {
+            "x": self._obstacle_x[x],
+            "y": self._obstacle_y,
+            "width": self._obstacle_width,
+            "height": self._obstacle_height
+        }
+
 
     def get_attack_layout(self, x: int):
         # 指定された横マス番号に配置する攻撃物の左上座標と描画サイズを返す
-        return (
-            self._attack_x[x],
-            self._attack_y,
-            self._attack_width,
-            self._attack_height
-        )
+        return {
+            "x": self._attack_x[x],
+            "y": self._attack_y,
+            "width": self._attack_width,
+            "height": self._attack_height
+        }

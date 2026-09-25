@@ -33,7 +33,7 @@ class Input:
         return command
 
     def command_update(self) -> None:
-        self.debug_log()
+        # self.debug_log()
         # 入力座標を取得する
         if self.mode:
             x, y = device_input(self.touch)

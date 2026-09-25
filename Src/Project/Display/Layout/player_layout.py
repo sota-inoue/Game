@@ -29,15 +29,27 @@ class PlayerLayout:
 
         # 左端から右端までのプレイヤーの描画X座標
         self.player_x = [
-            position_x[0], 
-            position_x[0] + player_speed_x, position_x[0] + player_speed_x * 2, position_x[0] + player_speed_x * 3,
-            position_x[1], 
-            position_x[1] + player_speed_x, position_x[1] + player_speed_x * 2, position_x[1] + player_speed_x * 3,
-            position_x[2], 
-            position_x[2] + player_speed_x, position_x[2] + player_speed_x * 2, position_x[2] + player_speed_x * 3,
-            position_x[3], 
-            position_x[3] + player_speed_x, position_x[3] + player_speed_x * 2, position_x[3] + player_speed_x * 3,
-            position_x[4]
+            position_x[0],                                                    # 0
+            position_x[0] + player_speed_x,                                  # 1
+            position_x[0] + player_speed_x * 2,                              # 2
+            position_x[0] + player_speed_x * 3,                              # 3
+
+            position_x[1],                                                    # 4
+            position_x[1] + player_speed_x,                                  # 5
+            position_x[1] + player_speed_x * 2,                              # 6
+            position_x[1] + player_speed_x * 3,                              # 7
+
+            position_x[2],                                                    # 8
+            position_x[2] + player_speed_x,                                  # 9
+            position_x[2] + player_speed_x * 2,                              # 10
+            position_x[2] + player_speed_x * 3,                              # 11
+
+            position_x[3],                                                    # 12
+            position_x[3] + player_speed_x,                                  # 13
+            position_x[3] + player_speed_x * 2,                              # 14
+            position_x[3] + player_speed_x * 3,                              # 15
+
+            position_x[4]                                                     # 16
         ]
 
         # 通常時とジャンプ最高点の左上Y座標
@@ -61,11 +73,9 @@ class PlayerLayout:
 
     def get_player_layout(self, x_index: int, y_index: int):
         # プレイヤーの左上座標と描画サイズを返す
-            return (
-                self.player_x[x_index],
-                self.player_y[y_index],
-                self._player_width,
-                self._player_height
-            )
-
-            
+        return {
+            "x": self.player_x[x_index],
+            "y": self.player_y[y_index],
+            "width": self._player_width,
+            "height": self._player_height
+        }

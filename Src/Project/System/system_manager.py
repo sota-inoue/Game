@@ -6,32 +6,32 @@ from Domain.game_flag import GameFlag, StageNumber
 
 from System.sound_system import SoundSystem
 from System.Map.map_system import Map
-from System.Player.player_position import PlayerPosition
-from System.Player.player_move import PlayerMove
+from System.Player.player_move import player_move, position_update, move_state_update
 from System.Player.player_hit_check import PlayerHitCheck
-from System.Player.player_attack import PlayerAttack
-from System.Player.attack_factory import AttackObjectFactory
+# from System.Player.player_attack import PlayerAttack
+# from System.Player.attack_factory import AttackObjectFactory
 
 from System.progress_system import ProgressSystem
 
 class System:
-    def __init__(self, width, height):
+    def __init__(self):
         self.sound = SoundSystem()
-        self._map = Map(width, height)
-        self.position = PlayerPosition()
+        self._map = Map()
         self.hit_check = PlayerHitCheck()
-        self.attack = PlayerAttack()
-        self.attack_factory = AttackObjectFactory(width, height)
-        self.move = PlayerMove(width, height)
+        # self.attack = PlayerAttack()
+        # self.attack_factory = AttackObjectFactory()
 
         self._progress = ProgressSystem()
 
 
-    def player_locate_update(self, player: Player) -> None:
-        self.move.update(player)
+    def player_move(self, player: Player) -> None:
+        player_move(player)
 
-    def player_position_update(self, cmd: Command, player: Player) -> None:
-        self.position.update(cmd, player)
+    def player_position_update(self, player: Player) -> None:
+        position_update(player)    
+
+    def player_move_state_update(self, cmd: Command, player: Player) -> None:
+        move_state_update(cmd, player)
 
     def player_hit_check(self, count: int, player: Player, objects: list[list[StageObject | None]] ) -> None:
         self.hit_check.update(count, player, objects)
@@ -39,12 +39,12 @@ class System:
     def map_update(self, count: int, objects: list[list[StageObject | None]], state: StageNumber) -> bool:
         return self._map.stage_update(objects, count, state)
 
-    def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:
-        self._map.object_hit_check(objects)
+    # def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:
+    #     self._map.object_hit_check(objects)
 
-    def player_attack(self, player: Player, objects: list[list[StageObject | None]]) -> list[StageObject | None]:
-        obj = self.attack.attack(player, objects)
-        return self.attack_factory.get_attack_object(player, obj)
+    # def player_attack(self, player: Player, objects: list[list[StageObject | None]]) -> list[StageObject | None]:
+    #     obj = self.attack.attack(player, objects)
+    #     return self.attack_factory.get_attack_object(player, obj)
     
 
     def title_update(self, command: Command, flag: GameFlag) -> bool:

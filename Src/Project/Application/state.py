@@ -8,14 +8,14 @@ from Input.command_converter import Command
 
 
 class State:
-    def __init__(self, width):
+    def __init__(self):
         self.game_command = Command.NONE
 
         self._game_flag = GameFlag()
 
         # 7レーン × 5マスのオブジェクトデータを生成する
         self._objects = [ [None for _ in range(5)] for _ in range(7)]
-        self._player = Player(width)
+        self._player = Player()
 
         self.attack_count = 0
         self._attack = [None for _ in range(5)]
@@ -81,58 +81,6 @@ class State:
     def get_urgency_level(self) -> int:
         return self._player.get_urgency_level()
 
-    def get_attack_draw_data(self) -> dict | None:
-        index = self.attack_count
-        obj = self._attack[index]
-        if obj is None:
-            return None
-        data = {
-            "x": obj.get_x(),
-            "y": obj.get_y(),
-            "width": obj.get_width(),
-            "height": obj.get_height(),
-            "image_path": obj.get_image_path()
-        }
-        self.attack_count += 1
-        # 5個目の描画データを取得した後にリセット
-        if index == 4:
-            self._attack = [None for _ in range(5)]
-            self.attack_count = 0
-        return data
-
-    def get_player_draw_data(self) -> dict:
-        return {
-            "x": self._player.get_x(),
-            "y": self._player.get_y(),
-            "width": self._player.get_width(),
-            "height": self._player.get_height(),
-            "image_path": self._player.get_image_path()
-        }
-
-    def get_draw_data(self) -> list[list[dict | None]]:
-        draw_data = []
-        i = 0
-        while i < len(self._objects):
-            lane = []
-            j = 0
-            while j < len(self._objects[i]):
-                obj = self._objects[i][j]
-
-                if obj is None:
-                    lane.append(None)
-
-                else:
-                    lane.append({
-                        "x": obj.get_x(),
-                        "y": obj.get_y(),
-                        "width": obj.get_width(),
-                        "height": obj.get_height(),
-                        "image_path": obj.get_image_path()
-                    })
-                j += 1
-            draw_data.append(lane)
-            i += 1
-        return draw_data
     
 
     # game_command
