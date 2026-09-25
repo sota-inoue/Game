@@ -1,7 +1,5 @@
 from enum import Enum, auto
 
-from Domain.stage_object import StageObject, ObjectType
-
 from asset_paths import PLAYER_IMAGE_PATH
 
 class Player_Move_State_x(Enum):
@@ -70,11 +68,10 @@ class Player_Layout_y(Enum):
 
 
 
-class Player(StageObject):
+class Player():
     def __init__(self) -> None:
-        super().__init__(object_type=ObjectType.PLAYER)
 
-        self.set_image_path(PLAYER_IMAGE_PATH)
+        self._image_path = PLAYER_IMAGE_PATH
 
         self._power: int = 1
         self._urgency_level: int = 0
@@ -100,6 +97,10 @@ class Player(StageObject):
 
         self._player_layout_x = Player_Layout_x.X3_0
         self._player_layout_y = Player_Layout_y.Y1_0
+
+
+    def get_image_path(self) -> str:
+        return self._image_path
 
 
     # power
