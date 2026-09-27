@@ -57,8 +57,8 @@ class RendererManager:
 
 
 
-    def draw_stage_object(self, player_data, map_data):
-        self._object.draw(player_data, map_data)
+    def draw_stage_object(self, player_data, map_data, attack_data):
+        self._object.draw(player_data, map_data, attack_data)
 
 
     def draw_urgency_level(self, hp):

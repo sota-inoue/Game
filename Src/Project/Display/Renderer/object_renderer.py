@@ -1,9 +1,14 @@
 import pygame
 from Display.Renderer.image_manager import ImageManager
 from Display.Layout.layout_manager import Layout
+from State.attack_data import Attack
+
+from StageObject.stage_object import Object_Position_x, Object_Position_y
 
 from State.player import Player
 from State.stage_object_data import StageObjectManager
+
+from asset_paths import OHUDA_IMAGE
 
 
 class StageObjectDraw:
@@ -13,9 +18,46 @@ class StageObjectDraw:
         self._layout = layout
         
 
-    def draw(self, player: Player, map_data: StageObjectManager) -> None:
+    def draw(self, player: Player, map_data: StageObjectManager, attack: Attack) -> None:
         self.object_draw(map_data)
+        self.attack_draw(attack)
         self.player_draw(player)
+
+
+    def attack_draw(self, attack: Attack) -> None:
+
+        # 攻撃中でない場合は描画しない
+        if not attack.get_is_attack():
+            return
+
+        # 現在の攻撃描画データを取得する
+        attack_data = attack.get_attack_data()
+
+        # 攻撃画像を取得する
+        path = attack_data["path"]
+        attack_x = attack_data["x"]
+        attack_y = attack_data["y"]
+
+        if path == None:
+            path = OHUDA_IMAGE
+            layout = self._layout.get_lane_attack_layout(attack_x, attack_y)
+        else:
+            layout = self._layout.get_middle_lane_enemy_layout(attack_x, attack_y + 1)
+
+
+        image = self._image.get_image(path)
+
+        x = layout["x"]
+        y = layout["y"]
+        width = layout["width"]
+        height = layout["height"]
+
+        # 描画サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (width, height) )
+
+        # x, yを左上座標として画像を描画する
+        self._surface.blit(image, (x, y))
+
 
     def player_draw(self, player: Player) -> None:
         layout_x = player.get_layout_x()
@@ -61,6 +103,11 @@ class StageObjectDraw:
                 if data is None:
                     cell_index += 1
                     continue
+
+                if data.get_position_x() == Object_Position_x.NONE:
+                    cell_index += 1
+                    continue
+
 
                 # ジャンプ可能なオブジェクトか取得する
                 is_jumpable = data.get_is_jumpable()

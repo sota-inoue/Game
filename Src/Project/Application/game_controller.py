@@ -109,16 +109,16 @@ class Controller:
             self.state.set_is_gameover(is_gameover)
 
             # 攻撃入力があった場合は攻撃データを生成する
-            # if command == Command.ATTACK:
-            #     attack = self.system.player_attack(player, objects)
-            #     self.state.set_attack_data(attack)
+            if command == Command.ATTACK:
+                attack = self.state.get_attack_data()
+                self.system.player_attack(player, objects, attack)
+
 
         # プレイヤーの描画座標を毎カウント更新する
         self.system.player_move(player)
         self.system.player_position_update(player)
 
         self.system.draw_is_middle_lane_update(objects)
-
 
     def system_update(self):
         # 5カウントごとにゲーム全体の進行状態を更新する
@@ -157,9 +157,9 @@ class Controller:
             # ステージ内の描画に必要なデータを取得する
             map_data = self.state.get_objects_data()
             player_data = self.state.get_player_data()
-            # attack_data = self.state.get_attack_draw_data()
+            attack_data = self.state.get_attack_data()
 
-            self._display.draw_stage_object(player_data, map_data)
+            self._display.draw_stage_object(player_data, map_data, attack_data)
 
 
             # 切迫度などのUIを描画する

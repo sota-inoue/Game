@@ -30,6 +30,9 @@ class Map:
         # 中間レーンに描画するかを設定する
         objects.set_draw_on_middle_lane(draw_pattern)
 
+        if self._count == 2:
+            objects.remove_hit_enemy_position()
+
         # 次のパターンへ進む
         self._count += 1
 
@@ -38,27 +41,40 @@ class Map:
             self._count = 0
 
 
-    def stage_update(self, objects: StageObjectManager, count: int, stage_state: StageNumber) -> bool:
+    def stage_update(
+        self,
+        objects: StageObjectManager,
+        count: int,
+        stage_state: StageNumber
+    ) -> bool:
+
         # ゲーム開始時はステージを更新しない
         if count == 0:
-            self._count = 0
             return False
 
-        # 5カウントごとの進行回数から、次に読み込むレーンの位置を求める
+        # 4カウントごとの進行回数から、
+        # 次に読み込むレーンの位置を求める
         index = (count // 4) - 1
 
         # 現在のステージに対応する次のレーンデータを取得する
         new_lane = self._get_new_lane(index, stage_state)
 
-        # 次のレーンが存在しない場合は、ステージ終了を通知する
+        # ステージデータが終了した場合
         if new_lane is None:
-            self._count = 0
-            return True
+
+            # 空レーンを追加して残っているオブジェクトを手前へ進める
+            empty_lane = [None for _ in range(5)]
+            objects.add_lane(empty_lane)
+
+            # すべてのオブジェクトがなくなったらステージ終了
+            if objects.is_empty():
+                return True
+
+            return False
 
         # 既存のオブジェクトを更新し、新しいレーンを追加する
         objects.add_lane(new_lane)
 
-        # ステージが継続していることを通知する
         return False
 
 

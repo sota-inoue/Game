@@ -1,5 +1,6 @@
 from State.player import Player
 from State.stage_object_data import StageObjectManager
+from State.attack_data import Attack
 
 from Input.command_converter import Command
 
@@ -9,8 +10,7 @@ from System.sound_system import SoundSystem
 from System.map_update import Map
 from System.Player.player_move import player_move, position_update, move_state_update
 from System.Player.player_hit_check import PlayerHitCheck
-# from System.Player.player_attack import PlayerAttack
-# from System.Player.attack_factory import AttackObjectFactory
+from System.Player.player_attack import attack
 
 from System.progress_system import ProgressSystem
 
@@ -19,8 +19,7 @@ class System:
         self.sound = SoundSystem()
         self._map = Map()
         self.hit_check = PlayerHitCheck()
-        # self.attack = PlayerAttack()
-        # self.attack_factory = AttackObjectFactory()
+
 
         self._progress = ProgressSystem()
 
@@ -43,13 +42,10 @@ class System:
     def draw_is_middle_lane_update(self, objects: StageObjectManager) -> None:
         self._map.draw_is_middle_lane_update(objects)
 
-    # def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:
-    #     self._map.object_hit_check(objects)
 
-    # def player_attack(self, player: Player, objects: list[list[StageObject | None]]) -> list[StageObject | None]:
-    #     obj = self.attack.attack(player, objects)
-    #     return self.attack_factory.get_attack_object(player, obj)
-    
+    def player_attack(self, player: Player, objects: StageObjectManager, attack_data: Attack) -> None:
+         return attack(player, objects, attack_data)
+
 
     def title_update(self, command: Command, flag: GameFlag) -> bool:
         return self._progress.title_update(command, flag)

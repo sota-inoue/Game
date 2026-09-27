@@ -1,5 +1,6 @@
 from State.player import Player
 from State.stage_object_data import StageObjectManager
+from State.attack_data import Attack
 
 from State.game_flag import (
     GameFlag, GamePhase, TitleSceneSelection, OpeningPage,
@@ -17,9 +18,7 @@ class State:
 
         self._objects = StageObjectManager()
         self._player = Player()
-
-        self.attack_count = 0
-        self._attack = [None for _ in range(5)]
+        self._attack = Attack()
 
     def title_reset(self):
         self.stage_reset()
@@ -28,9 +27,7 @@ class State:
     def stage_reset(self):
         self._objects.clear()
         self._player.reset()
-        self.attack_count = 0
-        self._attack = [None for _ in range(5)]
-
+        self._attack.reset()
 
     def get_objects_data(self):
         return self._objects
@@ -40,6 +37,9 @@ class State:
 
     def get_game_flag(self):
         return self._game_flag
+
+    def get_attack_data(self):
+        return self._attack
 
     # ==================================================
     # フラグのGetter
@@ -74,9 +74,6 @@ class State:
         self._game_flag.set_is_gameover(value)
 
 
-
-    def set_attack_data(self, data):
-        self._attack = data
 
     def get_urgency_level(self) -> int:
         return self._player.get_urgency_level()

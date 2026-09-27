@@ -32,7 +32,7 @@ from StageObject.object_parameters import(
     CIVILIAN_ID
 )
 
-from asset_paths import ENEMY_IMAGE_PATH
+from asset_paths import ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE
 
 class Enemy(StageObject):
     def __init__(self, image_path: str, id: int, size: int, is_jumpable: bool, damage: int, hp: int, hit_image: str) -> None:
@@ -62,7 +62,7 @@ class Enemy(StageObject):
     
     # _image_pathのgetterとsetter
     def get_hit_image_path(self) -> str:
-        return self._hit_image_path
+        return self._hit_image_path 
     
 
 
@@ -74,9 +74,9 @@ class Ojisan(Enemy):
             id = OJISAN_ID,
             size = 1,
             is_jumpable = OJISAN_IS_JUMPABLE,
-            damage=OJISAN_DAMAGE,
-            hp=OJISAN_HP,
-            hit_image=ENEMY_IMAGE_PATH
+            damage = OJISAN_DAMAGE,
+            hp = OJISAN_HP,
+            hit_image = OJISAN_DAMAGED_IMAGE
         )
 
 # class StrongOjisan(Enemy):
