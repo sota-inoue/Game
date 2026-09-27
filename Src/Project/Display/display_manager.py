@@ -58,8 +58,6 @@ class DisplayManager:
     def draw_stage_object(self, player_data, map_data):
         self._renderer.draw_stage_object(player_data, map_data)
 
-    def draw_stage_middle_object(self, player_data, map_data):
-        self._renderer.draw_stage_middle_object(player_data, map_data)
 
     def draw_urgency_level(self, hp):
         self._renderer.draw_urgency_level(hp)

@@ -60,9 +60,6 @@ class RendererManager:
     def draw_stage_object(self, player_data, map_data):
         self._object.draw(player_data, map_data)
 
-    def draw_stage_middle_object(self, player_data, map_data):
-        self._object.middle_draw( player_data, map_data)
-
 
     def draw_urgency_level(self, hp):
         self._ui.health_draw(hp)

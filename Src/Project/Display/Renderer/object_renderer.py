@@ -17,11 +17,6 @@ class StageObjectDraw:
         self.object_draw(map_data)
         self.player_draw(player)
 
-    def middle_draw(self, player: Player, map_data: StageObjectManager) -> None:
-        self.middle_object_draw(map_data)
-        self.player_draw(player)
-
-
     def player_draw(self, player: Player) -> None:
         layout_x = player.get_layout_x()
         layout_y = player.get_layout_y()
@@ -47,108 +42,58 @@ class StageObjectDraw:
 
     def object_draw(self, map_data: StageObjectManager) -> None:
 
-        # レーン数を取得する
-        lane_num = 7
-
-        # 1レーンあたりのマス数を取得する
-        cell_num = 5
+        # 中間レーンに描画するかを取得する
+        is_middle_draw = map_data.get_draw_on_middle_lane()
 
         # 一番奥のレーンから手前に向かって描画する
-        lane_index = lane_num - 1
+        lane_index = 6
 
         while lane_index >= 0:
-
+            
             # 左端のマスから順番に描画する
             cell_index = 0
-
-            while cell_index < cell_num:
+            while cell_index < 5:
 
                 # 現在のマスに配置されているオブジェクトを取得する
                 data = map_data.get_object(lane_index, cell_index)
 
-                # オブジェクトが存在する場合のみ描画する
-                if data is not None:
+                # オブジェクトが存在しない場合は次のマスへ進む
+                if data is None:
+                    cell_index += 1
+                    continue
 
-                    # オブジェクトの種類に応じたレイアウトを取得する
-                    if not data.get_is_jumpable():
-                        layout = self._layout.get_lane_enemy_layout(cell_index, lane_index)
+                # ジャンプ可能なオブジェクトか取得する
+                is_jumpable = data.get_is_jumpable()
+
+                # オブジェクトの種類と描画位置に応じたレイアウトを取得する
+                if is_jumpable:
+                    if is_middle_draw:
+                        layout = self._layout.get_middle_lane_obstacle_layout(cell_index, lane_index)
                     else:
                         layout = self._layout.get_lane_obstacle_layout(cell_index, lane_index)
+                else:
+                    if is_middle_draw:
+                        layout = self._layout.get_middle_lane_enemy_layout(cell_index, lane_index)
+                    else:
+                        layout = self._layout.get_lane_enemy_layout(cell_index, lane_index)
 
-                    # 描画位置と描画サイズを取得する
-                    x = layout["x"]
-                    y = layout["y"]
-                    width = layout["width"]
-                    height = layout["height"]
+                # 描画位置とサイズを取得する
+                x = layout["x"]
+                y = layout["y"]
+                width = layout["width"]
+                height = layout["height"]
 
-                    # オブジェクトの画像を取得する
-                    path = data.get_image_path()
-                    image = self._image.get_image(path)
+                # オブジェクト画像を取得する
+                image = self._image.get_image(data.get_image_path())
 
-                    # レイアウトのサイズに合わせて画像をリサイズする
-                    image = pygame.transform.scale(image, (width, height))
+                # 描画サイズに合わせて画像をリサイズする
+                image = pygame.transform.scale(image, (width, height))
 
-                    # 指定された座標に画像を描画する
-                    self._surface.blit(image, (x, y))
+                # オブジェクトを描画する
+                self._surface.blit(image, (x, y))
 
                 # 次のマスへ進む
                 cell_index += 1
 
             # 1つ手前のレーンへ進む
-            lane_index -= 1
-
-    def middle_object_draw(self, map_data: StageObjectManager) -> None:
-
-        # レーン数を取得する
-        lane_num = 7
-        # 1レーンあたりのマス数を取得する
-        cell_num = 5
-
-        # 一番奥のレーンから手前に向かって描画する
-        lane_index = lane_num - 1
-
-        # レーン0より手前にはミドルレーンが存在しないため1まで
-        while lane_index >= 1:
-
-            cell_index = 0
-
-            while cell_index < cell_num:
-
-                # 現在のマスに配置されているオブジェクトを取得する
-                data = map_data.get_object(lane_index, cell_index)
-
-                if data is not None:
-
-                    # 通常レーンから1つ手前のレーンとの間にある
-                    # ミドルレーンを使用する
-                    middle_index = lane_index - 1
-
-                    if not data.get_is_jumpable():
-                        layout = self._layout.get_middle_lane_enemy_layout(
-                            cell_index,
-                            middle_index
-                        )
-                    else:
-                        layout = self._layout.get_middle_lane_obstacle_layout(
-                            cell_index,
-                            middle_index
-                        )
-
-                    x = layout["x"]
-                    y = layout["y"]
-                    width = layout["width"]
-                    height = layout["height"]
-
-                    path = data.get_image_path()
-                    image = self._image.get_image(path)
-
-                    image = pygame.transform.scale(
-                        image,
-                        (width, height)
-                    )
-
-                    self._surface.blit(image, (x, y))
-
-                cell_index += 1
-
             lane_index -= 1

@@ -19,10 +19,29 @@ class Map:
         self._stage3_count = len(self._stage3_data)
         self._converter = ObjectConverter()
 
+        self._draw_pattern = self._draw_pattern = [ False, False, True, True ]
+        self._count = 0
+
+    def draw_is_middle_lane_update(self, objects: StageObjectManager) -> None:
+
+        # 現在の描画パターンを取得する
+        draw_pattern = self._draw_pattern[self._count]
+
+        # 中間レーンに描画するかを設定する
+        objects.set_draw_on_middle_lane(draw_pattern)
+
+        # 次のパターンへ進む
+        self._count += 1
+
+        # 最後まで進んだら先頭に戻す
+        if self._count >= len(self._draw_pattern):
+            self._count = 0
+
 
     def stage_update(self, objects: StageObjectManager, count: int, stage_state: StageNumber) -> bool:
         # ゲーム開始時はステージを更新しない
         if count == 0:
+            self._count = 0
             return False
 
         # 5カウントごとの進行回数から、次に読み込むレーンの位置を求める
@@ -33,6 +52,7 @@ class Map:
 
         # 次のレーンが存在しない場合は、ステージ終了を通知する
         if new_lane is None:
+            self._count = 0
             return True
 
         # 既存のオブジェクトを更新し、新しいレーンを追加する

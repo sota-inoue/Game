@@ -31,7 +31,6 @@ class Controller:
         #self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
-        self._is_middle_draw = False
 
     def command_update(self):
         # 入力状態を更新する
@@ -98,12 +97,8 @@ class Controller:
             is_gameclear = self.system.map_update(self.count, objects, stage)
             self.state.set_is_gameclear(is_gameclear)
 
-            # マップ更新直後は通常レーンを描画する
-            self._is_middle_draw = False
-
             # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
             self.system.player_move_state_update(command, player)
-
 
             # プレイヤーとステージオブジェクトの当たり判定を行う
             self.system.player_hit_check(self.count, player, objects)
@@ -121,6 +116,8 @@ class Controller:
         # プレイヤーの描画座標を毎カウント更新する
         self.system.player_move(player)
         self.system.player_position_update(player)
+
+        self.system.draw_is_middle_lane_update(objects)
 
 
     def system_update(self):
@@ -162,14 +159,7 @@ class Controller:
             player_data = self.state.get_player_data()
             # attack_data = self.state.get_attack_draw_data()
 
-
-            if self.count % 4 == 2:
-                self._is_middle_draw = True
-
-            if not self._is_middle_draw:
-                self._display.draw_stage_object(player_data, map_data)
-            else:
-                self._display.draw_stage_middle_object(player_data, map_data)
+            self._display.draw_stage_object(player_data, map_data)
 
 
             # 切迫度などのUIを描画する

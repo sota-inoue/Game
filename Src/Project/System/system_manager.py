@@ -40,6 +40,9 @@ class System:
     def map_update(self, count: int, objects: StageObjectManager, state: StageNumber) -> bool:
         return self._map.stage_update(objects, count, state)
 
+    def draw_is_middle_lane_update(self, objects: StageObjectManager) -> None:
+        self._map.draw_is_middle_lane_update(objects)
+
     # def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:
     #     self._map.object_hit_check(objects)
 

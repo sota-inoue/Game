@@ -42,6 +42,7 @@ class LaneGeometry:
 
         # 各主要レーンの中間に配置するレーンのY座標
         middle_lane_y = [
+            self._bottom_lane_y + (lane_y_range * lane_gap_rates[0] // (cumulative_rates[5]*2)),
             self._bottom_lane_y - lane_y_range * (lane_gap_rates[0] // 2) // cumulative_rates[5],
             self._bottom_lane_y - lane_y_range * (cumulative_rates[0] + lane_gap_rates[1] // 2) // cumulative_rates[5],
             self._bottom_lane_y - lane_y_range * (cumulative_rates[1] + lane_gap_rates[2] // 2) // cumulative_rates[5],
@@ -52,25 +53,26 @@ class LaneGeometry:
 
         # 手前から奥までの全13レーンのY座標
         self._lane_y = [
-            self._bottom_lane_y,
             middle_lane_y[0],
-            inner_lane_y[0],
+            self._bottom_lane_y,
             middle_lane_y[1],
-            inner_lane_y[1],
+            inner_lane_y[0],
             middle_lane_y[2],
-            inner_lane_y[2],
+            inner_lane_y[1],
             middle_lane_y[3],
-            inner_lane_y[3],
+            inner_lane_y[2],
             middle_lane_y[4],
-            inner_lane_y[4],
+            inner_lane_y[3],
             middle_lane_y[5],
+            inner_lane_y[4],
+            middle_lane_y[6],
             self._top_lane_y
         ]
 
         # 各レーンの幅
         self._lane_width = [
+            width,
             self._bottom_lane_width,
-            self._get_lane_width(self._lane_y[1]),
             self._get_lane_width(self._lane_y[2]),
             self._get_lane_width(self._lane_y[3]),
             self._get_lane_width(self._lane_y[4]),
@@ -81,13 +83,14 @@ class LaneGeometry:
             self._get_lane_width(self._lane_y[9]),
             self._get_lane_width(self._lane_y[10]),
             self._get_lane_width(self._lane_y[11]),
+            self._get_lane_width(self._lane_y[12]),
             self._top_lane_width
         ]
 
         # 各レーンの左端X座標
         self._lane_x = [
+            0,
             self._bottom_lane_left_x,
-            (width - self._lane_width[1]) // 2,
             (width - self._lane_width[2]) // 2,
             (width - self._lane_width[3]) // 2,
             (width - self._lane_width[4]) // 2,
@@ -98,6 +101,7 @@ class LaneGeometry:
             (width - self._lane_width[9]) // 2,
             (width - self._lane_width[10]) // 2,
             (width - self._lane_width[11]) // 2,
+            (width - self._lane_width[12]) // 2,
             self._top_lane_left_x
         ]
 
