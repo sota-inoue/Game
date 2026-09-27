@@ -2,7 +2,7 @@ import pygame
 from Display.Renderer.image_manager import ImageManager
 from Display.Layout.layout_manager import Layout
 
-from Domain.player import Player
+from State.player import Player
 from Domain.stage_object import StageObject
 
 

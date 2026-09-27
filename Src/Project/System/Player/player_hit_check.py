@@ -1,5 +1,5 @@
 from Domain.stage_object import StageObject
-from Domain.player import Player, Player_Position_y
+from State.player import Player, Player_Position_y
 
 class PlayerHitCheck:
     def __init__(self):

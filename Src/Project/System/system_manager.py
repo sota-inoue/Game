@@ -1,4 +1,4 @@
-from Domain.player import Player
+from State.player import Player
 from Domain.stage_object import StageObject
 from Input.command_converter import Command
 
