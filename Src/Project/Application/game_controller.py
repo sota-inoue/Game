@@ -8,6 +8,7 @@ from Input.input_manager import Input
 # ゲーム内の状態を管理するクラス
 from State.state_manager import State
 from State.game_flag import GamePhase
+from State.player import Player_Image_State
 
 # ゲームの進行や内部処理を管理するクラス
 from System.system_manager import System
@@ -87,9 +88,6 @@ class Controller:
         objects = self.state.get_objects_data()
         stage = self.state.get_stage_number()
 
-        # 敵オブジェクトとお札の当たり判定の処理を行う
-        # if self.count % 5 == 3:
-        #     self.system.object_hit_check(objects)
 
         # 4カウントごとにゲーム内部の主要な更新処理を行う
         if self.count == 0 or self.count % 4 == 0:
@@ -112,13 +110,15 @@ class Controller:
             if command == Command.ATTACK:
                 attack = self.state.get_attack_data()
                 self.system.player_attack(player, objects, attack)
+                if player.get_state() != Player_Image_State.DAMAGE:
+                    player.set_state(Player_Image_State.THROW)
 
 
         # プレイヤーの描画座標を毎カウント更新する
         self.system.player_move(player)
         self.system.player_position_update(player)
 
-        self.system.draw_is_middle_lane_update(objects)
+        self.system.draw_is_middle_lane_update(objects, player)
 
     def system_update(self):
         # 5カウントごとにゲーム全体の進行状態を更新する

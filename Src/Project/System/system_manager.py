@@ -39,8 +39,8 @@ class System:
     def map_update(self, count: int, objects: StageObjectManager, state: StageNumber) -> bool:
         return self._map.stage_update(objects, count, state)
 
-    def draw_is_middle_lane_update(self, objects: StageObjectManager) -> None:
-        self._map.draw_is_middle_lane_update(objects)
+    def draw_is_middle_lane_update(self, objects: StageObjectManager, player: Player) -> None:
+        self._map.draw_is_middle_lane_update(objects, player)
 
 
     def player_attack(self, player: Player, objects: StageObjectManager, attack_data: Attack) -> None:

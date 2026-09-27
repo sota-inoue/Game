@@ -19,9 +19,8 @@ class StageObjectDraw:
         
 
     def draw(self, player: Player, map_data: StageObjectManager, attack: Attack) -> None:
-        self.object_draw(map_data)
+        self.object_draw(map_data, player)
         self.attack_draw(attack)
-        self.player_draw(player)
 
 
     def attack_draw(self, attack: Attack) -> None:
@@ -82,7 +81,7 @@ class StageObjectDraw:
         self._surface.blit(image, (x, y))
 
 
-    def object_draw(self, map_data: StageObjectManager) -> None:
+    def object_draw(self, map_data: StageObjectManager, player: Player) -> None:
 
         # 中間レーンに描画するかを取得する
         is_middle_draw = map_data.get_draw_on_middle_lane()
@@ -141,6 +140,9 @@ class StageObjectDraw:
 
                 # 次のマスへ進む
                 cell_index += 1
+
+            if lane_index == 1:
+                self.player_draw(player)
 
             # 1つ手前のレーンへ進む
             lane_index -= 1

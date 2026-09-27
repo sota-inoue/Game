@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from asset_paths import PLAYER_IMAGE_PATH
+from asset_paths import PLAYER_IMAGE_PATH, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH
 
 class Player_Move_State_x(Enum):
     STAY = auto()
@@ -11,6 +11,11 @@ class Player_Move_State_y(Enum):
     STAY = auto()
     JUMP = auto()
     DOWN = auto()
+
+class Player_Image_State(Enum):
+    NORMAL = auto()
+    DAMAGE = auto()
+    THROW = auto()
 
 class Player_Position_x(Enum):
     X1 = 0
@@ -56,7 +61,13 @@ class Player_Layout_y(Enum):
 class Player():
     def __init__(self) -> None:
 
-        self._image_path = PLAYER_IMAGE_PATH
+        self._normal_image_path = PLAYER_IMAGE_PATH
+        self._damage_image_path = PLAYER_DAMAGE_IMAGE_PATH
+        self._throw_image_path = PLAYER_THROW_IMAGE_PATH
+
+        self._state : Player_Image_State = Player_Image_State.NORMAL
+
+
 
         self._power: int = 1
         self._urgency_level: int = 0
@@ -83,9 +94,27 @@ class Player():
         self._player_layout_x = Player_Layout_x.X3_0
         self._player_layout_y = Player_Layout_y.Y1_0
 
+        self._state : Player_Image_State = Player_Image_State.NORMAL
+
 
     def get_image_path(self) -> str:
-        return self._image_path
+
+        if self._state == Player_Image_State.NORMAL:
+            return self._normal_image_path
+
+        elif self._state == Player_Image_State.DAMAGE:
+            return self._damage_image_path
+
+        elif self._state == Player_Image_State.THROW:
+            return self._throw_image_path
+
+        return self._normal_image_path
+
+    def get_state(self) -> Player_Image_State:
+        return self._state
+
+    def set_state(self, state: Player_Image_State) -> None:
+        self._state = state
 
 
     # power

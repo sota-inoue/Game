@@ -16,7 +16,7 @@ from asset_paths import (
     GAMECLEAR_SELECT_NEXT,GAMECLEAR_SELECT_TITLE,
     GAMEOVER_SELECT_CONTINUE,GAMEOVER_SELECT_TITLE,
     OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
-    TOUCH_SCREEN
+    TOUCH_SCREEN, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH
     )
 
 
@@ -63,6 +63,9 @@ class ImageManager:
         self._load(OPNING_PAGE_2)
         self._load(OPNING_PAGE_3)
         self._load(TOUCH_SCREEN)
+
+        self._load(PLAYER_DAMAGE_IMAGE_PATH)
+        self._load(PLAYER_THROW_IMAGE_PATH)
 
     def _load(self, path: Path | None) -> None:
 

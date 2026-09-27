@@ -8,8 +8,21 @@ STAGE1_PATH = BASE_DIR / "Map" / "stage1.txt"
 STAGE2_PATH = BASE_DIR / "Map" / "stage2.txt"
 STAGE3_PATH = BASE_DIR / "Map" / "stage3.txt"
 
+DECIDE_BUTTON_SOUND_PATH = BASE_DIR / "Sound" / "Se" / "decide_button.mp3"
+BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Morning.mp3"
+
+
+OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
 PLAYER_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Player.png"
+PLAYER_DAMAGE_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Damaged.png"
+PLAYER_THROW_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Attack.png"
+
+
 ENEMY_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
+OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"
+
+
+
 OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
 
 STAGE1_BACK_GRAUND = BASE_DIR / "Image" / "Backgrounds" / "stage1_bg.jpg"
@@ -50,9 +63,3 @@ URGENCY_FRAME19 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage19.JPG"
 URGENCY_FRAME20 = BASE_DIR / "Image" / "UI" / "Urgency_Frame" / "hpgage20.JPG"
 
 TOUCH_SCREEN = BASE_DIR / "Image" / "UI" / "botanpause.JPG"
-
-OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
-OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"
-
-DECIDE_BUTTON_SOUND_PATH = BASE_DIR / "Sound" / "Se" / "decide_button.mp3"
-BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Morning.mp3"

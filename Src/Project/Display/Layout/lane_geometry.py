@@ -7,7 +7,7 @@ class LaneGeometry:
         # 一番手前のレーン
         self._bottom_lane_width = width * 9 // 10
         self._bottom_lane_left_x = (width - self._bottom_lane_width) // 2
-        self._bottom_lane_y = height * 14 // 15
+        self._bottom_lane_y = height * 13 // 15
 
         # 一番奥のレーン
         self._top_lane_width = width * 2 // 10
@@ -42,7 +42,7 @@ class LaneGeometry:
 
         # 各主要レーンの中間に配置するレーンのY座標
         middle_lane_y = [
-            self._bottom_lane_y + (lane_y_range * lane_gap_rates[0] // (cumulative_rates[5]*2)),
+            height + lane_y_range * (lane_gap_rates[0] // 2) // cumulative_rates[5],
             self._bottom_lane_y - lane_y_range * (lane_gap_rates[0] // 2) // cumulative_rates[5],
             self._bottom_lane_y - lane_y_range * (cumulative_rates[0] + lane_gap_rates[1] // 2) // cumulative_rates[5],
             self._bottom_lane_y - lane_y_range * (cumulative_rates[1] + lane_gap_rates[2] // 2) // cumulative_rates[5],
