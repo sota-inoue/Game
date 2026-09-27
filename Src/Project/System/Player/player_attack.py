@@ -1,4 +1,4 @@
-from Domain.stage_object import StageObject, ObjectType
+from StageObject.stage_object import StageObject, ObjectType
 from State.player import Player
 import copy
 

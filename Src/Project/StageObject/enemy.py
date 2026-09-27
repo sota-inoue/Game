@@ -1,7 +1,7 @@
 #StageObject/enemy.py
-from Domain.stage_object import StageObject, ObjectType
+from StageObject.stage_object import StageObject, ObjectType
 
-from Domain.object_parameters import(
+from StageObject.object_parameters import(
     OJISAN_HP,
     OJISAN_DAMAGE,
     OJISAN_IS_JUMPABLE,

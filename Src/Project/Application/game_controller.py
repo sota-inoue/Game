@@ -7,7 +7,7 @@ from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
 from State.state_manager import State
-from Domain.game_flag import GamePhase
+from State.game_flag import GamePhase
 
 # ゲームの進行や内部処理を管理するクラス
 from System.system_manager import System

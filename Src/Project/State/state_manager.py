@@ -1,5 +1,7 @@
 from State.player import Player
-from Domain.game_flag import (
+from State.stage_object_data import StageObjectManager
+
+from State.game_flag import (
     GameFlag, GamePhase, TitleSceneSelection, OpeningPage,
     GameOverSceneSelection, GameClearSceneSelection, StageNumber
 )
@@ -13,8 +15,7 @@ class State:
 
         self._game_flag = GameFlag()
 
-        # 7レーン × 5マスのオブジェクトデータを生成する
-        self._objects = [ [None for _ in range(5)] for _ in range(7)]
+        self._objects = StageObjectManager()
         self._player = Player()
 
         self.attack_count = 0
@@ -25,7 +26,7 @@ class State:
         self._game_flag.reset()
 
     def stage_reset(self):
-        self._objects = [ [None for _ in range(5)] for _ in range(7)]
+        self._objects.clear()
         self._player.reset()
         self.attack_count = 0
         self._attack = [None for _ in range(5)]

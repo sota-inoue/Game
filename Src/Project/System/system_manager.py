@@ -1,11 +1,12 @@
 from State.player import Player
-from Domain.stage_object import StageObject
+from State.stage_object_data import StageObjectManager
+
 from Input.command_converter import Command
 
-from Domain.game_flag import GameFlag, StageNumber
+from State.game_flag import GameFlag, StageNumber
 
 from System.sound_system import SoundSystem
-from System.Map.map_system import Map
+from System.map_update import Map
 from System.Player.player_move import player_move, position_update, move_state_update
 from System.Player.player_hit_check import PlayerHitCheck
 # from System.Player.player_attack import PlayerAttack
@@ -33,10 +34,10 @@ class System:
     def player_move_state_update(self, cmd: Command, player: Player) -> None:
         move_state_update(cmd, player)
 
-    def player_hit_check(self, count: int, player: Player, objects: list[list[StageObject | None]] ) -> None:
+    def player_hit_check(self, count: int, player: Player, objects: StageObjectManager) -> None:
         self.hit_check.update(count, player, objects)
 
-    def map_update(self, count: int, objects: list[list[StageObject | None]], state: StageNumber) -> bool:
+    def map_update(self, count: int, objects: StageObjectManager, state: StageNumber) -> bool:
         return self._map.stage_update(objects, count, state)
 
     # def object_hit_check(self,  objects: list[list[StageObject | None]] ) -> None:

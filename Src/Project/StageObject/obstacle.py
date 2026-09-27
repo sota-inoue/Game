@@ -1,7 +1,7 @@
 #StageObject/obstacle.py
-from Domain.stage_object import StageObject, ObjectType
+from StageObject.stage_object import StageObject, ObjectType
 
-from Domain.object_parameters import(
+from StageObject.object_parameters import(
     BANANA_DAMAGE,
     BANANA_IS_JUMPABLE,
     BANANA_ID,

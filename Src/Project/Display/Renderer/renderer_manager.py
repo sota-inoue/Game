@@ -8,7 +8,7 @@ from Display.Renderer.image_manager import ImageManager
 
 from Display.Layout.layout_manager import Layout
 
-from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
+from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 
 

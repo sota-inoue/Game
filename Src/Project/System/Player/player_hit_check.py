@@ -1,21 +1,22 @@
-from Domain.stage_object import StageObject
+from State.stage_object_data import StageObjectManager
 from State.player import Player, Player_Position_y
 
 class PlayerHitCheck:
     def __init__(self):
         self.last_count: int = 0
 
-    def update(self, count: int, player: Player, stage_data: list[list[StageObject | None]]) -> None:
+    def update(self, count: int, player: Player, stage_data: StageObjectManager) -> None:
 
          # プレイヤーの現在のマス位置を取得する
         player_position_x = player.get_position_x()
         player_position_y = player.get_position_y()
 
         # 一番手前のレーンを取得する
-        front_lane = stage_data[0]
+        lane_num = 0
+        cell_num = player_position_x.value
 
         # プレイヤーと同じ位置のオブジェクトを取得する
-        obj = front_lane[player_position_x.value]
+        obj = stage_data.get_object(lane_num, cell_num)
 
         # 現在の切迫度を取得する
         urgency_level = player.get_urgency_level()

@@ -1,4 +1,4 @@
-from Domain.game_flag import (
+from State.game_flag import (
     GameFlag,
     GamePhase,
     TitleSceneSelection,

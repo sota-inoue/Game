@@ -3,7 +3,7 @@ from Display.Renderer.image_manager import ImageManager
 from Display.Layout.layout_manager import Layout
 
 from State.player import Player
-from Domain.stage_object import StageObject
+from State.stage_object_data import StageObjectManager
 
 
 class StageObjectDraw:
@@ -13,16 +13,15 @@ class StageObjectDraw:
         self._layout = layout
         
 
-    def draw(self, player: Player, map_data) -> None:
+    def draw(self, player: Player, map_data: StageObjectManager) -> None:
         self.object_draw(map_data)
         self.player_draw(player)
 
-    def middle_draw(self, player: Player, map_data) -> None:
+    def middle_draw(self, player: Player, map_data: StageObjectManager) -> None:
         self.middle_object_draw(map_data)
         self.player_draw(player)
 
 
-    
     def player_draw(self, player: Player) -> None:
         layout_x = player.get_layout_x()
         layout_y = player.get_layout_y()
@@ -46,13 +45,13 @@ class StageObjectDraw:
         self._surface.blit(image, (x, y))
 
 
-    def object_draw(self, map_data: list[list[StageObject | None]]) -> None:
+    def object_draw(self, map_data: StageObjectManager) -> None:
 
         # レーン数を取得する
-        lane_num = len(map_data)
+        lane_num = 7
 
         # 1レーンあたりのマス数を取得する
-        cell_num = len(map_data[0])
+        cell_num = 5
 
         # 一番奥のレーンから手前に向かって描画する
         lane_index = lane_num - 1
@@ -65,7 +64,7 @@ class StageObjectDraw:
             while cell_index < cell_num:
 
                 # 現在のマスに配置されているオブジェクトを取得する
-                data = map_data[lane_index][cell_index]
+                data = map_data.get_object(lane_index, cell_index)
 
                 # オブジェクトが存在する場合のみ描画する
                 if data is not None:
@@ -98,13 +97,12 @@ class StageObjectDraw:
             # 1つ手前のレーンへ進む
             lane_index -= 1
 
-    def middle_object_draw(
-        self,
-        map_data: list[list[StageObject | None]]
-    ) -> None:
+    def middle_object_draw(self, map_data: StageObjectManager) -> None:
 
-        lane_num = len(map_data)
-        cell_num = len(map_data[0])
+        # レーン数を取得する
+        lane_num = 7
+        # 1レーンあたりのマス数を取得する
+        cell_num = 5
 
         # 一番奥のレーンから手前に向かって描画する
         lane_index = lane_num - 1
@@ -116,7 +114,8 @@ class StageObjectDraw:
 
             while cell_index < cell_num:
 
-                data = map_data[lane_index][cell_index]
+                # 現在のマスに配置されているオブジェクトを取得する
+                data = map_data.get_object(lane_index, cell_index)
 
                 if data is not None:
 

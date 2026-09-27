@@ -3,7 +3,7 @@ from Display.Renderer.renderer_manager import RendererManager
 
 from Display.Output.output_manager import OutputManager
 
-from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
+from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 class DisplayManager:
     def __init__(self, mode: bool):

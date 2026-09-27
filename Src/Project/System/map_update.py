@@ -1,11 +1,12 @@
 
 from System.file_load_system import load_text
 
-from System.Map.object_converter import ObjectConverter
+from StageObject.object_converter import ObjectConverter
 
-from Domain.stage_object import StageObject, Object_Position_x, Object_Position_y
+from StageObject.stage_object import StageObject
+from State.stage_object_data import StageObjectManager
 
-from Domain.game_flag import StageNumber
+from State.game_flag import StageNumber
 from asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
 
 class Map:
@@ -19,7 +20,7 @@ class Map:
         self._converter = ObjectConverter()
 
 
-    def stage_update(self, objects: list[list[StageObject | None]], count: int, stage_state: StageNumber) -> bool:
+    def stage_update(self, objects: StageObjectManager, count: int, stage_state: StageNumber) -> bool:
         # ゲーム開始時はステージを更新しない
         if count == 0:
             return False
@@ -35,7 +36,7 @@ class Map:
             return True
 
         # 既存のオブジェクトを更新し、新しいレーンを追加する
-        self._lane_update(objects, new_lane)
+        objects.add_lane(new_lane)
 
         # ステージが継続していることを通知する
         return False
@@ -59,26 +60,3 @@ class Map:
             return None
         # 数値データをオブジェクトへ変換する
         return self._converter.convert(stage_data[index])
-
-
-    def _lane_update(self, objects: list[list[StageObject | None]], new_lane: list[StageObject | None]) -> None:
-        # レーンを1つ手前へ移動する
-        i = 0
-        while i < len(objects) - 1:
-            objects[i] = objects[i + 1].copy()
-            i += 1
-
-        # 最後のレーンに新しいレーンを設定する
-        objects[-1] = new_lane
-
-        # 配列の位置に合わせて、 各オブジェクトのX・Y位置情報を更新する
-        y = 0
-        while y < len(objects):
-            x = 0
-            while x < len(objects[y]):
-                obj = objects[y][x]
-                if obj is not None:
-                    obj.set_position_x(Object_Position_x(x))
-                    obj.set_position_y(Object_Position_y(y))
-                x += 1
-            y += 1
