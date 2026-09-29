@@ -3,7 +3,7 @@ from System.file_load_system import load_text
 
 from StageObject.object_converter import ObjectConverter
 
-from StageObject.stage_object import StageObject, Object_Position_x, Object_Position_y
+from StageObject.stage_object import StageObject
 from State.stage_object_data import StageObjectManager
 from State.player import Player, Player_Image_State
 
@@ -41,10 +41,8 @@ class Map:
                 obj = objects.get_object(lane_num, cell_num)
 
                 if obj is not None:
-                    if obj.get_position_x() == Object_Position_x.NONE:
-                        obj.set_position_x(Object_Position_x(cell_num))
-                        obj.set_position_y(Object_Position_y.Y1)
-
+                    if not obj.get_is_draw():
+                        obj.set_is_draw(True)
                 cell_num += 1
 
         # 次のパターンへ進む

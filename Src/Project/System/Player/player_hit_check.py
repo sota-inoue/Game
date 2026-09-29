@@ -1,5 +1,3 @@
-from StageObject.stage_object import Object_Position_x, Object_Position_y
-
 from State.stage_object_data import StageObjectManager
 from State.player import Player, Player_Position_y, Player_Image_State
 
@@ -29,8 +27,7 @@ class PlayerHitCheck:
             if not (player_position_y == Player_Position_y.Y2 and obj.get_is_jumpable()):
                 urgency_level += obj.get_damage()
                 player.set_state(Player_Image_State.DAMAGE)
-                obj.set_position_x(Object_Position_x.NONE)
-                obj.set_position_y(Object_Position_y.NONE)
+                obj.set_is_draw(False)
 
         # 一定時間ごとに切迫度を増加させる
         if count - self.last_count >= 100:

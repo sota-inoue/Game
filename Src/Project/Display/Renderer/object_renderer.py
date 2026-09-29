@@ -3,8 +3,6 @@ from Display.Renderer.image_manager import ImageManager
 from Display.Layout.layout_manager import Layout
 from State.attack_data import Attack
 
-from StageObject.stage_object import Object_Position_x, Object_Position_y
-
 from State.player import Player
 from State.stage_object_data import StageObjectManager
 
@@ -103,7 +101,7 @@ class StageObjectDraw:
                     cell_index += 1
                     continue
 
-                if data.get_position_x() == Object_Position_x.NONE:
+                if not data.get_is_draw():
                     cell_index += 1
                     continue
 

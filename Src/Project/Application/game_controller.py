@@ -8,7 +8,7 @@ from Input.input_manager import Input
 # ゲーム内の状態を管理するクラス
 from State.state_manager import State
 from State.game_flag import GamePhase
-from State.player import Player_Image_State
+
 
 # ゲームの進行や内部処理を管理するクラス
 from System.system_manager import System
@@ -110,8 +110,7 @@ class Controller:
             if command == Command.ATTACK:
                 attack = self.state.get_attack_data()
                 self.system.player_attack(player, objects, attack)
-                if player.get_state() != Player_Image_State.DAMAGE:
-                    player.set_state(Player_Image_State.THROW)
+
 
 
         # プレイヤーの描画座標を毎カウント更新する
@@ -169,12 +168,12 @@ class Controller:
         # ゲームクリア画面を描画する
         elif game_state == GamePhase.CLEAR:
             clear = self.state.get_gameclear_scene_selection()
-            self._display.draw_game_clear(clear)
+            self._display.draw_clear(clear)
 
         # ゲームオーバー画面を描画する
         elif game_state == GamePhase.GAMEOVER:
             over = self.state.get_gameover_scene_selection()
-            self._display.draw_game_over(over)
+            self._display.draw_over(over)
 
         # エンディング画面を描画する
         elif game_state == GamePhase.ENDING:
