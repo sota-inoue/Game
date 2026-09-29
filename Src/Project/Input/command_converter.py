@@ -7,7 +7,7 @@ class Command(Enum):
     JUMP = auto()
     RIGHT = auto()
     ATTACK = auto()
-    POSE = auto()
+    PAUSE = auto()
     NONE = auto()
 
 
@@ -25,7 +25,7 @@ class CommandConverter:
             if 0 <= touch_x < self.touch_width // 2:
                 return Command.ATTACK
             elif self.touch_width // 2 <= touch_x <= self.touch_width:
-                return Command.POSE
+                return Command.PAUSE
 
         elif self.touch_height // 2 <= touch_y <= self.touch_height:
             if 0 <= touch_x < self.touch_width // 3:

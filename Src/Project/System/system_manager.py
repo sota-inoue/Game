@@ -47,20 +47,8 @@ class System:
          return attack(player, objects, attack_data)
 
 
-    def title_update(self, command: Command, flag: GameFlag) -> bool:
-        return self._progress.title_update(command, flag)
-
-    def opening_update(self, command: Command, flag: GameFlag) -> None:
-        self._progress.opening_update(command, flag)
-
-    def gameclear_update(self, command: Command, flag: GameFlag) -> None:
-        self._progress.clear_update(command, flag)
-
-    def gameover_update(self, command: Command, flag: GameFlag) -> None:
-        self._progress.gameover_update(command, flag)
-
-    def stage_update(self, flag: GameFlag) -> None:
-        self._progress.stage_update(flag)
+    def progress_update(self, command: Command, flag: GameFlag) -> bool:
+        return self._progress.progress_update(command, flag)
 
 
 

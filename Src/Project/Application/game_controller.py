@@ -33,54 +33,49 @@ class Controller:
         self.loop_flug = True
         self.count = 0
 
-    def command_update(self):
-        # 入力状態を更新する
-        self.input.command_update()
+        self._last_count = 0
 
-        # 5カウントごとに入力結果をゲーム内部へ反映する
-        if self.count % 4 == 0:
-
-            # ボタンが押された場合は効果音を再生する
-            if self.input.get_is_click():
-                self.system.play_PushButton()
-
-            # 現在の入力コマンドを取得して保存する
-            command = self.input.get_command()
-            self.state.set_game_command(command)
 
     def progress_update(self):
+
         # 現在のゲーム進行状態と操作情報を取得する
-        game_state = self.state.get_game_phase()
+        game_phase = self.state.get_game_phase()
         game_flag = self.state.get_game_flag()
         command = self.state.get_game_command()
 
         # 現在のゲーム状態に応じた進行処理を行う
-        if game_state == GamePhase.TITLE:
-            self.loop_flug = self.system.title_update(command, game_flag)
-        elif game_state == GamePhase.OPENING:
-            self.system.opening_update(command, game_flag)
-        elif game_state == GamePhase.STAGE:
-            self.system.stage_update(game_flag)
-        elif game_state == GamePhase.GAMEOVER:
-            self.system.gameover_update(command, game_flag)
-        elif game_state == GamePhase.CLEAR:
-            self.system.gameclear_update(command, game_flag)
+        self.loop_flug = self.system.progress_update(command, game_flag)
 
         # 進行処理後のゲーム状態を取得する
-        new_game_state = self.state.get_game_phase()
+        new_game_phase = self.state.get_game_phase()
 
-        # ゲーム状態が変化した場合のみ遷移後の初期化を行う
-        if game_state != new_game_state:
+        # ポーズへ遷移した場合
+        if game_phase != GamePhase.PAUSE and new_game_phase == GamePhase.PAUSE:
+            self._last_count = self.count
             self.count = 0
-            # ステージへ遷移した場合
-            if new_game_state == GamePhase.STAGE:
+            self._display.save_surface()
+            return
+
+        # ポーズから復帰した場合
+        if game_phase == GamePhase.PAUSE and new_game_phase != GamePhase.PAUSE:
+            self.count = self._last_count
+            self.state.set_game_command(Command.NONE)
+            return
+
+        # 通常のゲーム状態が変化した場合
+        if game_phase != new_game_phase:
+            self.count = 0
+            self._last_count = 0
+
+            if new_game_phase == GamePhase.STAGE:
                 self.state.set_game_command(Command.NONE)
                 self.state.stage_reset()
-                player = self.state.get_player_data()
-            # タイトル画面へ遷移した場合
-            elif new_game_state == GamePhase.TITLE:
+            elif new_game_phase == GamePhase.TITLE:
                 self.state.title_reset()
- 
+            elif new_game_phase == GamePhase.GAMEOVER:
+                self._display.save_surface()
+
+
     def stage_update(self):
         # ステージ処理に必要な内部データを取得する
         command = self.state.get_game_command()
@@ -111,32 +106,22 @@ class Controller:
                 attack = self.state.get_attack_data()
                 self.system.player_attack(player, objects, attack)
 
-
-
         # プレイヤーの描画座標を毎カウント更新する
         self.system.player_move(player)
         self.system.player_position_update(player)
 
         self.system.draw_is_middle_lane_update(objects, player)
 
-    def system_update(self):
-        # 5カウントごとにゲーム全体の進行状態を更新する
-        if self.count % 4 == 0:
-            self.progress_update()
-
-        # 進行状態更新後に現在のゲーム状態を取得する
-        game_state = self.state.get_game_phase()
-
-        # ステージ中の場合のみステージ内部処理を実行する
-        if game_state == GamePhase.STAGE:
-            self.stage_update()
-
-        # ゲーム全体で使用するカウントを更新する
-        self.count += 1
 
     def draw(self):
         # 現在のゲーム進行状態を取得する
         game_state = self.state.get_game_phase()
+
+        if game_state == GamePhase.PAUSE:
+            self._display.load_surface()
+            self._display.draw_black_overlay()
+            pause = self.state.get_pause_scene_selection()
+            self._display.draw_pause(pause)
 
         # タイトル画面を描画する
         if game_state == GamePhase.TITLE:
@@ -172,7 +157,9 @@ class Controller:
 
         # ゲームオーバー画面を描画する
         elif game_state == GamePhase.GAMEOVER:
-            over = self.state.get_gameover_scene_selection()
+            self._display.load_surface()
+            self._display.draw_black_overlay()
+            over= self.state.get_gameover_scene_selection()
             self._display.draw_over(over)
 
         # エンディング画面を描画する
@@ -182,14 +169,45 @@ class Controller:
         # self.renderer.touch_render()
         self._display.touch_iamge_render()
 
-    def loop(self):
-        self.command_update()
-        self.system_update()
-        self.draw()
         self._display.output()
-        if self.state.get_game_phase()== GamePhase.ENDING:
+
+    def loop(self):
+
+        # 入力状態を更新する
+        self.input.command_update()
+
+        # 4カウントごとに入力とゲーム進行を更新する
+        if self.count % 4 == 0:
+
+            # 現在の入力コマンドを取得して保存する
+            command = self.input.get_command()
+            self.state.set_game_command(command)
+
+            # ボタンが押された場合は効果音を再生する
+            if self.input.get_is_click():
+                self.system.play_PushButton()
+
+            # ゲームフェーズを更新する
+            self.progress_update()
+
+        # フェーズ更新後の状態を取得する
+        phase = self.state.get_game_phase()
+
+        # ステージ中のみステージ内部処理を行う
+        if phase == GamePhase.STAGE:
+            self.stage_update()
+
+        # 現在のゲーム状態を描画する
+        self.draw()
+
+        # エンディング終了後にゲームループを終了する
+        if phase == GamePhase.ENDING:
             if self.count > 30:
                 return False
+
+        # ゲーム全体で使用するカウントを更新する
+        self.count += 1
+
         return self.loop_flug
 
     
