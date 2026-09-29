@@ -17,9 +17,9 @@ from asset_paths import (
     GAMEOVER_SELECT_CONTINUE,GAMEOVER_SELECT_TITLE,
     OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
     TOUCH_SCREEN, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH,
-    PAUSE_SELECT_START, PAUSE_SELECT_TITLE
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,
+    PLAYER_JUMP_IMAGE_PATH, PLAYER_DOWN_IMAGE_PATH, PLAYER_RIGHT_IMAGE_PATH, PLAYER_LEHT_IMAGE_PATH
     )
-
 
 class ImageManager:
     def __init__(self):
@@ -70,6 +70,11 @@ class ImageManager:
 
         self._load(PAUSE_SELECT_START)
         self._load(PAUSE_SELECT_TITLE)
+
+        self._load(PLAYER_JUMP_IMAGE_PATH)
+        self._load(PLAYER_DOWN_IMAGE_PATH)
+        self._load(PLAYER_RIGHT_IMAGE_PATH)
+        self._load(PLAYER_LEHT_IMAGE_PATH)
 
     def _load(self, path: Path | None) -> None:
 

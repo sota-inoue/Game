@@ -1,5 +1,5 @@
 from State.stage_object_data import StageObjectManager
-from State.player import Player, Player_Position_y, Player_Image_State
+from State.player import Player, Player_Position_y, Player_Move_State_y, Player_Layout_y
 
 class PlayerHitCheck:
     def __init__(self):
@@ -26,8 +26,16 @@ class PlayerHitCheck:
             # ジャンプで回避できない場合はダメージを加算する
             if not (player_position_y == Player_Position_y.Y2 and obj.get_is_jumpable()):
                 urgency_level += obj.get_damage()
-                player.set_state(Player_Image_State.DAMAGE)
+                player.set_is_hit(True)
                 obj.set_is_draw(False)
+                if player.get_state_y() == Player_Move_State_y.JUMP and player.get_layout_y() == Player_Layout_y.Y1_0:
+                    player.set_state_y(Player_Move_State_y.STAY)
+
+                if player.get_state_y() == Player_Move_State_y.DOWN:
+                    player.set_layout_y(Player_Layout_y.Y1_2)
+
+
+            
 
         # 一定時間ごとに切迫度を増加させる
         if count - self.last_count >= 100:

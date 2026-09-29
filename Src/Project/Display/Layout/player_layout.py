@@ -53,10 +53,10 @@ class PlayerLayout:
         ]
 
         # 通常時とジャンプ最高点の左上Y座標
-        position_y = [ y - self._player_height, y - self._player_height * 2 ]
+        position_y = [ y - self._player_height, y - self._player_height * 17 // 10 ]
 
         # 通常位置からジャンプ最高点までを8分割する
-        player_speed_y = ( position_y[1] - position_y[0] ) // 8
+        player_speed_y = ( position_y[1] - position_y[0] ) // 4
 
         # ジャンプ上昇時のY座標
         self.player_y = [
@@ -64,10 +64,6 @@ class PlayerLayout:
             position_y[0] + player_speed_y,
             position_y[0] + player_speed_y * 2,
             position_y[0] + player_speed_y * 3,
-            position_y[0] + player_speed_y * 4,
-            position_y[0] + player_speed_y * 5,
-            position_y[0] + player_speed_y * 6,
-            position_y[0] + player_speed_y * 7,
             position_y[1]
         ]
 

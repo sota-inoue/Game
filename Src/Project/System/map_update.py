@@ -5,7 +5,7 @@ from StageObject.object_converter import ObjectConverter
 
 from StageObject.stage_object import StageObject
 from State.stage_object_data import StageObjectManager
-from State.player import Player, Player_Image_State
+from State.player import Player
 
 from State.game_flag import StageNumber
 from asset_paths import STAGE1_PATH, STAGE2_PATH, STAGE3_PATH
@@ -33,7 +33,8 @@ class Map:
 
         if self._count == 2:
             objects.remove_hit_enemy_position()
-            player.set_state(Player_Image_State.NORMAL)
+            player.set_is_attack(False)
+            player.set_is_hit(False)
             lane_num = 0
             cell_num = 0
 
