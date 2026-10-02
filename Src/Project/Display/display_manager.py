@@ -3,7 +3,7 @@ from Display.Renderer.renderer_manager import RendererManager
 
 from Display.Output.output_manager import OutputManager
 
-from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
+from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 class DisplayManager:
     def __init__(self, mode: bool):
@@ -55,11 +55,9 @@ class DisplayManager:
 
 
 
-    def draw_stage_object(self, player_data, map_data):
-        self._renderer.draw_stage_object(player_data, map_data)
+    def draw_stage_object(self, player_data, map_data, attack_data):
+        self._renderer.draw_stage_object(player_data, map_data, attack_data)
 
-    def draw_stage_middle_object(self, player_data, map_data):
-        self._renderer.draw_stage_middle_object(player_data, map_data)
 
     def draw_urgency_level(self, hp):
         self._renderer.draw_urgency_level(hp)

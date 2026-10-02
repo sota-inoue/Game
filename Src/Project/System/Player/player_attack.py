@@ -1,39 +1,29 @@
-from Domain.stage_object import StageObject, ObjectType
-from Domain.player import Player
-import copy
+from State.stage_object_data import StageObjectManager
+from State.player import Player
+from State.attack_data import Attack
 
+def attack(player: Player, stage_objects: StageObjectManager, attack: Attack):
 
-class PlayerAttack:
-    def attack(self, player: Player, stage_objects: list[list[StageObject | None]]) -> StageObject | None:
+    # プレイヤーがいる横方向のマス位置を取得する
+    x = player.get_position_x().value
 
-        # プレイヤーがいる横方向のマス位置を取得する
-        # PlayerPositionは1始まりのため、配列の添字に合わせて1を引く
-        x = player.get_position_x().value - 1
+    # プレイヤーと同じ列にいる一番手前の敵を探索する
+    y = stage_objects.search_enemy(x)
 
-        y = 0
-        while y < len(stage_objects):
-            obj = stage_objects[y][x]
-            # 敵が見つかった場合は探索を終了する
-            if obj is not None and obj.get_object_type() == ObjectType.ENEMY:
-                if y < 1:
-                    return
-                break
-            y += 1
+    # 同じ列に敵がいない場合は攻撃処理を終了する
+    if y == -1:
+        attack.create_attack_date(x, y, None)
+        return
 
-        # 同じ列に敵がいない場合は攻撃処理を終了する
-        if y >= len(stage_objects):
-            return None
+    # 攻撃対象の敵を取得する
+    target_obj = stage_objects.get_object(y, x)
 
-        # 攻撃対象の敵を取得する
-        target_obj = stage_objects[y][x]
-        attacked_obj = copy.copy(target_obj)
+    # プレイヤーの攻撃力分だけ敵のHPを減らす
+    hp = target_obj.get_hp() - player.get_power()
+    target_obj.set_hp(hp)
 
-        # プレイヤーの攻撃力分だけ敵のHPを減らす
-        hp = target_obj.get_hp() - player.get_power()
-        target_obj.set_hp(hp)
+    # 攻撃を受けた状態にする
+    target_obj.set_is_hit(True)
 
-        
-        stage_objects[y][x].set_is_hit(True)
-
-        return attacked_obj
-
+    path = target_obj.get_hit_image_path()
+    attack.create_attack_date(x, y, path)

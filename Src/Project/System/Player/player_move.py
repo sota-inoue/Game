@@ -1,5 +1,5 @@
 from Input.command_converter import Command
-from Domain.player import Player, Player_Move_State_x, Player_Move_State_y, Player_Position_x, Player_Position_y, Player_Layout_x, Player_Layout_y
+from State.player import Player, Player_Move_State_x, Player_Move_State_y, Player_Position_x, Player_Position_y, Player_Layout_x, Player_Layout_y
 
 def player_move(player: Player) -> None:
 

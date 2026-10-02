@@ -1,8 +1,6 @@
 from enum import Enum, auto
 
-from Domain.stage_object import StageObject, ObjectType
-
-from asset_paths import PLAYER_IMAGE_PATH
+from asset_paths import PLAYER_IMAGE_PATH, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH
 
 class Player_Move_State_x(Enum):
     STAY = auto()
@@ -13,6 +11,11 @@ class Player_Move_State_y(Enum):
     STAY = auto()
     JUMP = auto()
     DOWN = auto()
+
+class Player_Image_State(Enum):
+    NORMAL = auto()
+    DAMAGE = auto()
+    THROW = auto()
 
 class Player_Position_x(Enum):
     X1 = 0
@@ -25,56 +28,46 @@ class Player_Position_y(Enum):
     Y1 = 0
     Y2 = 1
 
-
 class Player_Layout_x(Enum):
     X1_0 = 0
-
     X1_1 = 1
     X1_2 = 2
     X1_3 = 3
-
     X2_0 = 4
-
     X2_1 = 5
     X2_2 = 6
     X2_3 = 7
-
     X3_0 = 8
-
     X3_1 = 9
     X3_2 = 10
     X3_3 = 11
-
     X4_0 = 12
-
     X4_1 = 13
     X4_2 = 14
     X4_3 = 15
-
     X5_0 = 16
 
 class Player_Layout_y(Enum):
     Y1_0 = 0
-
     Y1_1 = 1
     Y1_2 = 2
     Y1_3 = 3
-
     Y2_0 = 4
-    
     Y2_1 = 5
     Y2_2 = 6
     Y2_3 = 7
-
     Y3_0 = 8
 
-
-
-class Player(StageObject):
+class Player():
     def __init__(self) -> None:
-        super().__init__(object_type=ObjectType.PLAYER)
 
-        self.set_image_path(PLAYER_IMAGE_PATH)
+        self._normal_image_path = PLAYER_IMAGE_PATH
+        self._damage_image_path = PLAYER_DAMAGE_IMAGE_PATH
+        self._throw_image_path = PLAYER_THROW_IMAGE_PATH
+
+        self._state : Player_Image_State = Player_Image_State.NORMAL
+
+
 
         self._power: int = 1
         self._urgency_level: int = 0
@@ -100,6 +93,28 @@ class Player(StageObject):
 
         self._player_layout_x = Player_Layout_x.X3_0
         self._player_layout_y = Player_Layout_y.Y1_0
+
+        self._state : Player_Image_State = Player_Image_State.NORMAL
+
+
+    def get_image_path(self) -> str:
+
+        if self._state == Player_Image_State.NORMAL:
+            return self._normal_image_path
+
+        elif self._state == Player_Image_State.DAMAGE:
+            return self._damage_image_path
+
+        elif self._state == Player_Image_State.THROW:
+            return self._throw_image_path
+
+        return self._normal_image_path
+
+    def get_state(self) -> Player_Image_State:
+        return self._state
+
+    def set_state(self, state: Player_Image_State) -> None:
+        self._state = state
 
 
     # power

@@ -10,7 +10,7 @@ from asset_paths import (
     OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3
 )
 from config import GRAY
-from Domain.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
+from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
 
 
 class GameDisplay:

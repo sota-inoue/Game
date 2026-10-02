@@ -6,8 +6,9 @@ from Input.command_converter import Command
 from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
-from Application.state import State
-from Domain.game_flag import GamePhase
+from State.state_manager import State
+from State.game_flag import GamePhase
+from State.player import Player_Image_State
 
 # ゲームの進行や内部処理を管理するクラス
 from System.system_manager import System
@@ -31,7 +32,6 @@ class Controller:
         #self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
-        self._is_middle_draw = False
 
     def command_update(self):
         # 入力状態を更新する
@@ -88,9 +88,6 @@ class Controller:
         objects = self.state.get_objects_data()
         stage = self.state.get_stage_number()
 
-        # 敵オブジェクトとお札の当たり判定の処理を行う
-        # if self.count % 5 == 3:
-        #     self.system.object_hit_check(objects)
 
         # 4カウントごとにゲーム内部の主要な更新処理を行う
         if self.count == 0 or self.count % 4 == 0:
@@ -98,12 +95,8 @@ class Controller:
             is_gameclear = self.system.map_update(self.count, objects, stage)
             self.state.set_is_gameclear(is_gameclear)
 
-            # マップ更新直後は通常レーンを描画する
-            self._is_middle_draw = False
-
             # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
             self.system.player_move_state_update(command, player)
-
 
             # プレイヤーとステージオブジェクトの当たり判定を行う
             self.system.player_hit_check(self.count, player, objects)
@@ -114,14 +107,18 @@ class Controller:
             self.state.set_is_gameover(is_gameover)
 
             # 攻撃入力があった場合は攻撃データを生成する
-            # if command == Command.ATTACK:
-            #     attack = self.system.player_attack(player, objects)
-            #     self.state.set_attack_data(attack)
+            if command == Command.ATTACK:
+                attack = self.state.get_attack_data()
+                self.system.player_attack(player, objects, attack)
+                if player.get_state() != Player_Image_State.DAMAGE:
+                    player.set_state(Player_Image_State.THROW)
+
 
         # プレイヤーの描画座標を毎カウント更新する
         self.system.player_move(player)
         self.system.player_position_update(player)
 
+        self.system.draw_is_middle_lane_update(objects, player)
 
     def system_update(self):
         # 5カウントごとにゲーム全体の進行状態を更新する
@@ -160,16 +157,9 @@ class Controller:
             # ステージ内の描画に必要なデータを取得する
             map_data = self.state.get_objects_data()
             player_data = self.state.get_player_data()
-            # attack_data = self.state.get_attack_draw_data()
+            attack_data = self.state.get_attack_data()
 
-
-            if self.count % 4 == 2:
-                self._is_middle_draw = True
-
-            if not self._is_middle_draw:
-                self._display.draw_stage_object(player_data, map_data)
-            else:
-                self._display.draw_stage_middle_object(player_data, map_data)
+            self._display.draw_stage_object(player_data, map_data, attack_data)
 
 
             # 切迫度などのUIを描画する
