@@ -1,6 +1,10 @@
 from enum import Enum, auto
 
-from asset_paths import PLAYER_IMAGE_PATH, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH
+from asset_paths import (
+    PLAYER_IMAGE_PATH, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH, 
+    PLAYER_JUMP_IMAGE_PATH, PLAYER_DOWN_IMAGE_PATH, PLAYER_RIGHT_IMAGE_PATH, PLAYER_LEHT_IMAGE_PATH
+)
+
 
 class Player_Move_State_x(Enum):
     STAY = auto()
@@ -11,11 +15,6 @@ class Player_Move_State_y(Enum):
     STAY = auto()
     JUMP = auto()
     DOWN = auto()
-
-class Player_Image_State(Enum):
-    NORMAL = auto()
-    DAMAGE = auto()
-    THROW = auto()
 
 class Player_Position_x(Enum):
     X1 = 0
@@ -53,10 +52,6 @@ class Player_Layout_y(Enum):
     Y1_2 = 2
     Y1_3 = 3
     Y2_0 = 4
-    Y2_1 = 5
-    Y2_2 = 6
-    Y2_3 = 7
-    Y3_0 = 8
 
 class Player():
     def __init__(self) -> None:
@@ -65,9 +60,10 @@ class Player():
         self._damage_image_path = PLAYER_DAMAGE_IMAGE_PATH
         self._throw_image_path = PLAYER_THROW_IMAGE_PATH
 
-        self._state : Player_Image_State = Player_Image_State.NORMAL
-
-
+        self._jump_image_path = PLAYER_JUMP_IMAGE_PATH
+        self._down_image_path = PLAYER_DOWN_IMAGE_PATH
+        self._right_image_path = PLAYER_RIGHT_IMAGE_PATH
+        self._left_image_path = PLAYER_LEHT_IMAGE_PATH
 
         self._power: int = 1
         self._urgency_level: int = 0
@@ -80,6 +76,9 @@ class Player():
 
         self._player_layout_x: Player_Layout_x = Player_Layout_x.X3_0
         self._player_layout_y: Player_Layout_y = Player_Layout_y.Y1_0
+
+        self._is_hit: bool = False
+        self._is_attack: bool = False
 
 
     def reset(self) -> None:
@@ -94,27 +93,38 @@ class Player():
         self._player_layout_x = Player_Layout_x.X3_0
         self._player_layout_y = Player_Layout_y.Y1_0
 
-        self._state : Player_Image_State = Player_Image_State.NORMAL
-
 
     def get_image_path(self) -> str:
 
-        if self._state == Player_Image_State.NORMAL:
-            return self._normal_image_path
-
-        elif self._state == Player_Image_State.DAMAGE:
+        if self._is_hit:
             return self._damage_image_path
-
-        elif self._state == Player_Image_State.THROW:
+        elif self._is_attack:
             return self._throw_image_path
+
+        if self._state_y == Player_Move_State_y.JUMP:
+            return self._jump_image_path
+        elif self._state_y == Player_Move_State_y.DOWN:
+            return self._down_image_path
+
+        if self._state_x == Player_Move_State_x.RIGHT:
+            return self._right_image_path
+        elif self._state_x == Player_Move_State_x.LEFT:
+            return self._left_image_path
 
         return self._normal_image_path
 
-    def get_state(self) -> Player_Image_State:
-        return self._state
+    def get_is_attack(self) -> bool:
+        return self._is_attack
 
-    def set_state(self, state: Player_Image_State) -> None:
-        self._state = state
+    def set_is_attack(self, value: bool) -> None:
+        self._is_attack = value
+
+    def get_is_hit(self) -> bool:
+        return self._is_hit
+
+    def set_is_hit(self, value: bool) -> None:
+        self._is_hit = value
+
 
 
     # power

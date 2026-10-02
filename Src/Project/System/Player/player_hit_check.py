@@ -1,7 +1,5 @@
-from StageObject.stage_object import Object_Position_x, Object_Position_y
-
 from State.stage_object_data import StageObjectManager
-from State.player import Player, Player_Position_y, Player_Image_State
+from State.player import Player, Player_Position_y, Player_Move_State_y, Player_Layout_y
 
 class PlayerHitCheck:
     def __init__(self):
@@ -28,9 +26,45 @@ class PlayerHitCheck:
             # ジャンプで回避できない場合はダメージを加算する
             if not (player_position_y == Player_Position_y.Y2 and obj.get_is_jumpable()):
                 urgency_level += obj.get_damage()
-                player.set_state(Player_Image_State.DAMAGE)
-                obj.set_position_x(Object_Position_x.NONE)
-                obj.set_position_y(Object_Position_y.NONE)
+                player.set_is_hit(True)
+                obj.set_is_draw(False)
+                if player.get_state_y() == Player_Move_State_y.JUMP and player.get_layout_y() == Player_Layout_y.Y1_0:
+                    player.set_state_y(Player_Move_State_y.STAY)
+
+                if player.get_state_y() == Player_Move_State_y.DOWN:
+                    player.set_layout_y(Player_Layout_y.Y1_2)
+
+
+        # プレイヤーの左隣のマス
+        left_cell = cell_num - 1
+
+        if left_cell >= 0:
+            obj1 = stage_data.get_object(lane_num, left_cell)
+
+            if obj1 is not None:
+                if obj1.get_id() == 1:
+                    urgency_level += obj1.get_damage()
+                    player.set_is_hit(True)
+
+                    obj1.set_is_side_move(True)
+                    obj1.set_cell_num(left_cell)
+
+
+        # プレイヤーの右隣のマス
+        right_cell = cell_num + 1
+
+        if right_cell < 5:
+            obj2 = stage_data.get_object(lane_num, right_cell)
+
+            if obj2 is not None:
+                if obj2.get_id() == 1:
+                    urgency_level += obj2.get_damage()
+                    player.set_is_hit(True)
+
+                    obj2.set_is_side_move(True)
+                    obj2.set_cell_num(cell_num)
+
+            
 
         # 一定時間ごとに切迫度を増加させる
         if count - self.last_count >= 100:

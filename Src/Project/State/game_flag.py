@@ -8,6 +8,7 @@ class GamePhase(Enum):
     GAMEOVER = auto()
     CLEAR = auto()
     ENDING = auto()
+    PAUSE = auto()
 
 
 # タイトル画面の選択状態
@@ -35,6 +36,11 @@ class GameClearSceneSelection(Enum):
     NEXT = auto()
     TITLE = auto()
 
+# ポーズ画面の選択状態
+class PauseSceneSelection(Enum):
+    RESUME = auto()
+    TITLE = auto()
+
 
 # 現在のステージ
 class StageNumber(Enum):
@@ -53,6 +59,7 @@ class GameFlag:
         self._gameover_selection: GameOverSceneSelection = GameOverSceneSelection.CONTINUE
         self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.NEXT
         self._stage_number: StageNumber = StageNumber.STAGE_1
+        self._pause_selection: PauseSceneSelection = PauseSceneSelection.RESUME
 
         """ゲーム進行の判定に使用するフラグ"""
         # 画面がタッチされたか
@@ -71,6 +78,7 @@ class GameFlag:
         self._gameover_selection = GameOverSceneSelection.CONTINUE
         self._gameclear_selection = GameClearSceneSelection.NEXT
         self._stage_number = StageNumber.STAGE_1
+        self._pause_selection = PauseSceneSelection.RESUME
         self._is_gameclear = False
         self._is_gameover = False
 
@@ -154,3 +162,11 @@ class GameFlag:
         if not isinstance(value, bool):
             raise TypeError(f"受け取った型: {type(value).__name__} : bool型を指定してください。")
         self._is_first_play = value
+
+
+    def get_pause_selection(self) -> PauseSceneSelection:
+        return self._pause_selection
+
+
+    def set_pause_selection(self, selection: PauseSceneSelection) -> None:
+        self._pause_selection = selection

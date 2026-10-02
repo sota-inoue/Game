@@ -16,7 +16,7 @@ def player_move(player: Player) -> None:
         player.set_layout_x(Player_Layout_x(layout_x.value + 1))
 
     # Y方向の移動
-    if state_y == Player_Move_State_y.JUMP and layout_y != Player_Layout_y.Y3_0:
+    if state_y == Player_Move_State_y.JUMP and layout_y != Player_Layout_y.Y2_0:
         player.set_layout_y(Player_Layout_y(layout_y.value + 1))
     elif state_y == Player_Move_State_y.DOWN and layout_y != Player_Layout_y.Y1_0:
         player.set_layout_y(Player_Layout_y(layout_y.value - 1))
@@ -63,29 +63,21 @@ def position_update(player: Player) -> None:
     layout_y = player.get_layout_y()
 
     # Y方向のマス位置を更新する
-    if layout_y == Player_Layout_y.Y1_0:
+    if layout_y == Player_Layout_y.Y1_0 and player.get_state_y() == Player_Move_State_y.DOWN:
+        # 地面の当たり判定に戻す
         player.set_position_y(Player_Position_y.Y1)
-
-        # 地面まで下降した場合はジャンプを終了する
-        if player.get_state_y() == Player_Move_State_y.DOWN:
-            player.set_state_y(Player_Move_State_y.STAY)
+        # ジャンプ終了
+        player.set_state_y(Player_Move_State_y.STAY)
 
     elif layout_y == Player_Layout_y.Y2_0:
-
-        # 下降中は地面側の当たり判定にする
-        if player.get_state_y() == Player_Move_State_y.DOWN:
-            player.set_position_y(Player_Position_y.Y1)
-
-        # 上昇中は上側の当たり判定にする
-        elif player.get_state_y() == Player_Move_State_y.JUMP:
-            player.set_position_y(Player_Position_y.Y2)
-
-    elif layout_y == Player_Layout_y.Y3_0:
         # 最高地点では上側の当たり判定にする
         player.set_position_y(Player_Position_y.Y2)
-
         # 下降状態に切り替える
         player.set_state_y(Player_Move_State_y.DOWN)
+
+
+
+
 
 
 

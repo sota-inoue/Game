@@ -6,13 +6,57 @@ from State.game_flag import (
     GameOverSceneSelection,
     GameClearSceneSelection,
     StageNumber,
+    PauseSceneSelection
 )
 from Input.command_converter import Command
 
 
 class ProgressSystem:
 
-    def title_update(self, command: Command, flag: GameFlag) -> bool:
+    def progress_update(self, command: Command, flag: GameFlag) -> bool:
+        phase = flag.get_game_phase()
+
+        if command == Command.PAUSE and phase == GamePhase.STAGE:
+            flag.set_game_phase(GamePhase.PAUSE)
+            return True
+
+        if phase == GamePhase.TITLE:
+            return self._title_update(command, flag)
+        elif phase == GamePhase.OPENING:
+            self._opening_update(command, flag)
+        elif phase == GamePhase.CLEAR:
+            self._clear_update(command, flag)
+        elif phase == GamePhase.STAGE:
+            self._stage_update(flag)
+        elif phase == GamePhase.GAMEOVER:
+            self._gameover_update(command, flag)
+        elif phase == GamePhase.PAUSE:
+            self._pouse_update(command, flag)
+
+        return True
+
+    def _pouse_update(self, command: Command, flag: GameFlag) -> None:
+
+        state = flag.get_pause_selection()
+
+        if state == PauseSceneSelection.RESUME:
+
+            if command == Command.JUMP:
+                flag.set_game_phase(GamePhase.STAGE)
+
+            elif command == Command.RIGHT:
+                flag.set_pause_selection(PauseSceneSelection.TITLE)
+
+        elif state == PauseSceneSelection.TITLE:
+
+            if command == Command.JUMP:
+                flag.set_game_phase(GamePhase.TITLE)
+                flag.set_pause_selection(PauseSceneSelection.RESUME)
+
+            elif command == Command.LEFT:
+                flag.set_pause_selection(PauseSceneSelection.RESUME)
+
+    def _title_update(self, command: Command, flag: GameFlag) -> bool:
 
         state = flag.get_title_selection()
         is_first_play = flag.get_is_first_play()
@@ -47,7 +91,7 @@ class ProgressSystem:
         return True
 
 
-    def opening_update(self, command: Command, flag: GameFlag) -> None:
+    def _opening_update(self, command: Command, flag: GameFlag) -> None:
 
         state = flag.get_opening_page()
 
@@ -64,7 +108,7 @@ class ProgressSystem:
 
 
 
-    def clear_update(self, command: Command, flag: GameFlag) -> None:
+    def _clear_update(self, command: Command, flag: GameFlag) -> None:
 
         state = flag.get_gameclear_selection()
         stage = flag.get_stage_number()
@@ -93,7 +137,7 @@ class ProgressSystem:
                 flag.set_gameclear_selection(GameClearSceneSelection.NEXT)
 
 
-    def gameover_update(self, command: Command, flag: GameFlag) -> None:
+    def _gameover_update(self, command: Command, flag: GameFlag) -> None:
 
         state = flag.get_gameover_selection()
 
@@ -113,7 +157,7 @@ class ProgressSystem:
             elif command == Command.LEFT:
                 flag.set_gameover_selection(GameOverSceneSelection.CONTINUE)
 
-    def stage_update(self, flag: GameFlag) -> None:
+    def _stage_update(self, flag: GameFlag) -> None:
 
         is_gameclear = flag.get_is_gameclear()
         is_gameover = flag.get_is_gameover()

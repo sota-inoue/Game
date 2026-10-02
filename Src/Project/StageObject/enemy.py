@@ -79,6 +79,24 @@ class Ojisan(Enemy):
             hit_image = OJISAN_DAMAGED_IMAGE
         )
 
+        self._is_sive_move: bool = False
+        self._cell_mum: int = -1
+
+    def get_is_side_move(self) -> bool:
+        return self._is_sive_move
+
+
+    def set_is_side_move(self, is_side_move: bool) -> None:
+        self._is_sive_move = is_side_move
+
+
+    def get_cell_num(self) -> int:
+        return self._cell_mum
+
+
+    def set_cell_num(self, cell_num: int) -> None:
+        self._cell_mum = cell_num
+
 # class StrongOjisan(Enemy):
 #     def __init__(self) -> None:
 #         # IDは一意の初期値を割り当て（ID範囲: 4~6）
