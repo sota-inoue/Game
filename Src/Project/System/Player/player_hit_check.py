@@ -35,6 +35,35 @@ class PlayerHitCheck:
                     player.set_layout_y(Player_Layout_y.Y1_2)
 
 
+        # プレイヤーの左隣のマス
+        left_cell = cell_num - 1
+
+        if left_cell >= 0:
+            obj1 = stage_data.get_object(lane_num, left_cell)
+
+            if obj1 is not None:
+                if obj1.get_id() == 1:
+                    urgency_level += obj1.get_damage()
+                    player.set_is_hit(True)
+
+                    obj1.set_is_side_move(True)
+                    obj1.set_cell_num(left_cell)
+
+
+        # プレイヤーの右隣のマス
+        right_cell = cell_num + 1
+
+        if right_cell < 5:
+            obj2 = stage_data.get_object(lane_num, right_cell)
+
+            if obj2 is not None:
+                if obj2.get_id() == 1:
+                    urgency_level += obj2.get_damage()
+                    player.set_is_hit(True)
+
+                    obj2.set_is_side_move(True)
+                    obj2.set_cell_num(cell_num)
+
             
 
         # 一定時間ごとに切迫度を増加させる
