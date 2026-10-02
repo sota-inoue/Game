@@ -106,7 +106,9 @@ class StageObjectDraw:
                 if data.get_position_x() == Object_Position_x.NONE:
                     cell_index += 1
                     continue
-
+                
+                # オブジェクトの横マス幅を取得
+                width_in_cells = data.get_width_size()
 
                 # ジャンプ可能なオブジェクトか取得する
                 is_jumpable = data.get_is_jumpable()
@@ -119,9 +121,9 @@ class StageObjectDraw:
                         layout = self._layout.get_lane_obstacle_layout(cell_index, lane_index)
                 else:
                     if is_middle_draw:
-                        layout = self._layout.get_middle_lane_enemy_layout(cell_index, lane_index)
+                        layout = self._layout.get_middle_lane_enemy_layout(cell_index, lane_index, width_in_cells)
                     else:
-                        layout = self._layout.get_lane_enemy_layout(cell_index, lane_index)
+                        layout = self._layout.get_lane_enemy_layout(cell_index, lane_index, width_in_cells)
 
                 # 描画位置とサイズを取得する
                 x = layout["x"]

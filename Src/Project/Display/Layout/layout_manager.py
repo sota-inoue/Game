@@ -35,9 +35,9 @@ class Layout:
         self._player_lane = PlayerLayout(lane.get_lane_width(1), lane.get_lane_x(1), lane.get_lane_y(1))
 
 
-    def get_lane_enemy_layout(self, cell_index: int, lane_index: int):
+    def get_lane_enemy_layout(self, cell_index: int, lane_index: int, width_in_cells: int = 1):
         # 指定された主要レーンとマスに配置する敵のレイアウトを返す
-        return self._lane[lane_index].get_enemy_layout(cell_index)
+        return self._lane[lane_index].get_enemy_layout(cell_index, width_in_cells)
 
 
     def get_lane_obstacle_layout(self, cell_index: int, lane_index: int):
@@ -53,10 +53,9 @@ class Layout:
 
 
 
-    def get_middle_lane_enemy_layout(self, cell_index: int, lane_index: int):
+    def get_middle_lane_enemy_layout(self, cell_index: int, lane_index: int, width_in_cells: int = 1):
         # 指定された中間レーンとマスに配置する敵のレイアウトを返す
-        return self._middle_lane[lane_index].get_enemy_layout(cell_index)
-
+        return self._middle_lane[lane_index].get_enemy_layout(cell_index, width_in_cells)
 
     def get_middle_lane_obstacle_layout(self, cell_index: int, lane_index: int):
         # 指定された中間レーンとマスに配置する障害物のレイアウトを返す
