@@ -13,9 +13,14 @@ BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Morning.mp3"
 
 
 OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
+
 PLAYER_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Player.png"
 PLAYER_DAMAGE_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Damaged.png"
 PLAYER_THROW_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Attack.png"
+PLAYER_JUMP_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Jump.png"
+PLAYER_DOWN_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Down.png"
+PLAYER_RIGHT_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Right.png"
+PLAYER_LEHT_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Left.png"
 
 
 ENEMY_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
@@ -34,8 +39,11 @@ TITLE_SELECT_EXIT = BASE_DIR / "Image" / "SELECT" / "Title" / "Exit.jpg"
 GAMECLEAR_SELECT_NEXT = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Next.jpg"
 GAMECLEAR_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Title.jpg"
 
-GAMEOVER_SELECT_CONTINUE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Continue.jpg"
-GAMEOVER_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Title.jpg"
+GAMEOVER_SELECT_CONTINUE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Continue.png"
+GAMEOVER_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Title.png"
+
+PAUSE_SELECT_START = BASE_DIR / "Image" / "SELECT" / "Pause" / "Start.png"
+PAUSE_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "Pause" / "Title.png"
 
 OPNING_PAGE_1 = BASE_DIR / "Image" / "OP" / "op_1.png"
 OPNING_PAGE_2 = BASE_DIR / "Image" / "OP" / "op_2.png"

@@ -35,6 +35,19 @@ class Layout:
         self._player_lane = PlayerLayout(lane.get_lane_width(1), lane.get_lane_x(1), lane.get_lane_y(1))
 
 
+    def get_enemy_side_move_layout(self, cell_index: int):
+        if cell_index == 0:
+            num = 2
+        elif cell_index == 1:
+            num = 6
+        elif cell_index == 2:
+            num = 10
+        elif cell_index == 3:
+            num = 14
+
+        return self._player_lane.get_player_layout(num, 0)
+
+
     def get_lane_enemy_layout(self, cell_index: int, lane_index: int, width_in_cells: int = 1):
         # 指定された主要レーンとマスに配置する敵のレイアウトを返す
         return self._lane[lane_index].get_enemy_layout(cell_index, width_in_cells)

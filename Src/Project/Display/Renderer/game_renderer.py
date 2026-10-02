@@ -7,10 +7,11 @@ from asset_paths import (
     TITLE_SELECT_PLAY, TITLE_SELECT_SETTING, TITLE_SELECT_EXIT,
     GAMECLEAR_SELECT_NEXT, GAMECLEAR_SELECT_TITLE,
     GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
-    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3
+    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE
 )
 from config import GRAY
-from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection
+from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
 
 
 class GameDisplay:
@@ -40,6 +41,11 @@ class GameDisplay:
             OpeningPage.PAGE_1: self._image.get_image(OPNING_PAGE_1),
             OpeningPage.PAGE_2: self._image.get_image(OPNING_PAGE_2),
             OpeningPage.PAGE_3: self._image.get_image(OPNING_PAGE_3),
+        }
+
+        self._pause_images: dict[PauseSceneSelection, pygame.Surface] = {
+            PauseSceneSelection.RESUME: self._image.get_image(PAUSE_SELECT_START),
+            PauseSceneSelection.TITLE: self._image.get_image(PAUSE_SELECT_TITLE)
         }
 
         self._width = surface.get_width()
@@ -96,6 +102,17 @@ class GameDisplay:
         image = pygame.transform.scale(image, (self._width, self._height))
         
         # ゲームオーバー画面を描画する
+        self._surface.blit(image, (0, 0))
+
+    def draw_pause(self, state: PauseSceneSelection) -> None:
+        
+        # 現在の選択状態に対応するゲームクリア画像を取得する
+        image = self._pause_images[state]
+
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (self._width, self._height))
+
+        # ゲームクリア画面を描画する
         self._surface.blit(image, (0, 0))
 
     def draw_ending(self) -> None:

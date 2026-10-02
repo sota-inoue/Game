@@ -4,7 +4,7 @@ from State.attack_data import Attack
 
 from State.game_flag import (
     GameFlag, GamePhase, TitleSceneSelection, OpeningPage,
-    GameOverSceneSelection, GameClearSceneSelection, StageNumber
+    GameOverSceneSelection, GameClearSceneSelection, StageNumber, PauseSceneSelection
 )
 from Input.command_converter import Command
 
@@ -62,6 +62,9 @@ class State:
 
     def get_stage_number(self) -> StageNumber:
         return self._game_flag.get_stage_number()
+
+    def get_pause_scene_selection(self) -> PauseSceneSelection:
+        return self._game_flag.get_pause_selection()
 
     # ==================================================
     # フラグのSetter
