@@ -10,7 +10,7 @@ from Display.Layout.layout_manager import Layout
 
 from Display.Output.output_manager import OutputManager
 
-from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
+from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
 
 class DisplayManager:
     def __init__(self, mode: bool):
@@ -69,8 +69,8 @@ class DisplayManager:
         self._output.fb_close()
 
 
-    def draw_opening(self, state: OpeningPage):
-        self._game.draw_opning(state)
+    def draw_opening(self):
+        self._game.draw_opening()
 
     def draw_over(self, state: GameOverSceneSelection):
         self._game.draw_over(state)

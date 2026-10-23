@@ -1,64 +1,81 @@
-from Input.device_input import find_device, device_input
-from Input.pygame_input import pygame_input
+
+from collections import deque
+
+from Input.device_input import find_device, DeviceInput
+from Input.pygame_input import PygameInput
 from Input.coord_converter import driver_to_game, pygame_to_game
 from Input.command_converter import CommandConverter, Command
-from Input.command_converter import Command
+
 
 class Input:
-    def __init__(self, mode):
-        # True : Raspberry Pi（フレームバッファ描画）
-        # False: PC（pygameウィンドウ描画）
+    def __init__(self, mode: bool):
+        # True : Raspberry Pi
+        # False: PC
         self.mode = mode
 
         if self.mode:
             self.touch = find_device()
+            self._input = DeviceInput(self.touch)
+        else:
+            self._input = PygameInput()
 
         self.command_converter = CommandConverter()
 
-        self._is_click: bool = False
-        self._saved_command: Command = Command.NONE
+        # 未処理コマンドを保存する
+        self._commands = deque()
 
-        self._input_x: int = -1
-        self._input_y: int = -1
+        self._input_x = -1
+        self._input_y = -1
 
     def get_is_click(self) -> bool:
-        return self._is_click
+        return bool(self._commands)
 
     def get_command(self) -> Command:
-        command = self._saved_command
+        # 保存されたコマンドを順番に取得する
+        if self._commands:
+            return self._commands.popleft()
 
-        self._saved_command = Command.NONE
-        self._is_click = False
-
-        return command
+        return Command.NONE
 
     def command_update(self) -> None:
-        # self.debug_log()
-        # 入力座標を取得する
-        if self.mode:
-            x, y = device_input(self.touch)
-            self._input_x, self._input_y = driver_to_game(x, y)
-        else:
-            x, y = pygame_input()
-            self._input_x, self._input_y = pygame_to_game(x, y)
+        # デバイスから入力を読み取る
+        self._input.update()
 
-        # 入力がなければ終了
-        if self._input_x == -1 or self._input_y == -1:
-            return
+        # 取得した入力をすべて処理する
+        while self._input.has_input():
+            x, y = self._input.get_input()
 
-        # 変換後の座標からコマンドを取得
-        command = self.command_converter.convert(self._input_x, self._input_y, self.mode)
+            # 座標をゲーム内座標へ変換する
+            if self.mode:
+                x, y = driver_to_game(x, y)
+            else:
+                x, y = pygame_to_game(x, y)
 
-        # 有効なコマンドでなければ終了
-        if command == Command.NONE:
-            return
+            self._input_x = x
+            self._input_y = y
 
-        self._is_click = True
-        self._saved_command = command
+            # 無効な座標を除外する
+            if x < 0 or y < 0:
+                continue
+
+            # 座標からコマンドへ変換する
+            command = self.command_converter.convert(x, y)
+
+            if command == Command.NONE:
+                continue
+
+            # コマンドをキューへ保存する
+            self._commands.append(command)
 
     def debug_log(self) -> None:
+        command = (
+            self._commands[0].name
+            if self._commands else Command.NONE.name
+        )
+
         print(
             f": input = ({self._input_x}, {self._input_y}) "
-            f": click = {self._is_click} "
-            f": saved = {self._saved_command.name}"
+            f": click = {self.get_is_click()} "
+            f": saved = {command} "
+            f": queue = {len(self._commands)}"
         )

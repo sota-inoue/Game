@@ -47,8 +47,8 @@ class System:
          return attack(player, objects, attack_data)
 
 
-    def progress_update(self, command: Command, flag: GameFlag) -> bool:
-        return self._progress.progress_update(command, flag)
+    def progress_update(self, command: Command, flag: GameFlag, count: int) -> bool:
+        return self._progress.progress_update(command, flag, count)
 
 
 

@@ -1,11 +1,27 @@
+
+from collections import deque
 import pygame
 
-def pygame_input():
-    # pygameイベント取得
-    events = pygame.event.get()
-    for event in events:
-        # マウスクリックの場合の処理(仕様でマウスクリックをタッチ入力として拾ってくれ、Windows上でのデバックも楽なため)
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = event.pos
-            return x, y
-    return -1, -1
+
+class PygameInput:
+    def __init__(self):
+        self._events = deque()
+
+    def update(self):
+        # イベントをまとめて取得する
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self._events.append(event.pos)
+
+            elif event.type == pygame.QUIT:
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def get_input(self):
+        if self._events:
+            return self._events.popleft()
+
+        return -1, -1
+
+    def has_input(self):
+        return bool(self._events)

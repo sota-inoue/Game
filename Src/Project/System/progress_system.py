@@ -2,7 +2,6 @@ from State.game_flag import (
     GameFlag,
     GamePhase,
     TitleSceneSelection,
-    OpeningPage,
     GameOverSceneSelection,
     GameClearSceneSelection,
     StageNumber,
@@ -13,7 +12,7 @@ from Input.command_converter import Command
 
 class ProgressSystem:
 
-    def progress_update(self, command: Command, flag: GameFlag) -> bool:
+    def progress_update(self, command: Command, flag: GameFlag, count: int) -> bool:
         phase = flag.get_game_phase()
 
         if command == Command.PAUSE and phase == GamePhase.STAGE:
@@ -23,7 +22,7 @@ class ProgressSystem:
         if phase == GamePhase.TITLE:
             return self._title_update(command, flag)
         elif phase == GamePhase.OPENING:
-            self._opening_update(command, flag)
+            self._opening_update(count, flag)
         elif phase == GamePhase.CLEAR:
             self._clear_update(command, flag)
         elif phase == GamePhase.STAGE:
@@ -66,46 +65,28 @@ class ProgressSystem:
                 # 初回プレイの場合はオープニングへ進む
                 if is_first_play:
                     flag.set_is_first_play(False)
-                    flag.set_opening_page(OpeningPage.PAGE_1)
                     flag.set_game_phase(GamePhase.OPENING)
                 # 2回目以降はステージへ進む
                 else:
                     flag.set_game_phase(GamePhase.STAGE)
             elif command == Command.RIGHT:
-                flag.set_title_selection(TitleSceneSelection.SETTING)
-
-        elif state == TitleSceneSelection.SETTING:
-            if command == Command.RIGHT:
                 flag.set_title_selection(TitleSceneSelection.EXIT)
 
-            elif command == Command.LEFT:
-                flag.set_title_selection(TitleSceneSelection.START)
 
         elif state == TitleSceneSelection.EXIT:
             if command == Command.JUMP:
                 return False
 
             elif command == Command.LEFT:
-                flag.set_title_selection(TitleSceneSelection.SETTING)
+                flag.set_title_selection(TitleSceneSelection.START)
 
         return True
 
 
-    def _opening_update(self, command: Command, flag: GameFlag) -> None:
+    def _opening_update(self, count: int, flag: GameFlag) -> None:
 
-        state = flag.get_opening_page()
-
-        if command != Command.NONE:
-
-            if state == OpeningPage.PAGE_1:
-                flag.set_opening_page(OpeningPage.PAGE_2)
-
-            elif state == OpeningPage.PAGE_2:
-                flag.set_opening_page(OpeningPage.PAGE_3)
-
-            elif state == OpeningPage.PAGE_3:
-                flag.set_game_phase(GamePhase.STAGE)
-
+        if count >= 24:
+            flag.set_game_phase(GamePhase.STAGE)
 
 
     def _clear_update(self, command: Command, flag: GameFlag) -> None:
