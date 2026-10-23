@@ -12,6 +12,17 @@ from Display.Output.output_manager import OutputManager
 
 from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
 
+from config import (
+    STAGE_TOP_LANE_WIDTH_SCALE,
+    STAGE_BOTTOM_LANE_WIDTH_SCALE,
+    STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE,
+    STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE,
+    BOSS_TOP_LANE_WIDTH_SCALE,
+    BOSS_BOTTOM_LANE_WIDTH_SCALE,
+    BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE,
+    BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE,
+)
+
 class DisplayManager:
     def __init__(self, mode: bool):
         self._mode = mode
@@ -26,10 +37,17 @@ class DisplayManager:
 
         self._save_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)
 
-        self._layout = Layout(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        layout = Layout(DISPLAY_WIDTH, DISPLAY_HEIGHT, 
+                              STAGE_TOP_LANE_WIDTH_SCALE, STAGE_BOTTOM_LANE_WIDTH_SCALE, 
+                              STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE, STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE)
+
+        boss_layout = Layout(DISPLAY_WIDTH, DISPLAY_HEIGHT, 
+                                   BOSS_TOP_LANE_WIDTH_SCALE, BOSS_BOTTOM_LANE_WIDTH_SCALE, 
+                                   BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE, BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE)
+
         self._image = ImageManager()
 
-        self._object = StageObjectDraw(self._game_surface, self._image, self._layout)
+        self._object = StageObjectDraw(self._game_surface, self._image, layout, boss_layout)
 
         self._ui = UIRenderer(self._game_surface, self._image)
 
@@ -98,6 +116,8 @@ class DisplayManager:
     def draw_stage_object(self, player_data, map_data, attack_data):
         self._object.draw(player_data, map_data, attack_data)
 
+    def draw_boss_object(self, player_data, map_data, attack_data):
+        self._object.boss_draw(player_data, map_data, attack_data)
 
     def draw_urgency_level(self, hp):
         self._ui.health_draw(hp)

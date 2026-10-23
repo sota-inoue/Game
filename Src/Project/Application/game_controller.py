@@ -7,7 +7,7 @@ from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
 from State.state_manager import State
-from State.game_flag import GamePhase
+from State.game_flag import GamePhase, StageNumber
 
 
 # ゲームの進行や内部処理を管理するクラス
@@ -144,7 +144,12 @@ class Controller:
             player_data = self.state.get_player_data()
             attack_data = self.state.get_attack_data()
 
-            self._display.draw_stage_object(player_data, map_data, attack_data)
+            stage_num = self.state.get_stage_number()
+
+            if stage_num == StageNumber.STAGE_1:  # ボス戦の場合はボスオブジェクトを描画
+                self._display.draw_stage_object(player_data, map_data, attack_data)
+            elif stage_num == StageNumber.STAGE_2:
+                self._display.draw_boss_object(player_data, map_data, attack_data)
 
 
             # 切迫度などのUIを描画する

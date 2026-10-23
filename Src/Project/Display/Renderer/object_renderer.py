@@ -10,18 +10,22 @@ from asset_paths import OHUDA_IMAGE
 
 
 class StageObjectDraw:
-    def __init__(self, surface: pygame.Surface, image: ImageManager, layout: Layout):
+    def __init__(self, surface: pygame.Surface, image: ImageManager, layout: Layout, boss_layout: Layout):
         self._surface = surface
         self._image = image
         self._layout = layout
+        self._boss_layout = boss_layout
         
-
     def draw(self, player: Player, map_data: StageObjectManager, attack: Attack) -> None:
-        self.object_draw(map_data, player)
-        self.attack_draw(attack)
+        self.object_draw(map_data, player, self._layout)
+        self.attack_draw(attack, self._layout)
+
+    def boss_draw(self, player: Player, map_data: StageObjectManager, attack: Attack) -> None:
+        self.object_draw(map_data, player, self._boss_layout)
+        self.attack_draw(attack, self._boss_layout)
 
 
-    def attack_draw(self, attack: Attack) -> None:
+    def attack_draw(self, attack: Attack, layouts: Layout) -> None:
 
         # 攻撃中でない場合は描画しない
         if not attack.get_is_attack():
@@ -37,9 +41,9 @@ class StageObjectDraw:
 
         if path == None:
             path = OHUDA_IMAGE
-            layout = self._layout.get_lane_attack_layout(attack_x, attack_y)
+            layout = layouts.get_lane_attack_layout(attack_x, attack_y)
         else:
-            layout = self._layout.get_middle_lane_enemy_layout(attack_x, attack_y + 1)
+            layout = layouts.get_middle_lane_enemy_layout(attack_x, attack_y + 1)
 
 
         image = self._image.get_image(path)
@@ -56,12 +60,12 @@ class StageObjectDraw:
         self._surface.blit(image, (x, y))
 
 
-    def player_draw(self, player: Player) -> None:
+    def player_draw(self, player: Player, layouts: Layout) -> None:
         layout_x = player.get_layout_x()
         layout_y = player.get_layout_y()
 
         # 現在のレイアウト位置から描画情報を取得する
-        layout = self._layout.get_player_layout(layout_x.value, layout_y.value)
+        layout = layouts.get_player_layout(layout_x.value, layout_y.value)
 
         x = layout["x"]
         y = layout["y"]
@@ -78,30 +82,30 @@ class StageObjectDraw:
         # x, yを左上座標として画像を描画する
         self._surface.blit(image, (x, y))
 
-    def object_draw(self, map_data: StageObjectManager, player: Player) -> None:
+    def object_draw(self, map_data: StageObjectManager, player: Player, layout: Layout) -> None:
 
         # 中間レーンに描画するかを取得する
         is_middle_draw = map_data.get_draw_on_middle_lane()
 
         # 奥から順番に描画する
-        self.draw_lane(map_data, 6, is_middle_draw)
-        self.draw_lane(map_data, 5, is_middle_draw)
-        self.draw_lane(map_data, 4, is_middle_draw)
-        self.draw_lane(map_data, 3, is_middle_draw)
-        self.draw_lane(map_data, 2, is_middle_draw)
-        self.draw_lane(map_data, 1, is_middle_draw)
+        self.draw_lane(map_data, 6, is_middle_draw, layout)
+        self.draw_lane(map_data, 5, is_middle_draw, layout)
+        self.draw_lane(map_data, 4, is_middle_draw, layout)
+        self.draw_lane(map_data, 3, is_middle_draw, layout)
+        self.draw_lane(map_data, 2, is_middle_draw, layout)
+        self.draw_lane(map_data, 1, is_middle_draw, layout)
 
         # プレイヤーを描画する
-        self.player_draw(player)
+        self.player_draw(player, layout)
 
         # 一番手前のレーンを描画する
-        self.draw_lane(map_data, 0, is_middle_draw)
+        self.draw_lane(map_data, 0, is_middle_draw, layout)
 
         if not is_middle_draw:
-            self.draw_side_move_enemy(map_data)
+            self.draw_side_move_enemy(map_data, layout)
 
 
-    def draw_lane(self, map_data: StageObjectManager, lane_index: int, is_middle_draw: bool) -> None:
+    def draw_lane(self, map_data: StageObjectManager, lane_index: int, is_middle_draw: bool, layouts: Layout) -> None:
 
         # 左端のマスから順番に描画する
         cell_index = 0
@@ -131,15 +135,15 @@ class StageObjectDraw:
             # ジャンプ可能オブジェクト
             if data.get_is_jumpable():
                 if is_middle_draw:
-                    layout = self._layout.get_middle_lane_obstacle_layout(cell_index, lane_index)
+                    layout = layouts.get_middle_lane_obstacle_layout(cell_index, lane_index)
                 else:
-                    layout = self._layout.get_lane_obstacle_layout(cell_index, lane_index)
+                    layout = layouts.get_lane_obstacle_layout(cell_index, lane_index)
             # 敵
             else:
                 if is_middle_draw:
-                    layout = self._layout.get_middle_lane_enemy_layout(cell_index, lane_index)
+                    layout = layouts.get_middle_lane_enemy_layout(cell_index, lane_index)
                 else:
-                    layout = self._layout.get_lane_enemy_layout(cell_index, lane_index)
+                    layout = layouts.get_lane_enemy_layout(cell_index, lane_index)
 
             # 描画位置とサイズを取得する
             x = layout["x"]
@@ -159,7 +163,7 @@ class StageObjectDraw:
             cell_index += 1
 
 
-    def draw_side_move_enemy(self, map_data: StageObjectManager) -> None:
+    def draw_side_move_enemy(self, map_data: StageObjectManager, layouts: Layout) -> None:
 
         # 左端のマスから順番に描画する
         cell_index = 0
@@ -181,7 +185,7 @@ class StageObjectDraw:
                 if data.get_is_side_move():
 
                     index = data.get_cell_num()
-                    layout = self._layout.get_enemy_side_move_layout(index)
+                    layout = layouts.get_enemy_side_move_layout(index)
 
                     # 描画位置とサイズを取得する
                     x = layout["x"]

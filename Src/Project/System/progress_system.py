@@ -9,6 +9,8 @@ from State.game_flag import (
 )
 from Input.command_converter import Command
 
+from config import OPENING_MOVIE_COUNT, BOSS_INTRO_COUNT, BOSS_DEFEAT_COUNT, GAME_CLEAR_COUNT
+
 
 class ProgressSystem:
 
@@ -84,8 +86,7 @@ class ProgressSystem:
 
 
     def _opening_update(self, count: int, flag: GameFlag) -> None:
-
-        if count >= 24:
+        if count >= OPENING_MOVIE_COUNT:
             flag.set_game_phase(GamePhase.STAGE)
 
 
@@ -94,16 +95,17 @@ class ProgressSystem:
         state = flag.get_gameclear_selection()
         stage = flag.get_stage_number()
 
-        # 最終ステージクリア後はエンディングへ
-        if stage == StageNumber.STAGE_2:
+        if state == GameClearSceneSelection.CLEAR and count >= GAME_CLEAR_COUNT:
+            flag.set_gameclear_selection(GameClearSceneSelection.MOVIE)
+        elif stage == StageNumber.STAGE_1 and count >= GAME_CLEAR_COUNT + BOSS_INTRO_COUNT:
+            flag.set_game_phase(GamePhase.STAGE)
+            flag.set_stage_number(StageNumber.STAGE_2)
+            flag.set_gameclear_selection(GameClearSceneSelection.CLEAR)
+        elif stage == StageNumber.STAGE_2 and count >= GAME_CLEAR_COUNT + BOSS_DEFEAT_COUNT:
             flag.set_game_phase(GamePhase.ENDING)
 
-        if state == GameClearSceneSelection.CLEAR and count >= 24:
-            flag.set_gameclear_selection(GameClearSceneSelection.MOVIE)
-        elif state == GameClearSceneSelection.MOVIE and count >= 24:
-            flag.set_stage_number(StageNumber(stage.value + 1))
-            flag.set_game_phase(GamePhase.STAGE)
-
+                
+            
 
     def _gameover_update(self, command: Command, flag: GameFlag) -> None:
 
