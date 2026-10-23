@@ -4,14 +4,12 @@ from Display.Renderer.image_manager import ImageManager
 
 from asset_paths import (
     STAGE1_BACK_GRAUND,
-    TITLE_SELECT_PLAY, TITLE_SELECT_SETTING, TITLE_SELECT_EXIT,
-    GAMECLEAR_SELECT_NEXT, GAMECLEAR_SELECT_TITLE,
+    TITLE_SELECT_PLAY,  TITLE_SELECT_EXIT,
     GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
-    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
-    PAUSE_SELECT_START, PAUSE_SELECT_TITLE
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR
 )
 from config import GRAY
-from State.game_flag import TitleSceneSelection, OpeningPage, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
+from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
 
 
 class GameDisplay:
@@ -23,25 +21,16 @@ class GameDisplay:
 
         self._title_images: dict[TitleSceneSelection, pygame.Surface] = {
             TitleSceneSelection.START: self._image.get_image(TITLE_SELECT_PLAY),
-            TitleSceneSelection.SETTING: self._image.get_image(TITLE_SELECT_SETTING),
-            TitleSceneSelection.EXIT: self._image.get_image(TITLE_SELECT_EXIT),
+            TitleSceneSelection.EXIT: self._image.get_image(TITLE_SELECT_EXIT)
         }
 
-        self._gameclear_images: dict[GameClearSceneSelection, pygame.Surface] = {
-            GameClearSceneSelection.NEXT: self._image.get_image(GAMECLEAR_SELECT_NEXT),
-            GameClearSceneSelection.TITLE: self._image.get_image(GAMECLEAR_SELECT_TITLE),
-        }
+        self._gameclear_images = self._image.get_image(GAMECLEAR)
 
         self._gameover_images: dict[GameOverSceneSelection, pygame.Surface] = {
             GameOverSceneSelection.CONTINUE: self._image.get_image(GAMEOVER_SELECT_CONTINUE),
             GameOverSceneSelection.TITLE: self._image.get_image(GAMEOVER_SELECT_TITLE),
         }
 
-        self._opning_images: dict[OpeningPage, pygame.Surface] ={
-            OpeningPage.PAGE_1: self._image.get_image(OPNING_PAGE_1),
-            OpeningPage.PAGE_2: self._image.get_image(OPNING_PAGE_2),
-            OpeningPage.PAGE_3: self._image.get_image(OPNING_PAGE_3),
-        }
 
         self._pause_images: dict[PauseSceneSelection, pygame.Surface] = {
             PauseSceneSelection.RESUME: self._image.get_image(PAUSE_SELECT_START),
@@ -74,14 +63,14 @@ class GameDisplay:
 
 
     def draw_clear(self, state: GameClearSceneSelection) -> None:
-        # 現在の選択状態に対応するゲームクリア画像を取得する
-        image = self._gameclear_images[state]
 
-        # 画面サイズに合わせて画像をリサイズする
-        image = pygame.transform.scale(image, (self._width, self._height))
-
-        # ゲームクリア画面を描画する
-        self._surface.blit(image, (0, 0))
+        if state == GameClearSceneSelection.CLEAR:
+            image = self._gameclear_images
+            image = pygame.transform.scale(image, (self._width, self._height))
+            self._surface.blit(image, (0, 0))
+        elif state == GameClearSceneSelection.MOVIE:
+            self._surface.fill(GRAY)
+            self.draw_text( "BOSS_MOVIE", self._width // 2, self._height // 2 )
 
 
     def draw_over(self, state: GameOverSceneSelection) -> None:
@@ -94,15 +83,9 @@ class GameDisplay:
         # ゲームオーバー画面を描画する
         self._surface.blit(image, (0, 0))
 
-    def draw_opning(self, state: OpeningPage) -> None:
-        # 現在の状態に対応するオープニング画像を取得する
-        image = self._opning_images[state]
-
-        # 画面サイズに合わせて画像をリサイズする
-        image = pygame.transform.scale(image, (self._width, self._height))
-        
-        # ゲームオーバー画面を描画する
-        self._surface.blit(image, (0, 0))
+    def draw_opening(self) -> None:
+        self._surface.fill(GRAY)
+        self.draw_text( "OPENING_MOVIE", self._width // 2, self._height // 2 )
 
     def draw_pause(self, state: PauseSceneSelection) -> None:
         

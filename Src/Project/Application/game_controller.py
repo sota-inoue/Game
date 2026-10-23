@@ -7,7 +7,7 @@ from Input.input_manager import Input
 
 # ゲーム内の状態を管理するクラス
 from State.state_manager import State
-from State.game_flag import GamePhase
+from State.game_flag import GamePhase, StageNumber
 
 
 # ゲームの進行や内部処理を管理するクラス
@@ -44,7 +44,7 @@ class Controller:
         command = self.state.get_game_command()
 
         # 現在のゲーム状態に応じた進行処理を行う
-        self.loop_flug = self.system.progress_update(command, game_flag)
+        self.loop_flug = self.system.progress_update(command, game_flag, self.count)
 
         # 進行処理後のゲーム状態を取得する
         new_game_phase = self.state.get_game_phase()
@@ -73,6 +73,8 @@ class Controller:
             elif new_game_phase == GamePhase.TITLE:
                 self.state.title_reset()
             elif new_game_phase == GamePhase.GAMEOVER:
+                self._display.save_surface()
+            elif new_game_phase == GamePhase.CLEAR:
                 self._display.save_surface()
 
 
@@ -130,8 +132,7 @@ class Controller:
 
         # オープニング画面を描画する
         elif game_state == GamePhase.OPENING:
-            opening= self.state.get_opening_page()
-            self._display.draw_opening(opening)
+            self._display.draw_opening()
 
         # ゲームステージを描画する
         elif game_state == GamePhase.STAGE:
@@ -143,7 +144,12 @@ class Controller:
             player_data = self.state.get_player_data()
             attack_data = self.state.get_attack_data()
 
-            self._display.draw_stage_object(player_data, map_data, attack_data)
+            stage_num = self.state.get_stage_number()
+
+            if stage_num == StageNumber.STAGE_1:  # ボス戦の場合はボスオブジェクトを描画
+                self._display.draw_stage_object(player_data, map_data, attack_data)
+            elif stage_num == StageNumber.STAGE_2:
+                self._display.draw_boss_object(player_data, map_data, attack_data)
 
 
             # 切迫度などのUIを描画する

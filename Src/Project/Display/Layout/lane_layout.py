@@ -1,3 +1,6 @@
+from config import ENEMY_WIDTH_SCALE, ENEMY_HEIGHT_SCALE, OBSTACLE_WIDTH_SCALE, OBSTACLE_HEIGHT_SCALE, ATTACK_WIDTH_SCALE,ATTACK_HEIGHT_SCALE
+
+
 class LaneLayout:
     def __init__(self, width: int, x: int, y: int):
         self._width = width
@@ -13,8 +16,8 @@ class LaneLayout:
         ]
 
         # 敵の縦幅と横幅の比率は 5:3
-        self._enemy_width = self._width // 8
-        self._enemy_height = self._enemy_width * 5 // 3
+        self._enemy_width = self._width * ENEMY_WIDTH_SCALE
+        self._enemy_height = self._width * ENEMY_HEIGHT_SCALE
 
         # 敵の描画処理用の座標
         self._enemy_x = [
@@ -27,8 +30,8 @@ class LaneLayout:
         self._enemy_y = y - self._enemy_height
 
         # 障害物の横幅と縦幅の比率は 1:1
-        self._obstacle_width = self._enemy_width
-        self._obstacle_height = self._obstacle_width
+        self._obstacle_width = self._width * OBSTACLE_WIDTH_SCALE
+        self._obstacle_height = self._width * OBSTACLE_HEIGHT_SCALE
 
         # 障害物の描画処理用の座標
         self._obstacle_x = [
@@ -42,8 +45,8 @@ class LaneLayout:
 
 
         # 攻撃物の横幅と縦幅の比率は 1:1
-        self._attack_width = self._enemy_width // 2
-        self._attack_height = self._attack_width
+        self._attack_width = self._width * ATTACK_WIDTH_SCALE
+        self._attack_height = self._width * ATTACK_HEIGHT_SCALE
 
         # 攻撃物の中心が敵の中心に重なるように左上座標を求める
         self._attack_x = [

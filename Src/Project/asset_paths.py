@@ -33,11 +33,11 @@ OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
 STAGE1_BACK_GRAUND = BASE_DIR / "Image" / "Backgrounds" / "stage1_bg.jpg"
 
 TITLE_SELECT_PLAY = BASE_DIR / "Image" / "SELECT" / "Title" / "Play.jpg"
-TITLE_SELECT_SETTING = BASE_DIR / "Image" / "SELECT" / "Title" / "Setting.jpg"
 TITLE_SELECT_EXIT = BASE_DIR / "Image" / "SELECT" / "Title" / "Exit.jpg"
 
 GAMECLEAR_SELECT_NEXT = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Next.jpg"
 GAMECLEAR_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Title.jpg"
+GAMECLEAR = BASE_DIR / "Image" / "SELECT" / "GameClear" / "game_clear.png"
 
 GAMEOVER_SELECT_CONTINUE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Continue.png"
 GAMEOVER_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Title.png"

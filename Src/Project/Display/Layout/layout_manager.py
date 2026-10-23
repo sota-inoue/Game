@@ -4,9 +4,11 @@ from Display.Layout.player_layout import PlayerLayout
 
 
 class Layout:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int, 
+                 top_lane_width_scale: float, bottom_lane_width_scale: float, 
+                 top_lane_vertical_margin: float, bottom_lane_vertical_margin: float):
 
-        lane = LaneGeometry(width, height)
+        lane = LaneGeometry(width, height, top_lane_width_scale, bottom_lane_width_scale, top_lane_vertical_margin, bottom_lane_vertical_margin)
 
         # 主要レーン
         # 0が一番手前、6が一番奥

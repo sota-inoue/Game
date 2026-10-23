@@ -1,6 +1,7 @@
-from enum import Enum, auto
 
-from config import TOUCH_WIDTH,TOUCH_HEIGHT
+from enum import Enum, auto
+from config import TOUCH_WIDTH, TOUCH_HEIGHT
+
 
 class Command(Enum):
     LEFT = auto()
@@ -16,23 +17,25 @@ class CommandConverter:
         self.touch_width = TOUCH_WIDTH
         self.touch_height = TOUCH_HEIGHT
 
-    def convert(self, touch_x, touch_y, is_flip: bool = False):
-        # 左右を反転する場合
-        if is_flip:
-            touch_x = self.touch_width - 1 - touch_x
+    def convert(self, touch_x: int, touch_y: int) -> Command:
+        # タッチ画面外の入力を除外する
+        if not (
+            0 <= touch_x < self.touch_width
+            and 0 <= touch_y < self.touch_height
+        ):
+            return Command.NONE
 
-        if 0 <= touch_y < self.touch_height // 2:
-            if 0 <= touch_x < self.touch_width // 2:
+        # 上半分の入力
+        if touch_y < self.touch_height // 2:
+            if touch_x < self.touch_width // 2:
                 return Command.ATTACK
-            elif self.touch_width // 2 <= touch_x <= self.touch_width:
-                return Command.PAUSE
+            return Command.PAUSE
 
-        elif self.touch_height // 2 <= touch_y <= self.touch_height:
-            if 0 <= touch_x < self.touch_width // 3:
-                return Command.LEFT
-            elif self.touch_width // 3 <= touch_x < self.touch_width * 2 // 3:
-                return Command.JUMP
-            elif self.touch_width * 2 // 3 <= touch_x <= self.touch_width:
-                return Command.RIGHT
+        # 下半分の入力
+        if touch_x < self.touch_width // 3:
+            return Command.LEFT
 
-        return Command.NONE
+        if touch_x < self.touch_width * 2 // 3:
+            return Command.JUMP
+
+        return Command.RIGHT

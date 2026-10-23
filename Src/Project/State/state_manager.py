@@ -3,7 +3,7 @@ from State.stage_object_data import StageObjectManager
 from State.attack_data import Attack
 
 from State.game_flag import (
-    GameFlag, GamePhase, TitleSceneSelection, OpeningPage,
+    GameFlag, GamePhase, TitleSceneSelection, 
     GameOverSceneSelection, GameClearSceneSelection, StageNumber, PauseSceneSelection
 )
 from Input.command_converter import Command
@@ -50,9 +50,6 @@ class State:
 
     def get_title_scene_selection(self) -> TitleSceneSelection:
         return self._game_flag.get_title_selection()
-
-    def get_opening_page(self) -> OpeningPage:
-        return self._game_flag.get_opening_page()
 
     def get_gameover_scene_selection(self) -> GameOverSceneSelection:
         return self._game_flag.get_gameover_selection()

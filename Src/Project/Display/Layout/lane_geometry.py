@@ -1,18 +1,20 @@
 class LaneGeometry:
-    def __init__(self, width: int, height: int):
+    def __init__(self, width: int, height: int,
+        top_lane_width_scale: float, bottom_lane_width_scale: float,
+        top_lane_vertical_margin: float, bottom_lane_vertical_margin: float):
 
         # 画面中央のX座標
         self._center_x = width // 2
 
         # 一番手前のレーン
-        self._bottom_lane_width = width * 9 // 10
+        self._bottom_lane_width = width * bottom_lane_width_scale
         self._bottom_lane_left_x = (width - self._bottom_lane_width) // 2
-        self._bottom_lane_y = height * 13 // 15
+        self._bottom_lane_y = height * (1 - bottom_lane_vertical_margin)
 
         # 一番奥のレーン
-        self._top_lane_width = width * 2 // 10
+        self._top_lane_width = width * top_lane_width_scale
         self._top_lane_left_x = (width - self._top_lane_width) // 2
-        self._top_lane_y = height * 4 // 15
+        self._top_lane_y = height * top_lane_vertical_margin
 
         # 一番手前から一番奥までのY方向の距離
         lane_y_range = self._bottom_lane_y - self._top_lane_y

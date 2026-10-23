@@ -1,3 +1,5 @@
+from config import PLAYER_WIDTH_SCALE, PLAYER_HEIGHT_SCALE
+
 class PlayerLayout:
     def __init__(self, width: int, x: int, y: int):
 
@@ -11,8 +13,8 @@ class PlayerLayout:
         ]
 
         # プレイヤーの縦横比は 横:縦 = 3:5
-        self._player_width = width // 8
-        self._player_height = self._player_width * 5 // 3
+        self._player_width = width * PLAYER_WIDTH_SCALE
+        self._player_height = width * PLAYER_HEIGHT_SCALE
 
         # 各マスにいるときのプレイヤーの左上X座標
         position_x = [

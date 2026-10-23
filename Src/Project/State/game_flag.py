@@ -14,15 +14,7 @@ class GamePhase(Enum):
 # タイトル画面の選択状態
 class TitleSceneSelection(Enum):
     START = auto()
-    SETTING = auto()
     EXIT = auto()
-
-
-# オープニング画面の進行状態
-class OpeningPage(Enum):
-    PAGE_1 = auto()
-    PAGE_2 = auto()
-    PAGE_3 = auto()
 
 
 # ゲームオーバー画面の選択状態
@@ -33,8 +25,9 @@ class GameOverSceneSelection(Enum):
 
 # クリア画面の選択状態
 class GameClearSceneSelection(Enum):
-    NEXT = auto()
-    TITLE = auto()
+    CLEAR = auto()
+    MOVIE = auto()
+
 
 # ポーズ画面の選択状態
 class PauseSceneSelection(Enum):
@@ -55,9 +48,8 @@ class GameFlag:
         """各画面・ゲーム進行の状態"""
         self._game_phase: GamePhase = GamePhase.TITLE
         self._title_selection: TitleSceneSelection = TitleSceneSelection.START
-        self._opening_page: OpeningPage = OpeningPage.PAGE_1
         self._gameover_selection: GameOverSceneSelection = GameOverSceneSelection.CONTINUE
-        self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.NEXT
+        self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.CLEAR
         self._stage_number: StageNumber = StageNumber.STAGE_1
         self._pause_selection: PauseSceneSelection = PauseSceneSelection.RESUME
 
@@ -74,9 +66,8 @@ class GameFlag:
     def reset(self) -> None:
         self._game_phase = GamePhase.TITLE
         self._title_selection = TitleSceneSelection.START
-        self._opening_page = OpeningPage.PAGE_1
         self._gameover_selection = GameOverSceneSelection.CONTINUE
-        self._gameclear_selection = GameClearSceneSelection.NEXT
+        self._gameclear_selection = GameClearSceneSelection.CLEAR
         self._stage_number = StageNumber.STAGE_1
         self._pause_selection = PauseSceneSelection.RESUME
         self._is_gameclear = False
@@ -100,14 +91,7 @@ class GameFlag:
             raise TypeError(f"受け取った型: {type(state).__name__} : TitleSceneSelection型を指定してください。")
         self._title_selection = state
 
-    # OpeningPageのGetterとSetter
-    def get_opening_page(self) -> OpeningPage:
-        return self._opening_page
 
-    def set_opening_page(self, state: OpeningPage) -> None:
-        if not isinstance(state, OpeningPage):
-            raise TypeError(f"受け取った型: {type(state).__name__} : OpeningPage型を指定してください。")
-        self._opening_page = state
 
     # GameOverSceneSelectionのGetterとSetter
     def get_gameover_selection(self) -> GameOverSceneSelection:
