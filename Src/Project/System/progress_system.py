@@ -24,7 +24,7 @@ class ProgressSystem:
         elif phase == GamePhase.OPENING:
             self._opening_update(count, flag)
         elif phase == GamePhase.CLEAR:
-            self._clear_update(command, flag)
+            self._clear_update(count, flag)
         elif phase == GamePhase.STAGE:
             self._stage_update(flag)
         elif phase == GamePhase.GAMEOVER:
@@ -89,33 +89,20 @@ class ProgressSystem:
             flag.set_game_phase(GamePhase.STAGE)
 
 
-    def _clear_update(self, command: Command, flag: GameFlag) -> None:
+    def _clear_update(self, count: int, flag: GameFlag) -> None:
 
         state = flag.get_gameclear_selection()
         stage = flag.get_stage_number()
 
         # 最終ステージクリア後はエンディングへ
-        if stage == StageNumber.STAGE_3:
+        if stage == StageNumber.STAGE_2:
             flag.set_game_phase(GamePhase.ENDING)
 
-        if state == GameClearSceneSelection.NEXT:
-
-            if command == Command.JUMP:
-                # 次のステージを設定
-                flag.set_stage_number(StageNumber(stage.value + 1))
-                flag.set_game_phase(GamePhase.STAGE)
-
-            elif command == Command.RIGHT:
-                flag.set_gameclear_selection(GameClearSceneSelection.TITLE)
-
-        elif state == GameClearSceneSelection.TITLE:
-
-            if command == Command.JUMP:
-                flag.set_game_phase(GamePhase.TITLE)
-                flag.set_gameclear_selection(GameClearSceneSelection.NEXT)
-
-            elif command == Command.LEFT:
-                flag.set_gameclear_selection(GameClearSceneSelection.NEXT)
+        if state == GameClearSceneSelection.CLEAR and count >= 24:
+            flag.set_gameclear_selection(GameClearSceneSelection.MOVIE)
+        elif state == GameClearSceneSelection.MOVIE and count >= 24:
+            flag.set_stage_number(StageNumber(stage.value + 1))
+            flag.set_game_phase(GamePhase.STAGE)
 
 
     def _gameover_update(self, command: Command, flag: GameFlag) -> None:

@@ -37,6 +37,7 @@ TITLE_SELECT_EXIT = BASE_DIR / "Image" / "SELECT" / "Title" / "Exit.jpg"
 
 GAMECLEAR_SELECT_NEXT = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Next.jpg"
 GAMECLEAR_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Title.jpg"
+GAMECLEAR = BASE_DIR / "Image" / "SELECT" / "GameClear" / "game_clear.png"
 
 GAMEOVER_SELECT_CONTINUE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Continue.png"
 GAMEOVER_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Title.png"

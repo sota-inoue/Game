@@ -25,8 +25,8 @@ class GameOverSceneSelection(Enum):
 
 # クリア画面の選択状態
 class GameClearSceneSelection(Enum):
-    NEXT = auto()
-    TITLE = auto()
+    CLEAR = auto()
+    MOVIE = auto()
 
 
 # ポーズ画面の選択状態
@@ -49,7 +49,7 @@ class GameFlag:
         self._game_phase: GamePhase = GamePhase.TITLE
         self._title_selection: TitleSceneSelection = TitleSceneSelection.START
         self._gameover_selection: GameOverSceneSelection = GameOverSceneSelection.CONTINUE
-        self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.NEXT
+        self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.CLEAR
         self._stage_number: StageNumber = StageNumber.STAGE_1
         self._pause_selection: PauseSceneSelection = PauseSceneSelection.RESUME
 
@@ -67,7 +67,7 @@ class GameFlag:
         self._game_phase = GamePhase.TITLE
         self._title_selection = TitleSceneSelection.START
         self._gameover_selection = GameOverSceneSelection.CONTINUE
-        self._gameclear_selection = GameClearSceneSelection.NEXT
+        self._gameclear_selection = GameClearSceneSelection.CLEAR
         self._stage_number = StageNumber.STAGE_1
         self._pause_selection = PauseSceneSelection.RESUME
         self._is_gameclear = False

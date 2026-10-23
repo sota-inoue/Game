@@ -74,6 +74,8 @@ class Controller:
                 self.state.title_reset()
             elif new_game_phase == GamePhase.GAMEOVER:
                 self._display.save_surface()
+            elif new_game_phase == GamePhase.CLEAR:
+                self._display.save_surface()
 
 
     def stage_update(self):

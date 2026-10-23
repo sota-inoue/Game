@@ -5,10 +5,8 @@ from Display.Renderer.image_manager import ImageManager
 from asset_paths import (
     STAGE1_BACK_GRAUND,
     TITLE_SELECT_PLAY,  TITLE_SELECT_EXIT,
-    GAMECLEAR_SELECT_NEXT, GAMECLEAR_SELECT_TITLE,
     GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
-    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
-    PAUSE_SELECT_START, PAUSE_SELECT_TITLE
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR
 )
 from config import GRAY
 from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
@@ -26,10 +24,7 @@ class GameDisplay:
             TitleSceneSelection.EXIT: self._image.get_image(TITLE_SELECT_EXIT)
         }
 
-        self._gameclear_images: dict[GameClearSceneSelection, pygame.Surface] = {
-            GameClearSceneSelection.NEXT: self._image.get_image(GAMECLEAR_SELECT_NEXT),
-            GameClearSceneSelection.TITLE: self._image.get_image(GAMECLEAR_SELECT_TITLE),
-        }
+        self._gameclear_images = self._image.get_image(GAMECLEAR)
 
         self._gameover_images: dict[GameOverSceneSelection, pygame.Surface] = {
             GameOverSceneSelection.CONTINUE: self._image.get_image(GAMEOVER_SELECT_CONTINUE),
@@ -68,14 +63,14 @@ class GameDisplay:
 
 
     def draw_clear(self, state: GameClearSceneSelection) -> None:
-        # 現在の選択状態に対応するゲームクリア画像を取得する
-        image = self._gameclear_images[state]
 
-        # 画面サイズに合わせて画像をリサイズする
-        image = pygame.transform.scale(image, (self._width, self._height))
-
-        # ゲームクリア画面を描画する
-        self._surface.blit(image, (0, 0))
+        if state == GameClearSceneSelection.CLEAR:
+            image = self._gameclear_images
+            image = pygame.transform.scale(image, (self._width, self._height))
+            self._surface.blit(image, (0, 0))
+        elif state == GameClearSceneSelection.MOVIE:
+            self._surface.fill(GRAY)
+            self.draw_text( "BOSS_MOVIE", self._width // 2, self._height // 2 )
 
 
     def draw_over(self, state: GameOverSceneSelection) -> None:

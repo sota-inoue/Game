@@ -79,6 +79,9 @@ class DisplayManager:
         self._game.draw_title(state)
     
     def draw_clear(self, state: GameClearSceneSelection):
+        if state == GameClearSceneSelection.CLEAR:
+            self.load_surface()
+            self.draw_black_overlay()
         self._game.draw_clear(state)
 
     def draw_pause(self, state: PauseSceneSelection):
