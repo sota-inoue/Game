@@ -6,9 +6,10 @@ from asset_paths import (
     STAGE1_BACK_GRAUND,
     TITLE_SELECT_PLAY,  TITLE_SELECT_EXIT,
     GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
-    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR,
+    BOSS_IMAGE_PATH, BOSS_STAGE_IMAGE_PATH
 )
-from config import GRAY
+from config import GRAY, BOSS_WIDTH_SCALE, BOSS_HEIGHT_SCALE, BOSS_TOP_X, BOSS_TOP_Y
 from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
 
 
@@ -111,3 +112,23 @@ class GameDisplay:
 
         # 背景画像を描画する
         self._surface.blit( image,(0, 0) )
+
+    def draw_boss_stage(self) -> None:
+        boss_stage_image = self._image.get_image(BOSS_STAGE_IMAGE_PATH)
+        boss_stage_image = pygame.transform.scale(boss_stage_image, (self._width, self._height))
+        self._surface.blit(boss_stage_image, (0, 0))
+
+    def draw_boss(self) -> None:
+
+        boss_image = self._image.get_image(BOSS_IMAGE_PATH)
+
+        boss_width = int(self._width * BOSS_WIDTH_SCALE)
+        boss_height = int(self._width * BOSS_HEIGHT_SCALE)
+
+        boss_image = pygame.transform.scale(boss_image, (boss_width, boss_height))
+
+        boss_x = int(self._width * BOSS_TOP_X) - boss_width // 2
+        boss_y = int(self._height * BOSS_TOP_Y) - boss_height
+
+        self._surface.blit(boss_image, (boss_x, boss_y))
+

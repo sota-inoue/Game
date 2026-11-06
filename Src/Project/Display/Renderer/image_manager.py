@@ -18,7 +18,9 @@ from asset_paths import (
     OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
     TOUCH_SCREEN, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH,
     PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR,
-    PLAYER_JUMP_IMAGE_PATH, PLAYER_DOWN_IMAGE_PATH, PLAYER_RIGHT_IMAGE_PATH, PLAYER_LEHT_IMAGE_PATH
+    PLAYER_JUMP_IMAGE_PATH, PLAYER_DOWN_IMAGE_PATH, PLAYER_RIGHT_IMAGE_PATH, PLAYER_LEHT_IMAGE_PATH,
+    BOSS_IMAGE_PATH, BOSS_STAGE_IMAGE_PATH, BOSS_HP_FRAME0,
+    BOSS_HP_FRAME1, BOSS_HP_FRAME2, BOSS_HP_FRAME3, BOSS_HP_FRAME4, BOSS_HP_FRAME5, BOSS_HP_FRAME6, BOSS_HP_FRAME7, BOSS_HP_FRAME8, BOSS_HP_FRAME9, BOSS_HP_FRAME10
     )
 
 class ImageManager:
@@ -74,6 +76,21 @@ class ImageManager:
         self._load(PLAYER_DOWN_IMAGE_PATH)
         self._load(PLAYER_RIGHT_IMAGE_PATH)
         self._load(PLAYER_LEHT_IMAGE_PATH)
+        self._load(BOSS_IMAGE_PATH)
+        self._load(BOSS_STAGE_IMAGE_PATH)
+
+        self._load(BOSS_HP_FRAME0)
+        self._load(BOSS_HP_FRAME1)
+        self._load(BOSS_HP_FRAME2)
+        self._load(BOSS_HP_FRAME3)
+        self._load(BOSS_HP_FRAME4)
+        self._load(BOSS_HP_FRAME5)
+        self._load(BOSS_HP_FRAME6)
+        self._load(BOSS_HP_FRAME7)
+        self._load(BOSS_HP_FRAME8)
+        self._load(BOSS_HP_FRAME9)
+        self._load(BOSS_HP_FRAME10)
+
 
     def _load(self, path: Path | None) -> None:
 

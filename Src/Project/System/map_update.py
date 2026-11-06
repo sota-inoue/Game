@@ -54,18 +54,22 @@ class Map:
             self._count = 0
 
 
-    def stage_update(self, objects: StageObjectManager, count: int, stage_state: StageNumber) -> bool:
+    def stage_update(self, objects: StageObjectManager, count: int, stage_state: StageNumber, boss_hp: int) -> bool:
 
         # ゲーム開始時はステージを更新しない
         if count == 0:
             return False
 
-        # 4カウントごとの進行回数から、
-        # 次に読み込むレーンの位置を求める
+        # ステージ2のボス戦でボスのHPが0になった場合はステージクリア
+        if stage_state == StageNumber.STAGE_2 and boss_hp <= 0:
+            return True
+        
+        # 4カウントごとの進行回数から、次に読み込むレーンの位置を求める
         index = (count // 4) - 1
 
         # 現在のステージに対応する次のレーンデータを取得する
         new_lane = self._get_new_lane(index, stage_state)
+
 
         # ステージデータが終了した場合
         if new_lane is None:

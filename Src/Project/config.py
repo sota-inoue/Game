@@ -43,13 +43,13 @@ TOUCH_Y_MAX = 4095
 STAGE_TOP_LANE_WIDTH_SCALE = 2 / 10  # 上レーンの幅（画面幅に対する割合）
 STAGE_BOTTOM_LANE_WIDTH_SCALE = 9 / 10  # 下レーンの幅（画面幅に対する割合）
 STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE = 4 / 15  # 上レーンの上端位置（画面高さに対する割合）
-STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 2 / 15  # 下レーンの下端からの余白（画面高さに対する割合）
+STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15  # 下レーンの下端からの余白（画面高さに対する割合）
 
 # ボスステージのレイアウト設定
 BOSS_TOP_LANE_WIDTH_SCALE = 5 / 10  # 上レーンの幅（画面幅に対する割合）
 BOSS_BOTTOM_LANE_WIDTH_SCALE = 9 / 10 # 下レーンの高さ（画面高さに対する割合）
-BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE = 4 / 15  # 上レーンの縦方向の余白（画面高さに対する割合）
-BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 4 / 15 # 下レーンの縦方向の余白（画面高さに対する割合）
+BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE = 7 / 15  # 上レーンの縦方向の余白（画面高さに対する割合）
+BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15 # 下レーンの縦方向の余白（画面高さに対する割合)
 
 
 # プレイヤーのサイズの比率 : 縦横比 5:3
@@ -75,5 +75,21 @@ FPS = 8
 OPENING_MOVIE_COUNT = 3 * FPS  # オープニングフェーズの継続時間（秒）
 GAME_CLEAR_COUNT = 2 * FPS  # ゲームクリアフェーズの継続時間（秒）
 BOSS_INTRO_COUNT = 3 * FPS  # ボス登場フェーズの継続時間（秒）
-BOSS_DEFEAT_COUNT = 3 * FPS  # ボス撃破フェーズの継続時間（秒）
+BOSS_DEFEAT_COUNT = 3 * FPS  # ボス撃破フェーズの継続時間（秒)
 
+
+BOSS_WIDTH_SCALE = BOSS_TOP_LANE_WIDTH_SCALE * 6 / 10  # 横幅
+BOSS_HEIGHT_SCALE = BOSS_WIDTH_SCALE  # 高さ
+BOSS_TOP_X = 1 / 2  # ボスの描画位置の左端座標（画面左端からの距離）
+BOSS_TOP_Y = BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE  # ボスの描画位置の上端座標（画面上端からの距離）
+
+
+# HPフレームのサイズの比率：縦横比 16:9 (画像のアスペクト比参照)
+HP_FRAME_WIDTH_SCALE = 3 / 10  # HPフレームの横幅
+HP_FRAME_HEIGHT_SCALE = HP_FRAME_WIDTH_SCALE * 9 / 16 # HPフレームの高さ
+
+PLAYER_HP_FRAME_TOP_X = 1 - HP_FRAME_WIDTH_SCALE  # プレイヤーHPフレームの描画位置の左端座標（画面左端からの距離）
+PLAYER_HP_FRAME_TOP_Y = 0  # プレイヤーHPフレームの描画位置の上端座標（画面上端からの距離）
+
+BOSS_HP_FRAME_TOP_X = 0  # ボスHPフレームの描画位置の左端座標（画面左端からの距離）
+BOSS_HP_FRAME_TOP_Y = 0  # ボスHPフレームの描画位置の上端座標（画面上端からの距離）
