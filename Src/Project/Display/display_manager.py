@@ -108,8 +108,8 @@ class DisplayManager:
     def draw_ending(self):
         self._game.draw_ending()
 
-    def draw_stage(self):
-        self._game.draw_stage1_bg()
+    def draw_stage(self, count: int):
+        self._game.draw_stage1_bg(count)
 
     def draw_boss_stage(self):
         self._game.draw_boss_stage()

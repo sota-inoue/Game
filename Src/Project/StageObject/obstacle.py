@@ -5,15 +5,13 @@ from StageObject.object_parameters import(
     BANANA_DAMAGE,
     BANANA_IS_JUMPABLE,
     BANANA_ID,
-    COLOR_CONE_DAMAGE,
-    COLOR_CONE_IS_JUMPABLE,
-    COLOR_CONE_ID,
-    CARRY_CASE_OBSTACLE_DAMAGE,
-    CARRY_CASE_OBSTACLE_IS_JUMPABLE,
-    CARRY_CASE_OBSTACLE_ID
+    
+    BOSS_SMALL_ATTACK_ID,
+    BOSS_SMALL_ATTACK_DAMAGE,
+    BOSS_SMALL_ATTACK_IS_JUMPABLE,
 )
 
-from asset_paths import OBSTACLE_IMAGE_PATH
+from asset_paths import OBSTACLE_IMAGE_PATH, BOSS_SMALL_ATTACK_IMAGE_PATH
 
 class Obstacle(StageObject):
     def __init__(self, image_path: str, id: int, size: int, is_jumpable: bool, damage: int) -> None:
@@ -28,6 +26,16 @@ class Banana(Obstacle):
             size = 1,
             is_jumpable=BANANA_IS_JUMPABLE,
             damage=BANANA_DAMAGE,
+        )
+
+class BossSmallAttack(Obstacle):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = BOSS_SMALL_ATTACK_IMAGE_PATH,
+            id = BOSS_SMALL_ATTACK_ID,
+            size = 1,
+            is_jumpable=BOSS_SMALL_ATTACK_IS_JUMPABLE,
+            damage=BOSS_SMALL_ATTACK_DAMAGE,
         )
         
 # class ColorCone(Obstacle):

@@ -161,7 +161,7 @@ class Controller:
             stage_num = self.state.get_stage_number()
 
             if stage_num == StageNumber.STAGE_1:  # ボス戦の場合はボスオブジェクトを描画
-                self._display.draw_stage()
+                self._display.draw_stage(self.count)
                 self._display.draw_stage_object(player_data, map_data, attack_data)
             elif stage_num == StageNumber.STAGE_2:
                 self._display.draw_boss_stage()
@@ -206,11 +206,12 @@ class Controller:
 
             # 現在の入力コマンドを取得して保存する
             command = self.input.get_command()
-            self.state.set_game_command(command)
 
             # ボタンが押された場合は効果音を再生する
-            if self.input.get_is_click():
+            if command != Command.NONE:
                 self.system.play_PushButton()
+
+            self.state.set_game_command(command)
 
             # ゲームフェーズを更新する
             self.progress_update()

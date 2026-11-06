@@ -1,5 +1,7 @@
 from State.stage_object_data import StageObjectManager
-from State.player import Player, Player_Position_y, Player_Move_State_y, Player_Layout_y
+from State.player import Player, Player_Move_State_y
+
+from StageObject.object_parameters import BOSS_HOMING_ATTACK_ID, OJISAN_ID
 
 class PlayerHitCheck:
     def __init__(self):
@@ -44,7 +46,7 @@ class PlayerHitCheck:
             obj1 = stage_data.get_object(lane_num, left_cell)
 
             if obj1 is not None:
-                if obj1.get_id() == 1:
+                if obj1.get_id() == BOSS_HOMING_ATTACK_ID or obj1.get_id() == OJISAN_ID:
                     urgency_level += obj1.get_damage()
                     player.set_is_hit(True)
 
@@ -59,7 +61,7 @@ class PlayerHitCheck:
             obj2 = stage_data.get_object(lane_num, right_cell)
 
             if obj2 is not None:
-                if obj2.get_id() == 1:
+                if obj2.get_id() == BOSS_HOMING_ATTACK_ID or obj2.get_id() == OJISAN_ID:
                     urgency_level += obj2.get_damage()
                     player.set_is_hit(True)
 
