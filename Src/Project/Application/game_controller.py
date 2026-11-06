@@ -102,6 +102,7 @@ class Controller:
 
             # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
             self.system.player_move_state_update(command, player)
+            
 
             # プレイヤーとステージオブジェクトの当たり判定を行う
             self.system.player_hit_check(self.count, player, objects)

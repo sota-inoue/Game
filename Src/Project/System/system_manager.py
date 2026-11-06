@@ -32,6 +32,7 @@ class System:
 
     def player_move_state_update(self, cmd: Command, player: Player) -> None:
         move_state_update(cmd, player)
+        
 
     def player_hit_check(self, count: int, player: Player, objects: StageObjectManager) -> None:
         self.hit_check.update(count, player, objects)
