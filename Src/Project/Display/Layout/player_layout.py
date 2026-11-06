@@ -63,10 +63,10 @@ class PlayerLayout:
         # ジャンプ上昇時のY座標
         self.player_y = [
             position_y[0],
-            position_y[0] + player_speed_y,
-            position_y[0] + player_speed_y * 2,
-            position_y[0] + player_speed_y * 3,
-            position_y[1]
+            position_y[0] - self._player_height // 2,
+            position_y[0] - self._player_height,
+            position_y[0] - self._player_height // 2,
+            position_y[0]
         ]
 
     def get_player_layout(self, x_index: int, y_index: int):

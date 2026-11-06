@@ -6,9 +6,11 @@ from asset_paths import (
     STAGE1_BACK_GRAUND,
     TITLE_SELECT_PLAY,  TITLE_SELECT_EXIT,
     GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
-    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR,
+    BOSS_IMAGE_PATH, BOSS_STAGE_IMAGE_PATH,
+    STAGE_BACK_GROUND1, STAGE_BACK_GROUND2, STAGE_BACK_GROUND3, STAGE_BACK_GROUND4, STAGE_BACK_GROUND5
 )
-from config import GRAY
+from config import GRAY, BOSS_WIDTH_SCALE, BOSS_HEIGHT_SCALE, BOSS_TOP_X, BOSS_TOP_Y
 from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
 
 
@@ -36,6 +38,8 @@ class GameDisplay:
             PauseSceneSelection.RESUME: self._image.get_image(PAUSE_SELECT_START),
             PauseSceneSelection.TITLE: self._image.get_image(PAUSE_SELECT_TITLE)
         }
+
+        self._background_images = [STAGE_BACK_GROUND1, STAGE_BACK_GROUND2, STAGE_BACK_GROUND3, STAGE_BACK_GROUND4, STAGE_BACK_GROUND5]
 
         self._width = surface.get_width()
         self._height = surface.get_height()
@@ -102,12 +106,35 @@ class GameDisplay:
         self._surface.fill(GRAY)
         self.draw_text( "ENDING", self._width // 2, self._height // 2 )
 
-    def draw_stage1_bg(self) -> None:
+    def draw_stage1_bg(self, count: int) -> None:
+        # 4フレームごとに背景画像を切り替えてループする
+        index = (count // 4) % len(self._background_images)
+
         # 背景画像を取得する
-        image = self._image.get_image(STAGE1_BACK_GRAUND)
+        image = self._image.get_image(self._background_images[index])
 
         # 画面サイズに変更する
-        image = pygame.transform.scale( image, (self._width, self._height) )
+        image = pygame.transform.scale(image, (self._width, self._height))
 
         # 背景画像を描画する
-        self._surface.blit( image,(0, 0) )
+        self._surface.blit(image, (0, 0))
+
+    def draw_boss_stage(self) -> None:
+        boss_stage_image = self._image.get_image(BOSS_STAGE_IMAGE_PATH)
+        boss_stage_image = pygame.transform.scale(boss_stage_image, (self._width, self._height))
+        self._surface.blit(boss_stage_image, (0, 0))
+
+    def draw_boss(self) -> None:
+
+        boss_image = self._image.get_image(BOSS_IMAGE_PATH)
+
+        boss_width = int(self._width * BOSS_WIDTH_SCALE)
+        boss_height = int(self._width * BOSS_HEIGHT_SCALE)
+
+        boss_image = pygame.transform.scale(boss_image, (boss_width, boss_height))
+
+        boss_x = int(self._width * BOSS_TOP_X) - boss_width // 2
+        boss_y = int(self._height * BOSS_TOP_Y) - boss_height
+
+        self._surface.blit(boss_image, (boss_x, boss_y))
+

@@ -20,11 +20,14 @@ class State:
         self._player = Player()
         self._attack = Attack()
 
+        self._boss_hp = 10
+
     def title_reset(self):
         self.stage_reset()
         self._game_flag.reset()
 
     def stage_reset(self):
+        self._boss_hp = 10
         self._objects.clear()
         self._player.reset()
         self._attack.reset()
@@ -44,6 +47,12 @@ class State:
     # ==================================================
     # フラグのGetter
     # ==================================================
+
+    def get_boss_hp(self) -> int:
+        return self._boss_hp
+
+    def set_boss_hp(self, hp: int) -> None:
+        self._boss_hp = hp
 
     def get_game_phase(self) -> GamePhase:
         return self._game_flag.get_game_phase()

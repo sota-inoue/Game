@@ -108,9 +108,14 @@ class DisplayManager:
     def draw_ending(self):
         self._game.draw_ending()
 
-    def draw_stage(self):
-        self._game.draw_stage1_bg()
+    def draw_stage(self, count: int):
+        self._game.draw_stage1_bg(count)
 
+    def draw_boss_stage(self):
+        self._game.draw_boss_stage()
+
+    def draw_boss(self):
+        self._game.draw_boss()
 
 
     def draw_stage_object(self, player_data, map_data, attack_data):
@@ -122,8 +127,12 @@ class DisplayManager:
     def draw_urgency_level(self, hp):
         self._ui.health_draw(hp)
 
+    def draw_boss_health(self, boss_urgency_level: int):
+        self._ui.boss_health_draw(boss_urgency_level)
+
     def touch_render(self):
         self._touch.draw_controller()
 
     def touch_iamge_render(self):
         self._touch.draw_controller_image()
+

@@ -6,33 +6,27 @@ from StageObject.object_parameters import(
     OJISAN_DAMAGE,
     OJISAN_IS_JUMPABLE,
     OJISAN_ID,
-    STRONG_OJISAN_HP,
-    STRONG_OJISAN_DAMAGE,
-    STRONG_OJISAN_IS_JUMPABLE,
-    STRONG_OJISAN_ID,
+
     SMARTPHONE_USER_HP,
     SMARTPHONE_USER_DAMAGE,
     SMARTPHONE_USER_IS_JUMPABLE,
     SMARTPHONE_USER_ID,
-    FUROCAN_KAIWAI_HP,
-    FUROCAN_KAIWAI_DAMAGE,
-    FUROCAN_KAIWAI_IS_JUMPABLE,
-    FUROCAN_KAIWAI_ID,
-    CARRY_CASE_PERSON_HP,
-    CARRY_CASE_PERSON_DAMAGE,
-    CARRY_CASE_PERSON_IS_JUMPABLE,
-    CARRY_CASE_PERSON_ID,
-    YANCHA_GROUP_HP,
-    YANCHA_GROUP_DAMAGE,
-    YANCHA_GROUP_IS_JUMPABLE,
-    YANCHA_GROUP_ID,
-    CIVILIAN_HP,
-    CIVILIAN_DAMAGE,
-    CIVILIAN_IS_JUMPABLE,
-    CIVILIAN_ID
+
+    BOSS_LARGE_ATTACK_ID,
+    BOSS_LARGE_ATTACK_HP,
+    BOSS_LARGE_ATTACK_DAMAGE,
+    BOSS_LARGE_ATTACK_IS_JUMPABLE,
+
+    BOSS_HOMING_ATTACK_ID,
+    BOSS_HOMING_ATTACK_HP,
+    BOSS_HOMING_ATTACK_DAMAGE,
+    BOSS_HOMING_ATTACK_IS_JUMPABLE,
 )
 
-from asset_paths import ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE
+from asset_paths import (
+    ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE, STUDENT_IMAGE_PATH, STUDENT_DAMAGED_IMAGE, 
+    BOSS_LARGE_ATTACK_IMAGE_PATH, BOSS_HOMING_ATTACK_IMAGE_PATH
+)
 
 class Enemy(StageObject):
     def __init__(self, image_path: str, id: int, size: int, is_jumpable: bool, damage: int, hp: int, hit_image: str) -> None:
@@ -85,7 +79,6 @@ class Ojisan(Enemy):
     def get_is_side_move(self) -> bool:
         return self._is_sive_move
 
-
     def set_is_side_move(self, is_side_move: bool) -> None:
         self._is_sive_move = is_side_move
 
@@ -93,6 +86,61 @@ class Ojisan(Enemy):
     def get_cell_num(self) -> int:
         return self._cell_mum
 
+    def set_cell_num(self, cell_num: int) -> None:
+        self._cell_mum = cell_num
+
+
+class Student(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = STUDENT_IMAGE_PATH,
+            id = SMARTPHONE_USER_ID,
+            size = 1,
+            is_jumpable = SMARTPHONE_USER_IS_JUMPABLE,
+            damage = SMARTPHONE_USER_DAMAGE,
+            hp = SMARTPHONE_USER_HP,
+            hit_image = STUDENT_DAMAGED_IMAGE
+        )
+
+
+class BossLargeAttack(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = BOSS_LARGE_ATTACK_IMAGE_PATH,
+            id = BOSS_LARGE_ATTACK_ID,
+            size = 1,
+            is_jumpable = BOSS_LARGE_ATTACK_IS_JUMPABLE,
+            damage = BOSS_LARGE_ATTACK_DAMAGE,
+            hp = BOSS_LARGE_ATTACK_HP,
+            hit_image = BOSS_LARGE_ATTACK_IMAGE_PATH
+        )
+
+
+class BossHomingAttack(Enemy):
+    def __init__(self) -> None:
+
+        super().__init__(
+            image_path = BOSS_HOMING_ATTACK_IMAGE_PATH,
+            id = BOSS_HOMING_ATTACK_ID,
+            size = 1,
+            is_jumpable = BOSS_HOMING_ATTACK_IS_JUMPABLE,
+            damage = BOSS_HOMING_ATTACK_DAMAGE,
+            hp = BOSS_HOMING_ATTACK_HP,
+            hit_image = BOSS_HOMING_ATTACK_IMAGE_PATH
+        )
+
+        self._is_sive_move: bool = False
+        self._cell_mum: int = -1
+
+    def get_is_side_move(self) -> bool:
+        return self._is_sive_move
+
+    def set_is_side_move(self, is_side_move: bool) -> None:
+        self._is_sive_move = is_side_move
+
+
+    def get_cell_num(self) -> int:
+        return self._cell_mum
 
     def set_cell_num(self, cell_num: int) -> None:
         self._cell_mum = cell_num

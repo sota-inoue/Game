@@ -1,5 +1,7 @@
 from State.stage_object_data import StageObjectManager
-from State.player import Player, Player_Position_y, Player_Move_State_y, Player_Layout_y
+from State.player import Player, Player_Move_State_y
+
+from StageObject.object_parameters import BOSS_HOMING_ATTACK_ID, OJISAN_ID
 
 class PlayerHitCheck:
     def __init__(self):
@@ -23,16 +25,18 @@ class PlayerHitCheck:
 
         # オブジェクトが存在する場合
         if obj is not None:
-            # ジャンプで回避できない場合はダメージを加算する
-            if not (player_position_y == Player_Position_y.Y2 and obj.get_is_jumpable()):
+
+            # ジャンプ中かどうか
+            is_jump = player.get_state_y() == Player_Move_State_y.JUMP
+            
+            is_jumpable = obj.get_is_jumpable()
+
+            # ジャンプしていない、またはジャンプで回避できない場合
+            if not is_jump or not is_jumpable:
+
                 urgency_level += obj.get_damage()
                 player.set_is_hit(True)
                 obj.set_is_draw(False)
-                if player.get_state_y() == Player_Move_State_y.JUMP and player.get_layout_y() == Player_Layout_y.Y1_0:
-                    player.set_state_y(Player_Move_State_y.STAY)
-
-                if player.get_state_y() == Player_Move_State_y.DOWN:
-                    player.set_layout_y(Player_Layout_y.Y1_2)
 
 
         # プレイヤーの左隣のマス
@@ -42,7 +46,7 @@ class PlayerHitCheck:
             obj1 = stage_data.get_object(lane_num, left_cell)
 
             if obj1 is not None:
-                if obj1.get_id() == 1:
+                if obj1.get_id() == BOSS_HOMING_ATTACK_ID or obj1.get_id() == OJISAN_ID:
                     urgency_level += obj1.get_damage()
                     player.set_is_hit(True)
 
@@ -57,7 +61,7 @@ class PlayerHitCheck:
             obj2 = stage_data.get_object(lane_num, right_cell)
 
             if obj2 is not None:
-                if obj2.get_id() == 1:
+                if obj2.get_id() == BOSS_HOMING_ATTACK_ID or obj2.get_id() == OJISAN_ID:
                     urgency_level += obj2.get_damage()
                     player.set_is_hit(True)
 

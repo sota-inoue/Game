@@ -29,7 +29,7 @@ class Controller:
         self.system = System()
         self.state = State()
 
-        #self.system.play_TitleBGM()
+        # self.system.play_TitleBGM()
         self.loop_flug = True
         self.count = 0
 
@@ -58,7 +58,14 @@ class Controller:
 
         # ポーズから復帰した場合
         if game_phase == GamePhase.PAUSE and new_game_phase != GamePhase.PAUSE:
-            self.count = self._last_count
+            # タイトルに戻る場合はステージをリセットする
+            if new_game_phase == GamePhase.TITLE:
+                self.state.title_reset()
+                self.count = 0
+                self._last_count = 0
+            else:
+                self.count = self._last_count
+
             self.state.set_game_command(Command.NONE)
             return
 
@@ -84,16 +91,18 @@ class Controller:
         player = self.state.get_player_data()
         objects = self.state.get_objects_data()
         stage = self.state.get_stage_number()
-
+        boss_hp = self.state.get_boss_hp()
+        attack = self.state.get_attack_data()
 
         # 4カウントごとにゲーム内部の主要な更新処理を行う
         if self.count == 0 or self.count % 4 == 0:
             # マップを更新し、ステージクリア条件を判定する
-            is_gameclear = self.system.map_update(self.count, objects, stage)
+            is_gameclear = self.system.map_update(self.count, objects, stage, boss_hp)
             self.state.set_is_gameclear(is_gameclear)
 
             # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
             self.system.player_move_state_update(command, player)
+            
 
             # プレイヤーとステージオブジェクトの当たり判定を行う
             self.system.player_hit_check(self.count, player, objects)
@@ -105,8 +114,13 @@ class Controller:
 
             # 攻撃入力があった場合は攻撃データを生成する
             if command == Command.ATTACK:
-                attack = self.state.get_attack_data()
-                self.system.player_attack(player, objects, attack)
+                if stage == StageNumber.STAGE_1:
+                    self.system.player_attack(player, objects, attack)
+                elif stage == StageNumber.STAGE_2:
+                    new_boss_hp = self.system.player_attack(player, objects, attack, boss_hp)
+                    self.state.set_boss_hp(new_boss_hp)
+                    is_gameclear = new_boss_hp <= 0
+                    self.state.set_is_gameclear(is_gameclear)
 
         # プレイヤーの描画座標を毎カウント更新する
         self.system.player_move(player)
@@ -137,7 +151,7 @@ class Controller:
         # ゲームステージを描画する
         elif game_state == GamePhase.STAGE:
             # ステージの背景を描画する
-            self._display.draw_stage()
+            
 
             # ステージ内の描画に必要なデータを取得する
             map_data = self.state.get_objects_data()
@@ -147,8 +161,13 @@ class Controller:
             stage_num = self.state.get_stage_number()
 
             if stage_num == StageNumber.STAGE_1:  # ボス戦の場合はボスオブジェクトを描画
+                self._display.draw_stage(self.count)
                 self._display.draw_stage_object(player_data, map_data, attack_data)
             elif stage_num == StageNumber.STAGE_2:
+                self._display.draw_boss_stage()
+                self._display.draw_boss()
+                boss_hp = self.state.get_boss_hp()
+                self._display.draw_boss_health(boss_hp)
                 self._display.draw_boss_object(player_data, map_data, attack_data)
 
 
@@ -187,11 +206,12 @@ class Controller:
 
             # 現在の入力コマンドを取得して保存する
             command = self.input.get_command()
-            self.state.set_game_command(command)
 
             # ボタンが押された場合は効果音を再生する
-            if self.input.get_is_click():
+            if command != Command.NONE:
                 self.system.play_PushButton()
+
+            self.state.set_game_command(command)
 
             # ゲームフェーズを更新する
             self.progress_update()

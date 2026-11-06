@@ -32,19 +32,20 @@ class System:
 
     def player_move_state_update(self, cmd: Command, player: Player) -> None:
         move_state_update(cmd, player)
+        
 
     def player_hit_check(self, count: int, player: Player, objects: StageObjectManager) -> None:
         self.hit_check.update(count, player, objects)
 
-    def map_update(self, count: int, objects: StageObjectManager, state: StageNumber) -> bool:
-        return self._map.stage_update(objects, count, state)
+    def map_update(self, count: int, objects: StageObjectManager, state: StageNumber, boss_hp: int) -> bool:
+        return self._map.stage_update(objects, count, state, boss_hp)
 
     def draw_is_middle_lane_update(self, objects: StageObjectManager, player: Player) -> None:
         self._map.draw_is_middle_lane_update(objects, player)
 
 
-    def player_attack(self, player: Player, objects: StageObjectManager, attack_data: Attack) -> None:
-         return attack(player, objects, attack_data)
+    def player_attack(self, player: Player, objects: StageObjectManager, attack_data: Attack, boss_hp: int | None = None) -> int | None:
+         return attack(player, objects, attack_data, boss_hp)
 
 
     def progress_update(self, command: Command, flag: GameFlag, count: int) -> bool:
