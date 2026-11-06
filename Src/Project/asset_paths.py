@@ -26,6 +26,10 @@ PLAYER_LEHT_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Left.png"
 ENEMY_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
 OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"
 
+STUDENT_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "distracted_walking.png"
+STUDENT_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "distracted_walking2.png"
+
+
 
 
 OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"

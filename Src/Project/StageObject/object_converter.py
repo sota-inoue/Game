@@ -1,15 +1,20 @@
-from StageObject.enemy import Ojisan
+from StageObject.enemy import Ojisan, Student
 from StageObject.obstacle import Banana
 
 from StageObject.stage_object import StageObject
+
+from StageObject.object_parameters import(
+    OJISAN_ID, BANANA_ID, SMARTPHONE_USER_ID
+)
 
 
 class ObjectConverter:
     def __init__(self):
         self._objects = {
             0: None,
-            1: Ojisan,
-            51: Banana
+            OJISAN_ID: Ojisan,
+            BANANA_ID: Banana,
+            SMARTPHONE_USER_ID: Student
         }
 
     def convert(self,lists: list[int]) -> list[StageObject | None]:

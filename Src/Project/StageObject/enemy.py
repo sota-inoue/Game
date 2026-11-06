@@ -32,7 +32,7 @@ from StageObject.object_parameters import(
     CIVILIAN_ID
 )
 
-from asset_paths import ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE
+from asset_paths import ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE, STUDENT_IMAGE_PATH, STUDENT_DAMAGED_IMAGE
 
 class Enemy(StageObject):
     def __init__(self, image_path: str, id: int, size: int, is_jumpable: bool, damage: int, hp: int, hit_image: str) -> None:
@@ -85,7 +85,6 @@ class Ojisan(Enemy):
     def get_is_side_move(self) -> bool:
         return self._is_sive_move
 
-
     def set_is_side_move(self, is_side_move: bool) -> None:
         self._is_sive_move = is_side_move
 
@@ -93,9 +92,21 @@ class Ojisan(Enemy):
     def get_cell_num(self) -> int:
         return self._cell_mum
 
-
     def set_cell_num(self, cell_num: int) -> None:
         self._cell_mum = cell_num
+
+
+class Student(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = STUDENT_IMAGE_PATH,
+            id = SMARTPHONE_USER_ID,
+            size = 1,
+            is_jumpable = SMARTPHONE_USER_IS_JUMPABLE,
+            damage = SMARTPHONE_USER_DAMAGE,
+            hp = SMARTPHONE_USER_HP,
+            hit_image = STUDENT_DAMAGED_IMAGE
+        )
 
 # class StrongOjisan(Enemy):
 #     def __init__(self) -> None:
