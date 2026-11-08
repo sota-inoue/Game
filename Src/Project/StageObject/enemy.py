@@ -21,11 +21,28 @@ from StageObject.object_parameters import(
     BOSS_HOMING_ATTACK_HP,
     BOSS_HOMING_ATTACK_DAMAGE,
     BOSS_HOMING_ATTACK_IS_JUMPABLE,
-)
+
+    GENERAL_PUBLIC1_ID,
+    GENERAL_PUBLIC1_HP,
+    GENERAL_PUBLIC1_DAMAGE,
+    GENERAL_PUBLIC1_IS_JUMPABLE,
+
+    GENERAL_PUBLIC2_ID,
+    GENERAL_PUBLIC2_HP,
+    GENERAL_PUBLIC2_DAMAGE,
+    GENERAL_PUBLIC2_IS_JUMPABLE,
+
+    GENERAL_PUBLIC3_ID,
+    GENERAL_PUBLIC3_HP,
+    GENERAL_PUBLIC3_DAMAGE,
+    GENERAL_PUBLIC3_IS_JUMPABLE,
+    )
 
 from asset_paths import (
     ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE, STUDENT_IMAGE_PATH, STUDENT_DAMAGED_IMAGE, 
-    BOSS_LARGE_ATTACK_IMAGE_PATH, BOSS_HOMING_ATTACK_IMAGE_PATH
+    BOSS_LARGE_ATTACK_IMAGE_PATH, BOSS_HOMING_ATTACK_IMAGE_PATH,
+    GENERAL_PUBLIC1_IMAGE_PATH, GENERAL_PUBLIC1_DAMAGED_IMAGE, GENERAL_PUBLIC2_IMAGE_PATH,
+    GENERAL_PUBLIC2_DAMAGED_IMAGE, GENERAL_PUBLIC3_IMAGE_PATH, GENERAL_PUBLIC3_DAMAGED_IMAGE
 )
 
 class Enemy(StageObject):
@@ -102,6 +119,43 @@ class Student(Enemy):
             hit_image = STUDENT_DAMAGED_IMAGE
         )
 
+class GeneralPublic1(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = GENERAL_PUBLIC1_IMAGE_PATH,
+            id = GENERAL_PUBLIC1_ID,
+            size = 1,
+            is_jumpable = GENERAL_PUBLIC1_IS_JUMPABLE,
+            damage = GENERAL_PUBLIC1_DAMAGE,
+            hp = GENERAL_PUBLIC1_HP,
+            hit_image = GENERAL_PUBLIC1_DAMAGED_IMAGE
+        )
+
+class GeneralPublic2(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = GENERAL_PUBLIC2_IMAGE_PATH,
+            id = GENERAL_PUBLIC2_ID,
+            size = 1,
+            is_jumpable = GENERAL_PUBLIC2_IS_JUMPABLE,
+            damage = GENERAL_PUBLIC2_DAMAGE,
+            hp = GENERAL_PUBLIC2_HP,
+            hit_image = GENERAL_PUBLIC2_DAMAGED_IMAGE
+        )
+
+class GeneralPublic3(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = GENERAL_PUBLIC3_IMAGE_PATH,
+            id = GENERAL_PUBLIC3_ID,
+            size = 1,
+            is_jumpable = GENERAL_PUBLIC3_IS_JUMPABLE,
+            damage = GENERAL_PUBLIC3_DAMAGE,
+            hp = GENERAL_PUBLIC3_HP,
+            hit_image = GENERAL_PUBLIC3_DAMAGED_IMAGE
+        )
+
+        
 
 class BossLargeAttack(Enemy):
     def __init__(self) -> None:
