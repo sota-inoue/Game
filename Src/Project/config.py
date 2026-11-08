@@ -46,7 +46,7 @@ STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE = 4 / 15  # 上レーンの上端位置（�
 STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15  # 下レーンの下端からの余白（画面高さに対する割合）
 
 # ボスステージのレイアウト設定
-BOSS_TOP_LANE_WIDTH_SCALE = 5 / 10  # 上レーンの幅（画面幅に対する割合）
+BOSS_TOP_LANE_WIDTH_SCALE = 4 / 10  # 上レーンの幅（画面幅に対する割合）
 BOSS_BOTTOM_LANE_WIDTH_SCALE = 9 / 10 # 下レーンの高さ（画面高さに対する割合）
 BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE = 7 / 15  # 上レーンの縦方向の余白（画面高さに対する割合）
 BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15 # 下レーンの縦方向の余白（画面高さに対する割合)
@@ -78,7 +78,7 @@ BOSS_INTRO_COUNT = 3 * FPS  # ボス登場フェーズの継続時間（秒）
 BOSS_DEFEAT_COUNT = 3 * FPS  # ボス撃破フェーズの継続時間（秒)
 
 
-BOSS_WIDTH_SCALE = BOSS_TOP_LANE_WIDTH_SCALE * 6 / 10  # 横幅
+BOSS_WIDTH_SCALE = BOSS_TOP_LANE_WIDTH_SCALE * 8 / 10  # 横幅
 BOSS_HEIGHT_SCALE = BOSS_WIDTH_SCALE  # 高さ
 BOSS_TOP_X = 1 / 2  # ボスの描画位置の左端座標（画面左端からの距離）
 BOSS_TOP_Y = BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE  # ボスの描画位置の上端座標（画面上端からの距離）

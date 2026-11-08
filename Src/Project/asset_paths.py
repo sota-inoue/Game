@@ -29,8 +29,14 @@ OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"
 STUDENT_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "distracted_walking.png"
 STUDENT_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "distracted_walking2.png"
 
+GENERAL_PUBLIC1_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "general_public_1.png"
+GENERAL_PUBLIC1_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "general_public_1_2.png"
 
+GENERAL_PUBLIC2_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "general_public_2.png"
+GENERAL_PUBLIC2_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "general_public_2_2.png"
 
+GENERAL_PUBLIC3_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "general_public_3.png"
+GENERAL_PUBLIC3_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "general_public_3_2.png"
 
 OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
 

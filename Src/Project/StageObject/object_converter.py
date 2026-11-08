@@ -1,4 +1,7 @@
-from StageObject.enemy import Ojisan, Student, BossLargeAttack, BossHomingAttack
+from StageObject.enemy import (
+    Ojisan, Student, BossLargeAttack, BossHomingAttack,
+    GeneralPublic1, GeneralPublic2, GeneralPublic3
+)
 from StageObject.obstacle import Banana, BossSmallAttack
 
 from StageObject.stage_object import StageObject
@@ -6,6 +9,7 @@ from StageObject.stage_object import StageObject
 from StageObject.object_parameters import(
     OJISAN_ID, BANANA_ID, SMARTPHONE_USER_ID, BOSS_SMALL_ATTACK_ID,
     BOSS_LARGE_ATTACK_ID,BOSS_HOMING_ATTACK_ID,
+    GENERAL_PUBLIC1_ID, GENERAL_PUBLIC2_ID, GENERAL_PUBLIC3_ID
 )
 
 
@@ -19,6 +23,9 @@ class ObjectConverter:
             BOSS_SMALL_ATTACK_ID: BossSmallAttack,
             BOSS_LARGE_ATTACK_ID: BossLargeAttack,
             BOSS_HOMING_ATTACK_ID: BossHomingAttack,
+            GENERAL_PUBLIC1_ID: GeneralPublic1,
+            GENERAL_PUBLIC2_ID: GeneralPublic2,
+            GENERAL_PUBLIC3_ID: GeneralPublic3
         }
 
     def convert(self,lists: list[int]) -> list[StageObject | None]:

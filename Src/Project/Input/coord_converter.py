@@ -22,8 +22,10 @@ def driver_to_game(x: int, y: int) -> tuple[int, int]:
     x = max(0, min(x, TOUCH_WIDTH - 1))
     y = max(0, min(y, TOUCH_HEIGHT - 1))
 
-    return x, y
+    # Y軸を反転する
+    y = TOUCH_HEIGHT - 1 - y
 
+    return x, y
 
 def pygame_to_game(x: int, y: int) -> tuple[int, int]:
     # タッチ画面の範囲を判定する
