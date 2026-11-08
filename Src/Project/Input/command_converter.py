@@ -25,17 +25,37 @@ class CommandConverter:
         ):
             return Command.NONE
 
-        # 上半分の入力
-        if touch_y < self.touch_height // 2:
-            if touch_x < self.touch_width // 2:
-                return Command.ATTACK
+        # タッチ座標を割合に変換する
+        x = touch_x / self.touch_width
+        y = touch_y / self.touch_height
+
+        # ATTACK
+        if 0.12 <= x <= 0.32 and 0.07 <= y <= 0.38:
+            return Command.ATTACK
+
+        # PAUSE
+        if 0.69 <= x <= 0.89 and 0.07 <= y <= 0.38:
             return Command.PAUSE
 
-        # 下半分の入力
-        if touch_x < self.touch_width // 3:
+        # LEFT
+        if 0.00 <= x <= 0.24 and 0.40 <= y <= 0.72:
             return Command.LEFT
 
-        if touch_x < self.touch_width * 2 // 3:
+        # RIGHT
+        if 0.78 <= x <= 1.00 and 0.40 <= y <= 0.72:
+            return Command.RIGHT
+
+        # JUMP（円形判定）
+        center_x = 0.50
+        center_y = 0.56
+
+        radius_x = 0.23
+        radius_y = 0.36
+
+        dx = (x - center_x) / radius_x
+        dy = (y - center_y) / radius_y
+
+        if dx * dx + dy * dy <= 1:
             return Command.JUMP
 
-        return Command.RIGHT
+        return Command.NONE

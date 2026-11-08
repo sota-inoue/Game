@@ -111,6 +111,9 @@ class DisplayManager:
     def draw_stage(self, count: int):
         self._game.draw_stage1_bg(count)
 
+    def draw_stage1_bg(self):
+        self._game.draw_stage_bg()
+
     def draw_boss_stage(self):
         self._game.draw_boss_stage()
 

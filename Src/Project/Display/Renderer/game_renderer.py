@@ -106,6 +106,16 @@ class GameDisplay:
         self._surface.fill(GRAY)
         self.draw_text( "ENDING", self._width // 2, self._height // 2 )
 
+    def draw_stage_bg(self) -> None:
+        # 背景画像を取得する
+        image = self._image.get_image(STAGE1_BACK_GRAUND)
+
+        # 画面サイズに変更する
+        image = pygame.transform.scale(image, (self._width, self._height))
+
+        # 背景画像を描画する
+        self._surface.blit(image, (0, 0))
+
     def draw_stage1_bg(self, count: int) -> None:
         # 4フレームごとに背景画像を切り替えてループする
         index = (count // 4) % len(self._background_images)
