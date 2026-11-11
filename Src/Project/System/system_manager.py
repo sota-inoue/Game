@@ -12,16 +12,13 @@ from System.Player.player_move import player_move, position_update, move_state_u
 from System.Player.player_hit_check import PlayerHitCheck
 from System.Player.player_attack import attack
 
-from System.progress_system import ProgressSystem
+from System.progress_system import pouse_update, title_update, gameover_update
 
 class System:
     def __init__(self):
         self.sound = SoundSystem()
         self._map = Map()
         self.hit_check = PlayerHitCheck()
-
-
-        self._progress = ProgressSystem()
 
 
     def player_move(self, player: Player) -> None:
@@ -40,17 +37,22 @@ class System:
     def map_update(self, count: int, objects: StageObjectManager, state: StageNumber, boss_hp: int) -> bool:
         return self._map.stage_update(objects, count, state, boss_hp)
 
-    def draw_is_middle_lane_update(self, objects: StageObjectManager, player: Player) -> None:
-        self._map.draw_is_middle_lane_update(objects, player)
+    def draw_is_middle_lane_update(self, objects: StageObjectManager, player: Player, count: int) -> None:
+        self._map.draw_is_middle_lane_update(objects, player, count)
 
 
     def player_attack(self, player: Player, objects: StageObjectManager, attack_data: Attack, boss_hp: int | None = None) -> int | None:
          return attack(player, objects, attack_data, boss_hp)
 
 
-    def progress_update(self, command: Command, flag: GameFlag, count: int) -> bool:
-        return self._progress.progress_update(command, flag, count)
+    def title_update(self, command: Command, flag: GameFlag) -> bool:
+        return title_update(command, flag)
 
+    def pause_update(self, command: Command, flag: GameFlag) -> None:
+        pouse_update(command, flag)
+
+    def gameover_update(self, command: Command, flag: GameFlag) -> None:
+        gameover_update(command, flag)
 
 
     def play_PushButton(self) -> None:

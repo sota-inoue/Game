@@ -1,6 +1,7 @@
 import pygame
 
 from Display.Renderer.image_manager import ImageManager
+from Display.Renderer.video_manager import VideoManager
 
 from asset_paths import (
     STAGE1_BACK_GRAUND,
@@ -17,9 +18,10 @@ from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameCle
 class GameDisplay:
     TEXT_COLOR = (0, 0, 0)
 
-    def __init__(self, surface: pygame.Surface, image: ImageManager):
+    def __init__(self, surface: pygame.Surface, image: ImageManager, video: VideoManager):
         self._surface = surface
         self._image = image
+        self._video = video
 
         self._title_images: dict[TitleSceneSelection, pygame.Surface] = {
             TitleSceneSelection.START: self._image.get_image(TITLE_SELECT_PLAY),
@@ -46,14 +48,6 @@ class GameDisplay:
 
         self._font = pygame.font.Font(None, 50)
 
-    def draw_text(self, text_data: str, x: int, y: int) -> None:
-        # 指定した文字列を作成する
-        text = self._font.render(text_data, True, self.TEXT_COLOR)
-        # 描画する文字列の幅と高さを取得する
-        text_width = text.get_width()
-        text_height = text.get_height()
-        # 指定された座標を文字列の中心として描画する
-        self._surface.blit(text, (x - text_width // 2, y - text_height // 2))
 
     def draw_title(self, state: TitleSceneSelection) -> None:
         # 現在の選択状態に対応するタイトル画像を取得する
@@ -66,55 +60,68 @@ class GameDisplay:
         self._surface.blit(image, (0, 0))
 
 
-    def draw_clear(self, state: GameClearSceneSelection) -> None:
-
-        if state == GameClearSceneSelection.CLEAR:
-            image = self._gameclear_images
-            image = pygame.transform.scale(image, (self._width, self._height))
-            self._surface.blit(image, (0, 0))
-        elif state == GameClearSceneSelection.MOVIE:
-            self._surface.fill(GRAY)
-            self.draw_text( "BOSS_MOVIE", self._width // 2, self._height // 2 )
+    def draw_clear(self) -> None:
+        image = self._gameclear_images
+        image = pygame.transform.scale(image, (self._width, self._height))
+        self._surface.blit(image, (0, 0))
 
 
     def draw_over(self, state: GameOverSceneSelection) -> None:
-        # 現在の選択状態に対応するゲームオーバー画像を取得する
         image = self._gameover_images[state]
-
-        # 画面サイズに合わせて画像をリサイズする
         image = pygame.transform.scale(image, (self._width, self._height))
-        
-        # ゲームオーバー画面を描画する
         self._surface.blit(image, (0, 0))
-
-    def draw_opening(self) -> None:
-        self._surface.fill(GRAY)
-        self.draw_text( "OPENING_MOVIE", self._width // 2, self._height // 2 )
 
     def draw_pause(self, state: PauseSceneSelection) -> None:
-        
-        # 現在の選択状態に対応するゲームクリア画像を取得する
         image = self._pause_images[state]
-
-        # 画面サイズに合わせて画像をリサイズする
         image = pygame.transform.scale(image, (self._width, self._height))
-
-        # ゲームクリア画面を描画する
         self._surface.blit(image, (0, 0))
-
-    def draw_ending(self) -> None:
-        self._surface.fill(GRAY)
-        self.draw_text( "ENDING", self._width // 2, self._height // 2 )
 
     def draw_stage_bg(self) -> None:
-        # 背景画像を取得する
         image = self._image.get_image(STAGE1_BACK_GRAUND)
-
-        # 画面サイズに変更する
         image = pygame.transform.scale(image, (self._width, self._height))
-
-        # 背景画像を描画する
         self._surface.blit(image, (0, 0))
+
+    def draw_boss_stage(self) -> None:
+        boss_stage_image = self._image.get_image(BOSS_STAGE_IMAGE_PATH)
+        boss_stage_image = pygame.transform.scale(boss_stage_image, (self._width, self._height))
+        self._surface.blit(boss_stage_image, (0, 0))
+
+
+
+    def draw_opening(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_opening_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+    def draw_ending(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_ending_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+    def draw_boss_intro(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_boss_intro_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+    def draw_boss_defeat(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_boss_defeat_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+
+
 
     def draw_stage1_bg(self, count: int) -> None:
         # 4フレームごとに背景画像を切り替えてループする
@@ -129,10 +136,7 @@ class GameDisplay:
         # 背景画像を描画する
         self._surface.blit(image, (0, 0))
 
-    def draw_boss_stage(self) -> None:
-        boss_stage_image = self._image.get_image(BOSS_STAGE_IMAGE_PATH)
-        boss_stage_image = pygame.transform.scale(boss_stage_image, (self._width, self._height))
-        self._surface.blit(boss_stage_image, (0, 0))
+
 
     def draw_boss(self) -> None:
 

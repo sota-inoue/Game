@@ -14,7 +14,7 @@ class StageObjectManager:
         # 1レーンあたりのマス数
         self._cell_num: int = CELL_NUM
 
-        self._is_middle_lane_drawable: bool = False
+        self._draw_on_middle_lane: bool = False
 
         # ステージ上のオブジェクトを管理する2次元配列
         self._objects: list[list[StageObject | None]] = [
@@ -116,6 +116,7 @@ class StageObjectManager:
             [None for _ in range(self._cell_num)]
             for _ in range(self._lane_num)
         ]
+        self._draw_on_middle_lane = False
 
     def get_draw_on_middle_lane(self) -> bool:
         return self._draw_on_middle_lane

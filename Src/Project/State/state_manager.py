@@ -76,6 +76,9 @@ class State:
     # フラグのSetter
     # ==================================================
 
+    def set_game_phase(self, state: GamePhase) -> None:
+        self._game_flag.set_game_phase(state)
+
     def set_is_gameclear(self, value: bool) -> None:
         self._game_flag.set_is_gameclear(value)
 
