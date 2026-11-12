@@ -1,0 +1,4462 @@
+﻿
+========================================
+FILE: Src\Project\Application\app.py
+========================================
+
+import pygame
+import time
+
+from Application.game_controller import Controller
+
+
+class App:
+    def __init__(self, mode):
+        self.controller = Controller(mode)
+        self.clock = pygame.time.Clock()
+        self.pre_time = time.perf_counter()
+
+        self.run()
+
+    def run(self):
+        while True:
+            start_time = time.perf_counter()
+
+            if not self.controller.loop():
+                self.controller.close()
+                break
+
+            # controller.loop()だけの処理時間
+            processing_time = time.perf_counter() - start_time
+
+            # 前回のフレーム開始から今回のフレーム開始まで
+            frame_time = start_time - self.pre_time
+
+            if frame_time > 0:
+                fps = 1 / frame_time
+            else:
+                fps = 0
+
+            # デバッグログ
+            #print(f"処理時間 = {processing_time:.4f}s : 1フレーム時間 = {frame_time:.4f}s : FPS = {fps:.2f}")
+
+            self.pre_time = start_time
+
+            # 指定したフレームレートになるように処理速度を調整する
+            self.clock.tick(8)
+
+        
+
+
+========================================
+FILE: Src\Project\Application\game_controller.py
+========================================
+
+import pygame
+
+from Input.command_converter import Command
+
+# 入力処理を管理するクラス
+from Input.input_manager import Input
+
+# ゲーム内の状態を管理するクラス
+from State.state_manager import State
+from State.game_flag import GamePhase, StageNumber
+
+
+# ゲームの進行や内部処理を管理するクラス
+from System.system_manager import System
+
+# 画面への出力処理を管理するクラス
+from Display.display_manager import DisplayManager
+
+
+
+class Controller:
+    def __init__(self,mode):
+        self.mode = mode
+        pygame.init()
+        
+        self._display = DisplayManager(mode)
+
+        self.input = Input(mode)
+        self.system = System()
+        self.state = State()
+
+        # self.system.play_TitleBGM()
+        self.loop_flug = True
+        self.count = 0
+
+        self._last_count = 0
+
+
+    def input_update(self):
+
+        self.input.command_update()
+
+        # 4カウントごとに入力とゲーム進行を更新する
+        if self.count % 4 == 0:
+
+            # 現在の入力コマンドを取得して保存する
+            command = self.input.get_command()
+
+            # ボタンが押された場合は効果音を再生する
+            if command != Command.NONE:
+                self.system.play_PushButton()
+
+            self.state.set_game_command(command)
+
+
+    def progress_update(self):
+
+        # 現在のゲーム進行状態と操作情報を取得する
+        game_phase = self.state.get_game_phase()
+        game_flag = self.state.get_game_flag()
+        command = self.state.get_game_command()
+
+        if game_phase == GamePhase.TITLE:
+            self.loop_flug = self.system.title_update(command, game_flag)
+
+        elif game_phase == GamePhase.OPENING and command == Command.RIGHT:
+            self.state.set_game_phase(GamePhase.TITLE)
+
+        elif game_phase == GamePhase.BOSS_INTRO and command == Command.RIGHT:
+            self.state.set_game_phase(GamePhase.BOSS_STAGE)
+
+        elif game_phase in (GamePhase.STAGE, GamePhase.BOSS_STAGE):
+
+            if command == Command.PAUSE:
+                self.state.set_game_phase(GamePhase.PAUSE)
+                self._last_count = self.count
+                self.count = 0
+                self._display.save_surface()
+
+            else:
+                # ステージ内部処理
+                self.stage_update()
+
+        elif game_phase == GamePhase.GAMEOVER:
+            self.system.gameover_update(command, game_flag)
+
+        elif game_phase == GamePhase.PAUSE:
+            self.system.pause_update(command, game_flag)
+
+
+    def stage_update(self):
+        # ステージ処理に必要な内部データを取得する
+        command = self.state.get_game_command()
+        player = self.state.get_player_data()
+        objects = self.state.get_objects_data()
+        phase = self.state.get_game_phase()
+        boss_hp = self.state.get_boss_hp()
+        attack = self.state.get_attack_data()
+
+        # 4カウントごとにゲーム内部の主要な更新処理を行う
+        if self.count == 0 or self.count % 4 == 0:
+            # マップを更新し、ステージクリア条件を判定する
+            is_gameclear = self.system.map_update(self.count, objects, phase, boss_hp)
+
+            if is_gameclear == True:
+                self.count = 0
+                if phase == GamePhase.STAGE:
+                    self.state.set_game_phase(GamePhase.CLEAR)
+                elif phase == GamePhase.BOSS_STAGE:
+                    self.state.set_game_phase(GamePhase.BOSS_DEFEAT)
+
+            # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
+            self.system.player_move_state_update(command, player)
+
+            # プレイヤーとステージオブジェクトの当たり判定を行う
+            self.system.player_hit_check(self.count, player, objects)
+
+            # 現在の切迫度からゲームオーバー条件を判定する
+            hp = self.state.get_urgency_level()
+            is_gameover = hp >= 100
+
+            if is_gameover == True:
+                self.state.set_game_phase(GamePhase.GAMEOVER)
+                self._display.save_surface()
+
+
+            # 攻撃入力があった場合は攻撃データを生成する
+            if command == Command.ATTACK:
+                if phase == GamePhase.STAGE:
+                    self.system.player_attack(player, objects, attack)
+                elif phase == GamePhase.BOSS_STAGE:
+                    new_boss_hp = self.system.player_attack(player, objects, attack, boss_hp)
+                    self.state.set_boss_hp(new_boss_hp)
+                    is_gameclear = new_boss_hp <= 0
+                    self.state.set_is_gameclear(is_gameclear)
+
+        # プレイヤーの描画座標を毎カウント更新する
+        self.system.player_move(player)
+        self.system.player_position_update(player)
+
+        self.system.draw_is_middle_lane_update(objects, player, self.count)
+
+
+    def draw(self):
+        # 現在のゲーム進行状態を取得する
+        game_state = self.state.get_game_phase()
+
+        if game_state == GamePhase.PAUSE:
+            pause = self.state.get_pause_scene_selection()
+            self._display.draw_pause(pause)
+
+        # オープニング画面を描画する
+        elif game_state == GamePhase.OPENING:
+            if self._display.draw_opening(self.count):
+                self.state.set_game_phase(GamePhase.TITLE)
+
+        # タイトル画面を描画する
+        elif game_state == GamePhase.TITLE:
+            title = self.state.get_title_scene_selection()
+            self._display.draw_title(title)
+
+
+        # ゲームステージを描画する
+        elif game_state == GamePhase.STAGE:
+            # ステージの背景を描画する
+            self._display.draw_stage()
+
+            # ステージ内の描画に必要なデータを取得する
+            map_data = self.state.get_objects_data()
+            player_data = self.state.get_player_data()
+            attack_data = self.state.get_attack_data()
+
+            self._display.draw_stage_object(player_data, map_data, attack_data)
+
+            urgency_level = self.state.get_urgency_level()
+            self._display.draw_urgency_level(urgency_level)
+
+        elif game_state == GamePhase.BOSS_STAGE:
+            self._display.draw_boss_stage()
+            self._display.draw_boss()
+
+            boss_hp = self.state.get_boss_hp()
+            self._display.draw_boss_health(boss_hp)
+
+            map_data = self.state.get_objects_data()
+            player_data = self.state.get_player_data()
+            attack_data = self.state.get_attack_data()
+            self._display.draw_boss_object(player_data, map_data, attack_data)
+
+            urgency_level = self.state.get_urgency_level()
+            self._display.draw_urgency_level(urgency_level)
+
+
+        # ゲームクリア画面を描画する
+        elif game_state == GamePhase.CLEAR:
+            if self.count < 40:
+                self._display.draw_clear()
+            else:
+                self.state.set_game_phase(GamePhase.BOSS_INTRO)
+
+        elif game_state == GamePhase.BOSS_INTRO:
+            if self._display.draw_boss_intro(self.count):
+                self.state.set_game_phase(GamePhase.BOSS_STAGE)
+
+        elif game_state == GamePhase.BOSS_DEFEAT:
+            if self.count < 24:
+                self._display.draw_clear()
+            else:
+                defeat_count = self.count - 24
+                if self._display.draw_boss_defeat(defeat_count):
+                    self.state.set_game_phase(GamePhase.ENDING)
+                    self.count = 0
+
+        # エンディング画面を描画する
+        elif game_state == GamePhase.ENDING:
+            if self._display.draw_ending(self.count):
+                self.state.set_game_phase(GamePhase.TITLE)
+
+        # ゲームオーバー画面を描画する
+        elif game_state == GamePhase.GAMEOVER:
+            self._display.load_surface()
+            self._display.draw_black_overlay()
+            over= self.state.get_gameover_scene_selection()
+            self._display.draw_over(over)
+
+        # self.renderer.touch_render()
+        self._display.touch_iamge_render()
+
+        self._display.output()
+
+    def update_phase_transition(self, before_phase: GamePhase, after_phase: GamePhase):
+
+        # ゲーム状態が変化していない場合
+        if before_phase == after_phase:
+            self.count += 1
+            return
+
+        # ポーズから復帰した場合
+        if before_phase == GamePhase.PAUSE and after_phase != GamePhase.PAUSE:
+
+            # タイトルに戻る場合
+            if after_phase == GamePhase.TITLE:
+                self.state.title_reset()
+                self.count = 0
+                self._last_count = 0
+
+            # ゲームに復帰する場合
+            else:
+                self.count = self._last_count
+
+            self.state.set_game_command(Command.NONE)
+            return
+
+        # 通常のゲーム状態が変化した場合
+        self.count = 0
+        self._last_count = 0
+
+        if after_phase == GamePhase.STAGE:
+            self.state.set_game_command(Command.NONE)
+            self.state.stage_reset()
+
+        elif after_phase == GamePhase.BOSS_STAGE:
+            self.state.set_game_command(Command.NONE)
+            self.state.stage_reset()
+
+        elif after_phase == GamePhase.TITLE:
+            self.state.title_reset()
+
+        elif after_phase == GamePhase.GAMEOVER:
+            self._display.save_surface()
+
+        elif after_phase == GamePhase.CLEAR or after_phase == GamePhase.BOSS_DEFEAT:
+            self._display.save_surface()
+            self.count = 0
+
+    def loop(self):
+        self.input_update()
+
+        before_phase = self.state.get_game_phase()
+        self.progress_update()
+        self.draw()
+        after_phase = self.state.get_game_phase()
+
+        # 描画前にフェーズ変更を反映する
+        self.update_phase_transition(before_phase, after_phase)
+
+        return self.loop_flug
+
+    
+    def close(self):
+        if self.mode:
+            self._display.fb_close()
+        pygame.quit()
+
+========================================
+FILE: Src\Project\asset_paths.py
+========================================
+
+from pathlib import Path
+
+# パスの設定
+
+BASE_DIR = Path(__file__).resolve().parent / "Assets"
+
+STAGE1_PATH = BASE_DIR / "Map" / "stage1.txt"
+STAGE2_PATH = BASE_DIR / "Map" / "stage2.txt"
+STAGE3_PATH = BASE_DIR / "Map" / "stage3.txt"
+
+DECIDE_BUTTON_SOUND_PATH = BASE_DIR / "Sound" / "Se" / "decide_button.mp3"
+BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Morning.mp3"
+
+
+OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
+
+PLAYER_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Player.png"
+PLAYER_DAMAGE_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Damaged.png"
+PLAYER_THROW_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Attack.png"
+PLAYER_JUMP_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Jump.png"
+PLAYER_DOWN_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Down.png"
+PLAYER_RIGHT_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Right.png"
+PLAYER_LEHT_IMAGE_PATH = BASE_DIR / "Image" / "Player" / "Left.png"
+
+
+ENEMY_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "office_worker.png"
+OJISAN_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "ojisan_damaged.png"
+
+STUDENT_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "distracted_walking.png"
+STUDENT_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "distracted_walking2.png"
+
+GENERAL_PUBLIC1_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "general_public_1.png"
+GENERAL_PUBLIC1_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "general_public_1_2.png"
+
+GENERAL_PUBLIC2_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "general_public_2.png"
+GENERAL_PUBLIC2_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "general_public_2_2.png"
+
+GENERAL_PUBLIC3_IMAGE_PATH = BASE_DIR / "Image" / "Enemy" / "general_public_3.png"
+GENERAL_PUBLIC3_DAMAGED_IMAGE = BASE_DIR / "Image" / "Enemy" / "general_public_3_2.png"
+
+OBSTACLE_IMAGE_PATH = BASE_DIR / "Image" / "Obstacle" / "banana.png"
+
+STAGE1_BACK_GRAUND = BASE_DIR / "Image" / "Backgrounds" / "stage1_bg.jpg"
+
+TITLE_SELECT_PLAY = BASE_DIR / "Image" / "SELECT" / "Title" / "Play.jpg"
+TITLE_SELECT_EXIT = BASE_DIR / "Image" / "SELECT" / "Title" / "Exit.jpg"
+
+GAMECLEAR_SELECT_NEXT = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Next.jpg"
+GAMECLEAR_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameClear" / "Title.jpg"
+GAMECLEAR = BASE_DIR / "Image" / "SELECT" / "GameClear" / "game_clear.png"
+
+GAMEOVER_SELECT_CONTINUE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Continue.png"
+GAMEOVER_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "GameOver" / "Title.png"
+
+PAUSE_SELECT_START = BASE_DIR / "Image" / "SELECT" / "Pause" / "Start.png"
+PAUSE_SELECT_TITLE = BASE_DIR / "Image" / "SELECT" / "Pause" / "Title.png"
+
+OPNING_PAGE_1 = BASE_DIR / "Image" / "OP" / "op_1.png"
+OPNING_PAGE_2 = BASE_DIR / "Image" / "OP" / "op_2.png"
+OPNING_PAGE_3 = BASE_DIR / "Image" / "OP" / "op_3.png"
+
+URGENCY_FRAME1 = BASE_DIR / "Image" / "HP" / "hpB0 2.png"
+URGENCY_FRAME2 = BASE_DIR / "Image" / "HP" / "hpB1 2.png"
+URGENCY_FRAME3 = BASE_DIR / "Image" / "HP" / "hpB2 2.png"
+URGENCY_FRAME4 = BASE_DIR / "Image" / "HP" / "hpB3 2.png"
+URGENCY_FRAME5 = BASE_DIR / "Image" / "HP" / "hpB4 2.png"
+URGENCY_FRAME6 = BASE_DIR / "Image" / "HP" / "hpB5 2.png"
+URGENCY_FRAME7 = BASE_DIR / "Image" / "HP" / "hpB6 2.png"
+URGENCY_FRAME8 = BASE_DIR / "Image" / "HP" / "hpB7 2.png"
+URGENCY_FRAME9 = BASE_DIR / "Image" / "HP" / "hpB8 2.png"
+URGENCY_FRAME10 = BASE_DIR / "Image" / "HP" / "hpB9 2.png"
+URGENCY_FRAME11 = BASE_DIR / "Image" / "HP" / "hpB10 2.png"
+URGENCY_FRAME12 = BASE_DIR / "Image" / "HP" / "hpB11 2.png"
+URGENCY_FRAME13 = BASE_DIR / "Image" / "HP" / "hpB12 2.png"
+URGENCY_FRAME14 = BASE_DIR / "Image" / "HP" / "hpB13 2.png"
+URGENCY_FRAME15 = BASE_DIR / "Image" / "HP" / "hpB14 2.png"
+URGENCY_FRAME16 = BASE_DIR / "Image" / "HP" / "hpB15 2.png"
+URGENCY_FRAME17 = BASE_DIR / "Image" / "HP" / "hpB16 2.png"
+URGENCY_FRAME18 = BASE_DIR / "Image" / "HP" / "hpB17 2.png"
+URGENCY_FRAME19 = BASE_DIR / "Image" / "HP" / "hpB18 2.png"
+URGENCY_FRAME20 = BASE_DIR / "Image" / "HP" / "hpB19 2.png"
+
+BOSS_HP_FRAME0 = BASE_DIR / "Image" / "BOSSUI" / "hp0.png"
+BOSS_HP_FRAME1 = BASE_DIR / "Image" / "BOSSUI" / "hp1.png"
+BOSS_HP_FRAME2 = BASE_DIR / "Image" / "BOSSUI" / "hp2.png"
+BOSS_HP_FRAME3 = BASE_DIR / "Image" / "BOSSUI" / "hp3.png"
+BOSS_HP_FRAME4 = BASE_DIR / "Image" / "BOSSUI" / "hp4.png"
+BOSS_HP_FRAME5 = BASE_DIR / "Image" / "BOSSUI" / "hp5.png"
+BOSS_HP_FRAME6 = BASE_DIR / "Image" / "BOSSUI" / "hp6.png"
+BOSS_HP_FRAME7 = BASE_DIR / "Image" / "BOSSUI" / "hp7.png"
+BOSS_HP_FRAME8 = BASE_DIR / "Image" / "BOSSUI" / "hp8.png"
+BOSS_HP_FRAME9 = BASE_DIR / "Image" / "BOSSUI" / "hp9.png"
+BOSS_HP_FRAME10 = BASE_DIR / "Image" / "BOSSUI" / "hp10.png"
+
+TOUCH_SCREEN = BASE_DIR / "Image" / "UI" / "botanpause.JPG"
+
+BOSS_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "last_boss_ 2.png"
+BOSS_STAGE_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "Back_Boss 2.png"
+
+BOSS_SMALL_ATTACK_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "boss_attack_small.png"
+BOSS_LARGE_ATTACK_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "boss_attack_large.png"
+BOSS_HOMING_ATTACK_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "boss_attack_homing.png"
+
+STAGE_BACK_GROUND1 = BASE_DIR / "Image" / "Backgrounds" / "Back1.jpg"
+STAGE_BACK_GROUND2 = BASE_DIR / "Image" / "Backgrounds" / "Back2.jpg"
+STAGE_BACK_GROUND3 = BASE_DIR / "Image" / "Backgrounds" / "Back3.jpg"
+STAGE_BACK_GROUND4 = BASE_DIR / "Image" / "Backgrounds" / "Back4.jpg"
+STAGE_BACK_GROUND5 = BASE_DIR / "Image" / "Backgrounds" / "Back5.jpg"
+
+OPNING_VIDEO_PATH = BASE_DIR / "Video" / "opning_video.mp4"
+BOSS_INTRO_VIDEO_PATH = BASE_DIR / "Video" / "boss_intro.MP4"
+BOSS_DEFEAT_VIDEO_PATH = BASE_DIR / "Video" / "bos_defeat.MP4"
+ENDING_VIDEO_PATH = BASE_DIR / "Video" / "ending_video.mp4"
+
+========================================
+FILE: Src\Project\config.py
+========================================
+
+# タッチパネルのドライバの名前
+DEVICE_NAME = "ADS7846 Touchscreen"
+
+# 色
+BLACK   = (0, 0, 0)
+WHITE   = (255, 255, 255)
+RED     = (255, 0, 0)
+GREEN   = (0, 255, 0)
+BLUE    = (0, 0, 255)
+YELLOW  = (255, 255, 0)
+CYAN    = (0, 255, 255)
+MAGENTA = (255, 0, 255)
+GRAY    = (128, 128, 128)
+LIGHT_BLUE  = (100, 180, 255)
+LIGHT_GREEN = (120, 220, 120)
+ORANGE      = (255, 165, 0)
+PINK        = (255, 105, 180)
+PURPLE      = (128, 0, 128)
+BROWN       = (139, 69, 19)
+NAVY        = (0, 0, 128)
+
+# pygameのウィンドウサイズ
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 800
+
+# Windows用のゲーム画面サイズ
+DISPLAY_WIDTH = 600
+DISPLAY_HEIGHT = 450
+
+# タッチパネルの画面サイズ
+TOUCH_WIDTH = 480
+TOUCH_HEIGHT = 320
+
+# pysceenに描画する用のタッチパネルの表示位置の頂点座標
+TOUCH_SCREEN_TOP_X = (SCREEN_WIDTH - TOUCH_WIDTH) // 2
+TOUCH_SCREEN_TOP_Y = SCREEN_HEIGHT - TOUCH_HEIGHT - 15
+
+# タッチパネルの最大入力値
+TOUCH_X_MAX = 4095
+TOUCH_Y_MAX = 4095
+
+# ステージのレイアウト設定
+STAGE_TOP_LANE_WIDTH_SCALE = 2 / 10  # 上レーンの幅（画面幅に対する割合）
+STAGE_BOTTOM_LANE_WIDTH_SCALE = 9 / 10  # 下レーンの幅（画面幅に対する割合）
+STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE = 4 / 15  # 上レーンの上端位置（画面高さに対する割合）
+STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15  # 下レーンの下端からの余白（画面高さに対する割合）
+
+# ボスステージのレイアウト設定
+BOSS_TOP_LANE_WIDTH_SCALE = 4 / 10  # 上レーンの幅（画面幅に対する割合）
+BOSS_BOTTOM_LANE_WIDTH_SCALE = 9 / 10 # 下レーンの高さ（画面高さに対する割合）
+BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE = 7 / 15  # 上レーンの縦方向の余白（画面高さに対する割合）
+BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15 # 下レーンの縦方向の余白（画面高さに対する割合)
+
+
+# プレイヤーのサイズの比率 : 縦横比 5:3
+PLAYER_WIDTH_SCALE = 1 / 8  # 横幅
+PLAYER_HEIGHT_SCALE = PLAYER_WIDTH_SCALE * 5 / 3  # 高さ
+
+# 敵のサイズの比率：縦横比 5:3
+ENEMY_WIDTH_SCALE = 1 / 8  # 横幅
+ENEMY_HEIGHT_SCALE = ENEMY_WIDTH_SCALE * 5 / 3  # 高さ
+
+# 障害物のサイズの比率：縦横比 1:1
+OBSTACLE_WIDTH_SCALE = 1 / 8  # 横幅
+OBSTACLE_HEIGHT_SCALE = OBSTACLE_WIDTH_SCALE  # 高さ
+
+# 攻撃物のサイズの比率：縦横比 1:1
+ATTACK_WIDTH_SCALE = 1 / 16  # 横幅
+ATTACK_HEIGHT_SCALE = ATTACK_WIDTH_SCALE  # 高さ
+
+
+# FPS（1秒あたりの更新回数）
+FPS = 8
+
+OPENING_MOVIE_COUNT = 3 * FPS  # オープニングフェーズの継続時間（秒）
+GAME_CLEAR_COUNT = 2 * FPS  # ゲームクリアフェーズの継続時間（秒）
+BOSS_INTRO_COUNT = 3 * FPS  # ボス登場フェーズの継続時間（秒）
+BOSS_DEFEAT_COUNT = 3 * FPS  # ボス撃破フェーズの継続時間（秒)
+
+
+BOSS_WIDTH_SCALE = BOSS_TOP_LANE_WIDTH_SCALE * 8 / 10  # 横幅
+BOSS_HEIGHT_SCALE = BOSS_WIDTH_SCALE  # 高さ
+BOSS_TOP_X = 1 / 2  # ボスの描画位置の左端座標（画面左端からの距離）
+BOSS_TOP_Y = BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE  # ボスの描画位置の上端座標（画面上端からの距離）
+
+
+# HPフレームのサイズの比率：縦横比 16:9 (画像のアスペクト比参照)
+HP_FRAME_WIDTH_SCALE = 3 / 10  # HPフレームの横幅
+HP_FRAME_HEIGHT_SCALE = HP_FRAME_WIDTH_SCALE * 9 / 16 # HPフレームの高さ
+
+PLAYER_HP_FRAME_TOP_X = 1 - HP_FRAME_WIDTH_SCALE  # プレイヤーHPフレームの描画位置の左端座標（画面左端からの距離）
+PLAYER_HP_FRAME_TOP_Y = 0  # プレイヤーHPフレームの描画位置の上端座標（画面上端からの距離）
+
+BOSS_HP_FRAME_TOP_X = 0  # ボスHPフレームの描画位置の左端座標（画面左端からの距離）
+BOSS_HP_FRAME_TOP_Y = 0  # ボスHPフレームの描画位置の上端座標（画面上端からの距離）
+
+========================================
+FILE: Src\Project\Display\display_manager.py
+========================================
+
+import pygame
+
+from Display.Renderer.touch_renderer import TouchDisplay
+from Display.Renderer.game_renderer import GameDisplay
+from Display.Renderer.object_renderer import StageObjectDraw
+from Display.Renderer.ui_renderer import UIRenderer
+from Display.Renderer.image_manager import ImageManager
+from Display.Renderer.video_manager import VideoManager
+
+from Display.Layout.layout_manager import Layout
+
+from Display.Output.output_manager import OutputManager
+
+from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
+
+from config import (
+    STAGE_TOP_LANE_WIDTH_SCALE,
+    STAGE_BOTTOM_LANE_WIDTH_SCALE,
+    STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE,
+    STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE,
+    BOSS_TOP_LANE_WIDTH_SCALE,
+    BOSS_BOTTOM_LANE_WIDTH_SCALE,
+    BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE,
+    BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE,
+)
+
+class DisplayManager:
+    def __init__(self, mode: bool):
+        self._mode = mode
+        self._output = OutputManager(mode)
+        DISPLAY_WIDTH = self._output.GAME_SCREEN_WIDTH
+        DISPLAY_HEIGHT = self._output.GAME_SCREEN_HEIGHT
+        TOUCH_WIDTH = self._output.TOUCH_SCREEN_WIDTH
+        TOUCH_HEIGHT = self._output.TOUCH_SCREEN_HEIGHT
+
+        self._game_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)
+        self._touch_surface = pygame.Surface((TOUCH_WIDTH, TOUCH_HEIGHT), depth=16)
+
+        self._save_surface = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT), depth=16)
+
+        layout = Layout(DISPLAY_WIDTH, DISPLAY_HEIGHT, 
+                              STAGE_TOP_LANE_WIDTH_SCALE, STAGE_BOTTOM_LANE_WIDTH_SCALE, 
+                              STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE, STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE)
+
+        boss_layout = Layout(DISPLAY_WIDTH, DISPLAY_HEIGHT, 
+                                   BOSS_TOP_LANE_WIDTH_SCALE, BOSS_BOTTOM_LANE_WIDTH_SCALE, 
+                                   BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE, BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE)
+
+        self._image = ImageManager()
+        self._video = VideoManager(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+
+        self._object = StageObjectDraw(self._game_surface, self._image, layout, boss_layout)
+
+        self._ui = UIRenderer(self._game_surface, self._image)
+
+        self._game = GameDisplay(self._game_surface, self._image, self._video)
+
+        self._touch = TouchDisplay(self._touch_surface, self._image)
+
+        
+
+        self._width = DISPLAY_WIDTH
+        self._height = DISPLAY_HEIGHT
+
+    def get_width(self):
+        return self._width
+
+    def get_height(self):
+        return self._height
+
+    def save_surface(self) -> None:
+        # 現在のゲーム画面を保存する
+         self._save_surface.blit(self._game_surface, (0, 0))
+
+    def load_surface(self) -> None:
+        # 保存したゲーム画面を復元する
+        self._game_surface.blit(self._save_surface, (0, 0))
+
+
+    def draw_black_overlay(self) -> None:
+        overlay = pygame.Surface((self._width, self._height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 100))
+        self._game_surface.blit(overlay, (0, 0))
+
+
+    def output(self):
+        # 取得した2つの画面をディスプレイに反映する
+        self._output.output(self._game_surface, self._touch_surface)
+
+    def fb_close(self):
+        self._output.fb_close()
+
+
+
+    def draw_over(self, state: GameOverSceneSelection):
+        self._game.draw_over(state)
+
+    def draw_title(self, state: TitleSceneSelection):
+        self._game.draw_title(state)
+
+    def draw_pause(self, state: PauseSceneSelection):
+        self._game_surface.blit(self._save_surface, (0, 0))
+        self.draw_black_overlay()
+        self._game.draw_pause(state)
+    
+    def draw_clear(self):
+        self._game.draw_clear()
+
+
+
+    def draw_opening(self, count: int) -> bool:
+        return self._game.draw_opening(count)
+
+    def draw_ending(self, count: int) -> bool:
+        return self._game.draw_ending(count)
+
+    def draw_boss_intro(self, count: int) -> bool:
+        return self._game.draw_boss_intro(count)
+
+    def draw_boss_defeat(self, count: int) -> bool:
+        return self._game.draw_boss_defeat(count)
+
+
+
+    # def draw_stage(self, count: int):
+    #     self._game.draw_stage1_bg(count)
+
+    def draw_stage(self):
+        self._game.draw_stage_bg()
+
+    def draw_boss_stage(self):
+        self._game.draw_boss_stage()
+
+    def draw_boss(self):
+        self._game.draw_boss()
+
+
+    def draw_stage_object(self, player_data, map_data, attack_data):
+        self._object.draw(player_data, map_data, attack_data)
+
+    def draw_boss_object(self, player_data, map_data, attack_data):
+        self._object.boss_draw(player_data, map_data, attack_data)
+
+    def draw_urgency_level(self, hp):
+        self._ui.health_draw(hp)
+
+    def draw_boss_health(self, boss_urgency_level: int):
+        self._ui.boss_health_draw(boss_urgency_level)
+
+    def touch_render(self):
+        self._touch.draw_controller()
+
+    def touch_iamge_render(self):
+        self._touch.draw_controller_image()
+
+
+========================================
+FILE: Src\Project\Display\Layout\lane_geometry.py
+========================================
+
+class LaneGeometry:
+    def __init__(self, width: int, height: int,
+        top_lane_width_scale: float, bottom_lane_width_scale: float,
+        top_lane_vertical_margin: float, bottom_lane_vertical_margin: float):
+
+        # 画面中央のX座標
+        self._center_x = width // 2
+
+        # 一番手前のレーン
+        self._bottom_lane_width = width * bottom_lane_width_scale
+        self._bottom_lane_left_x = (width - self._bottom_lane_width) // 2
+        self._bottom_lane_y = height * (1 - bottom_lane_vertical_margin)
+
+        # 一番奥のレーン
+        self._top_lane_width = width * top_lane_width_scale
+        self._top_lane_left_x = (width - self._top_lane_width) // 2
+        self._top_lane_y = height * top_lane_vertical_margin
+
+        # 一番手前から一番奥までのY方向の距離
+        lane_y_range = self._bottom_lane_y - self._top_lane_y
+
+        # 各主要レーン間の間隔比率
+        # 手前ほど広く、奥ほど狭くする
+        lane_gap_rates = [12, 10, 8, 6, 4, 2]
+
+        # 一番手前を基準とした各主要レーンまでの累積値
+        cumulative_rates = [
+            lane_gap_rates[0],
+            lane_gap_rates[0] + lane_gap_rates[1],
+            lane_gap_rates[0] + lane_gap_rates[1] + lane_gap_rates[2],
+            lane_gap_rates[0] + lane_gap_rates[1] + lane_gap_rates[2] + lane_gap_rates[3],
+            lane_gap_rates[0] + lane_gap_rates[1] + lane_gap_rates[2] + lane_gap_rates[3] + lane_gap_rates[4],
+            lane_gap_rates[0] + lane_gap_rates[1] + lane_gap_rates[2] + lane_gap_rates[3] + lane_gap_rates[4] + lane_gap_rates[5]
+        ]
+
+        # 一番手前と一番奥を除いた主要レーンのY座標
+        inner_lane_y = [
+            self._bottom_lane_y - lane_y_range * cumulative_rates[0] // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * cumulative_rates[1] // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * cumulative_rates[2] // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * cumulative_rates[3] // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * cumulative_rates[4] // cumulative_rates[5]
+        ]
+
+        # 各主要レーンの中間に配置するレーンのY座標
+        middle_lane_y = [
+            height + lane_y_range * (lane_gap_rates[0] // 2) // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * (lane_gap_rates[0] // 2) // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * (cumulative_rates[0] + lane_gap_rates[1] // 2) // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * (cumulative_rates[1] + lane_gap_rates[2] // 2) // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * (cumulative_rates[2] + lane_gap_rates[3] // 2) // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * (cumulative_rates[3] + lane_gap_rates[4] // 2) // cumulative_rates[5],
+            self._bottom_lane_y - lane_y_range * (cumulative_rates[4] + lane_gap_rates[5] // 2) // cumulative_rates[5]
+        ]
+
+        # 手前から奥までの全13レーンのY座標
+        self._lane_y = [
+            middle_lane_y[0],
+            self._bottom_lane_y,
+            middle_lane_y[1],
+            inner_lane_y[0],
+            middle_lane_y[2],
+            inner_lane_y[1],
+            middle_lane_y[3],
+            inner_lane_y[2],
+            middle_lane_y[4],
+            inner_lane_y[3],
+            middle_lane_y[5],
+            inner_lane_y[4],
+            middle_lane_y[6],
+            self._top_lane_y
+        ]
+
+        # 各レーンの幅
+        self._lane_width = [
+            width,
+            self._bottom_lane_width,
+            self._get_lane_width(self._lane_y[2]),
+            self._get_lane_width(self._lane_y[3]),
+            self._get_lane_width(self._lane_y[4]),
+            self._get_lane_width(self._lane_y[5]),
+            self._get_lane_width(self._lane_y[6]),
+            self._get_lane_width(self._lane_y[7]),
+            self._get_lane_width(self._lane_y[8]),
+            self._get_lane_width(self._lane_y[9]),
+            self._get_lane_width(self._lane_y[10]),
+            self._get_lane_width(self._lane_y[11]),
+            self._get_lane_width(self._lane_y[12]),
+            self._top_lane_width
+        ]
+
+        # 各レーンの左端X座標
+        self._lane_x = [
+            0,
+            self._bottom_lane_left_x,
+            (width - self._lane_width[2]) // 2,
+            (width - self._lane_width[3]) // 2,
+            (width - self._lane_width[4]) // 2,
+            (width - self._lane_width[5]) // 2,
+            (width - self._lane_width[6]) // 2,
+            (width - self._lane_width[7]) // 2,
+            (width - self._lane_width[8]) // 2,
+            (width - self._lane_width[9]) // 2,
+            (width - self._lane_width[10]) // 2,
+            (width - self._lane_width[11]) // 2,
+            (width - self._lane_width[12]) // 2,
+            self._top_lane_left_x
+        ]
+
+
+    def _get_lane_width(self, y: int) -> int:
+
+        # 一番手前を0.0、一番奥を1.0とした位置の割合を求める
+        rate = (self._bottom_lane_y - y) / (self._bottom_lane_y - self._top_lane_y)
+
+        # Y位置に応じて手前から奥へレーン幅を補間する
+        lane_width = int(self._bottom_lane_width + (self._top_lane_width - self._bottom_lane_width) * rate )
+
+        return lane_width
+
+
+    def get_lane_width(self, index: int) -> int:
+        return self._lane_width[index]
+
+
+    def get_lane_x(self, index: int) -> int:
+        return self._lane_x[index]
+
+
+    def get_lane_y(self, index: int) -> int:
+        return self._lane_y[index]
+
+
+========================================
+FILE: Src\Project\Display\Layout\lane_layout.py
+========================================
+
+from config import ENEMY_WIDTH_SCALE, ENEMY_HEIGHT_SCALE, OBSTACLE_WIDTH_SCALE, OBSTACLE_HEIGHT_SCALE, ATTACK_WIDTH_SCALE,ATTACK_HEIGHT_SCALE
+
+
+class LaneLayout:
+    def __init__(self, width: int, x: int, y: int):
+        self._width = width
+        # このレーンにあるマス共通のY座標
+        self._grid_y = y
+
+        self._grid_x = [
+            x + self._width // 6,      # 左端のx座標
+            x + self._width * 2 // 6,  # 左から2番目のx座標
+            x + self._width * 3 // 6,  # 中央のx座標
+            x + self._width * 4 // 6,  # 左から4番目のx座標
+            x + self._width * 5 // 6,  # 右端のx座標
+        ]
+
+        # 敵の縦幅と横幅の比率は 5:3
+        self._enemy_width = self._width * ENEMY_WIDTH_SCALE
+        self._enemy_height = self._width * ENEMY_HEIGHT_SCALE
+
+        # 敵の描画処理用の座標
+        self._enemy_x = [
+            self._grid_x[0] - (self._enemy_width // 2),
+            self._grid_x[1] - (self._enemy_width // 2),
+            self._grid_x[2] - (self._enemy_width // 2),
+            self._grid_x[3] - (self._enemy_width // 2),
+            self._grid_x[4] - (self._enemy_width // 2)
+        ]
+        self._enemy_y = y - self._enemy_height
+
+        # 障害物の横幅と縦幅の比率は 1:1
+        self._obstacle_width = self._width * OBSTACLE_WIDTH_SCALE
+        self._obstacle_height = self._width * OBSTACLE_HEIGHT_SCALE
+
+        # 障害物の描画処理用の座標
+        self._obstacle_x = [
+            self._grid_x[0] - (self._obstacle_width // 2),
+            self._grid_x[1] - (self._obstacle_width // 2),
+            self._grid_x[2] - (self._obstacle_width // 2),
+            self._grid_x[3] - (self._obstacle_width // 2),
+            self._grid_x[4] - (self._obstacle_width // 2)
+        ]
+        self._obstacle_y = y - self._obstacle_height
+
+
+        # 攻撃物の横幅と縦幅の比率は 1:1
+        self._attack_width = self._width * ATTACK_WIDTH_SCALE
+        self._attack_height = self._width * ATTACK_HEIGHT_SCALE
+
+        # 攻撃物の中心が敵の中心に重なるように左上座標を求める
+        self._attack_x = [
+            self._grid_x[0] - (self._attack_width // 2),
+            self._grid_x[1] - (self._attack_width // 2),
+            self._grid_x[2] - (self._attack_width // 2),
+            self._grid_x[3] - (self._attack_width // 2),
+            self._grid_x[4] - (self._attack_width // 2)
+        ]
+
+        self._attack_y = y - ( (self._enemy_height // 2) + (self._attack_height // 2) )
+
+    def get_enemy_layout(self, cell_index: int, width_in_cells: int = 1):
+        # 指定された横マス番号と占有マス数に応じた敵の左上描画座標とサイズを返す
+        if width_in_cells == 1:
+            # 1マス敵は従来通りのサイズと前計算座標を使用
+            return {
+                "x": self._enemy_x[cell_index],
+                "y": self._enemy_y,
+                "width": self._enemy_width,
+                "height": self._enemy_height
+            }
+        # 多マス敵のサイズ算出
+        enemy_width = (self._width // 6) * width_in_cells
+        enemy_height = enemy_width // 2  # 横長敵用の高さ比率 (2:1)
+
+        # 占有領域の中心 X 座標を計算
+        start_x = self._grid_x[cell_index]
+        end_cell_idx = min(cell_index + width_in_cells - 1, 4)
+        end_x = self._grid_x[end_cell_idx]
+        center_x = (start_x + end_x) // 2
+
+        # 左上描画座標の決定
+        top_left_x = center_x - (enemy_width // 2)
+        top_left_y = self._grid_y - enemy_height
+        return {
+            "x": top_left_x,
+            "y": top_left_y,
+            "width": enemy_width,
+            "height": enemy_height
+        }
+
+
+    def get_obstacle_layout(self, x: int):
+        # 指定された横マス番号に配置する障害物の左上座標と描画サイズを返す
+        return {
+            "x": self._obstacle_x[x],
+            "y": self._obstacle_y,
+            "width": self._obstacle_width,
+            "height": self._obstacle_height
+        }
+
+
+    def get_attack_layout(self, x: int):
+        # 指定された横マス番号に配置する攻撃物の左上座標と描画サイズを返す
+        return {
+            "x": self._attack_x[x],
+            "y": self._attack_y,
+            "width": self._attack_width,
+            "height": self._attack_height
+        }
+
+========================================
+FILE: Src\Project\Display\Layout\layout_manager.py
+========================================
+
+from Display.Layout.lane_geometry import LaneGeometry
+from Display.Layout.lane_layout import LaneLayout
+from Display.Layout.player_layout import PlayerLayout
+
+
+class Layout:
+    def __init__(self, width: int, height: int, 
+                 top_lane_width_scale: float, bottom_lane_width_scale: float, 
+                 top_lane_vertical_margin: float, bottom_lane_vertical_margin: float):
+
+        lane = LaneGeometry(width, height, top_lane_width_scale, bottom_lane_width_scale, top_lane_vertical_margin, bottom_lane_vertical_margin)
+
+        # 主要レーン
+        # 0が一番手前、6が一番奥
+        self._lane = [
+            LaneLayout(lane.get_lane_width(1), lane.get_lane_x(1), lane.get_lane_y(1)),
+            LaneLayout(lane.get_lane_width(3), lane.get_lane_x(3), lane.get_lane_y(3)),
+            LaneLayout(lane.get_lane_width(5), lane.get_lane_x(5), lane.get_lane_y(5)),
+            LaneLayout(lane.get_lane_width(7), lane.get_lane_x(7),lane.get_lane_y(7)),
+            LaneLayout(lane.get_lane_width(9), lane.get_lane_x(9), lane.get_lane_y(9)),
+            LaneLayout(lane.get_lane_width(11), lane.get_lane_x(11), lane.get_lane_y(11)),
+            LaneLayout(lane.get_lane_width(13), lane.get_lane_x(13), lane.get_lane_y(13))
+        ]
+
+        # 主要レーン同士の中間レーン
+        self._middle_lane = [
+            LaneLayout(lane.get_lane_width(0), lane.get_lane_x(0), lane.get_lane_y(0)),
+            LaneLayout(lane.get_lane_width(2), lane.get_lane_x(2), lane.get_lane_y(2)),
+            LaneLayout(lane.get_lane_width(4), lane.get_lane_x(4), lane.get_lane_y(4)),
+            LaneLayout(lane.get_lane_width(6), lane.get_lane_x(6), lane.get_lane_y(6)),
+            LaneLayout(lane.get_lane_width(8), lane.get_lane_x(8), lane.get_lane_y(8)),
+            LaneLayout(lane.get_lane_width(10), lane.get_lane_x(10), lane.get_lane_y(10)),
+            LaneLayout(lane.get_lane_width(12), lane.get_lane_x(12), lane.get_lane_y(12))
+        ]
+
+        # プレイヤーは一番手前のレーンを基準にする
+        self._player_lane = PlayerLayout(lane.get_lane_width(1), lane.get_lane_x(1), lane.get_lane_y(1))
+
+
+    def get_enemy_side_move_layout(self, cell_index: int):
+        if cell_index == 0:
+            num = 2
+        elif cell_index == 1:
+            num = 6
+        elif cell_index == 2:
+            num = 10
+        elif cell_index == 3:
+            num = 14
+
+        return self._player_lane.get_player_layout(num, 0)
+
+
+    def get_lane_enemy_layout(self, cell_index: int, lane_index: int, width_in_cells: int = 1):
+        # 指定された主要レーンとマスに配置する敵のレイアウトを返す
+        return self._lane[lane_index].get_enemy_layout(cell_index, width_in_cells)
+
+
+    def get_lane_obstacle_layout(self, cell_index: int, lane_index: int):
+        # 指定された主要レーンとマスに配置する障害物のレイアウトを返す
+        return self._lane[lane_index].get_obstacle_layout(cell_index)
+
+
+    def get_lane_attack_layout(self, cell_index: int, lane_index: int):
+        if lane_index == 0:
+            return self._middle_lane[2].get_attack_layout(cell_index)
+        # 指定された主要レーンとマスに配置する攻撃物のレイアウトを返す
+        return self._lane[lane_index].get_attack_layout(cell_index)
+
+
+
+    def get_middle_lane_enemy_layout(self, cell_index: int, lane_index: int, width_in_cells: int = 1):
+        # 指定された中間レーンとマスに配置する敵のレイアウトを返す
+        return self._middle_lane[lane_index].get_enemy_layout(cell_index, width_in_cells)
+
+    def get_middle_lane_obstacle_layout(self, cell_index: int, lane_index: int):
+        # 指定された中間レーンとマスに配置する障害物のレイアウトを返す
+        return self._middle_lane[lane_index].get_obstacle_layout(cell_index)
+
+    def get_player_layout(self, x_index: int, y_index: int):
+        # 指定された位置のプレイヤーのレイアウトを返す
+        return self._player_lane.get_player_layout(x_index, y_index)
+
+========================================
+FILE: Src\Project\Display\Layout\player_layout.py
+========================================
+
+from config import PLAYER_WIDTH_SCALE, PLAYER_HEIGHT_SCALE
+
+class PlayerLayout:
+    def __init__(self, width: int, x: int, y: int):
+
+        # 各マスの中心X座標
+        grid_x = [
+            x + width // 6,
+            x + width * 2 // 6,
+            x + width * 3 // 6,
+            x + width * 4 // 6,
+            x + width * 5 // 6,
+        ]
+
+        # プレイヤーの縦横比は 横:縦 = 3:5
+        self._player_width = width * PLAYER_WIDTH_SCALE
+        self._player_height = width * PLAYER_HEIGHT_SCALE
+
+        # 各マスにいるときのプレイヤーの左上X座標
+        position_x = [
+            grid_x[0] - (self._player_width // 2),
+            grid_x[1] - (self._player_width // 2),
+            grid_x[2] - (self._player_width // 2),
+            grid_x[3] - (self._player_width // 2),
+            grid_x[4] - (self._player_width // 2)
+        ]
+
+        # 隣のマスまでの距離を4分割した値を、
+        # 1フレームごとのX方向の移動量とする
+        player_speed_x = ( position_x[1] - position_x[0] ) // 4
+
+        # 左端から右端までのプレイヤーの描画X座標
+        self.player_x = [
+            position_x[0],                                                    # 0
+            position_x[0] + player_speed_x,                                  # 1
+            position_x[0] + player_speed_x * 2,                              # 2
+            position_x[0] + player_speed_x * 3,                              # 3
+
+            position_x[1],                                                    # 4
+            position_x[1] + player_speed_x,                                  # 5
+            position_x[1] + player_speed_x * 2,                              # 6
+            position_x[1] + player_speed_x * 3,                              # 7
+
+            position_x[2],                                                    # 8
+            position_x[2] + player_speed_x,                                  # 9
+            position_x[2] + player_speed_x * 2,                              # 10
+            position_x[2] + player_speed_x * 3,                              # 11
+
+            position_x[3],                                                    # 12
+            position_x[3] + player_speed_x,                                  # 13
+            position_x[3] + player_speed_x * 2,                              # 14
+            position_x[3] + player_speed_x * 3,                              # 15
+
+            position_x[4]                                                     # 16
+        ]
+
+        # 通常時とジャンプ最高点の左上Y座標
+        position_y = [ y - self._player_height, y - self._player_height * 17 // 10 ]
+
+        # 通常位置からジャンプ最高点までを8分割する
+        player_speed_y = ( position_y[1] - position_y[0] ) // 4
+
+        # ジャンプ上昇時のY座標
+        self.player_y = [
+            position_y[0],
+            position_y[0] - self._player_height // 2,
+            position_y[0] - self._player_height,
+            position_y[0] - self._player_height // 2,
+            position_y[0]
+        ]
+
+    def get_player_layout(self, x_index: int, y_index: int):
+        # プレイヤーの左上座標と描画サイズを返す
+        return {
+            "x": self.player_x[x_index],
+            "y": self.player_y[y_index],
+            "width": self._player_width,
+            "height": self._player_height
+        }
+
+========================================
+FILE: Src\Project\Display\Output\frame_buffer_output.py
+========================================
+
+import pygame
+import mmap
+import subprocess
+
+class FrameBufferOutput:
+    def __init__(self):
+        # SPI液晶の画面サイズとフレームバッファ名のインスタン生成と初期化
+        self.SPI_FB = None
+        self.SPI_WIDTH = 0
+        self.SPI_HEIGHT = 0
+
+        # HDMIの画面サイズとフレームバッファ名のインスタン生成と初期化
+        self.HDMI_FB = None
+        self.HDMI_WIDTH = 0
+        self.HDMI_HEIGHT = 0
+
+        # 接続されているフレームバッファを調べ、デバイス名と画面サイズを取得する
+        self.find_fb()
+
+        # SPI液晶用のフレームバッファが見つからなければ終了
+        if self.SPI_FB is None:
+            raise RuntimeError("SPI LCD用のフレームバッファが見つかりません")
+
+        # HDMI用のフレームバッファが見つからなければ終了
+        if self.HDMI_FB is None:
+            raise RuntimeError("HDMI用のフレームバッファが見つかりません")
+
+        # SPI液晶用のフレームバッファを操作するクラスを生成
+        self.fb1 = FrameBuffer(self.SPI_FB, self.SPI_WIDTH, self.SPI_HEIGHT)
+
+        # HDMI用のフレームバッファを操作するクラスを生成
+        self.fb2 = FrameBuffer(self.HDMI_FB, self.HDMI_WIDTH, self.HDMI_HEIGHT)
+
+    # SPI液晶のフレームバッファーに直接描写する処理
+    def touch_draw(self, surface):
+        self.fb1.draw(surface)
+
+    # HDMIのフレームバッファーに直接描写する処理
+    def game_draw(self, surface):
+        self.fb2.draw(surface)
+
+    def close(self):
+        self.fb1.close()
+        self.fb2.close()
+
+    def find_fb(self):
+        # フレームバッファの情報を保存するリストの生成
+        framebuffers = []
+        # /dev/fb0～/dev/fb2 を順番に調べる
+        # Raspberry PiではSPI液晶とHDMI出力があるため3つ確認する
+        for fb in ["/dev/fb0", "/dev/fb1", "/dev/fb2"]:
+            try:
+                # Linuxコマンド「fbset -fb <デバイス名>」を実行し、フレームバッファの情報を取得する
+                result = subprocess.check_output(
+                    ["fbset", "-fb", fb],
+                    # 実行結果を文字列として受け取る
+                    text=True,
+                    # 存在しないフレームバッファを指定したときのエラーメッセージを表示しない
+                    stderr=subprocess.DEVNULL
+                )
+
+                # 実行結果の例
+                # mode "480x320"
+                #     geometry 480 320 480 320 16
+                #     rgba 5/11,6/5,5/0,0/0
+                # endmode
+
+                # 実行結果を1行ずつ調べる
+                for line in result.splitlines():
+                    # 解像度が書かれているgeometry行を探す
+                    if "geometry" in line:
+                        # 空白で分割する
+                        # 例：['geometry', '480', '320', '480', '320', '16']
+                        data = line.split()
+                        # 横幅と高さを取得する
+                        width = int(data[1])
+                        height = int(data[2])
+                        # フレームバッファ名、解像度（画面のサイズ）
+                        framebuffers.append({
+                            "fb": fb,
+                            "width": width,
+                            "height": height,
+                            # 比較用に解像度を保存する
+                            "size": width * height
+                        })
+                        break
+
+            # フレームバッファが存在しない場合は次を調べる
+            except Exception:
+                pass
+
+        # フレームバッファが2つ未満ならエラー
+        if len(framebuffers) < 2:
+            raise RuntimeError("必要なフレームバッファが見つかりません")
+        
+        # 解像度の小さい順に並べ替える
+        framebuffers.sort(key=lambda x: x["size"])
+
+        # 解像度が低い方をSPI液晶、大きい方をHDMIとして取得する
+        spi = framebuffers[0]
+        hdmi = framebuffers[-1]
+
+        # SPI液晶の情報を保存
+        self.SPI_FB = spi["fb"]
+        self.SPI_WIDTH = spi["width"]
+        self.SPI_HEIGHT = spi["height"]
+
+        # HDMIの情報を保存
+        self.HDMI_FB = hdmi["fb"]
+        self.HDMI_WIDTH = hdmi["width"]
+        self.HDMI_HEIGHT = hdmi["height"]
+    
+class FrameBuffer:
+    def __init__(self, device, width, height):
+        # 真っ黒な画面を作成
+        self.surface = pygame.Surface((width, height), depth=16)
+        self.surface.fill((0, 0, 0))
+        # RGB565(16bit = 2Byte)のため必要なバイト数を計算
+        self.size = width * height * 2
+        # フレームバッファを読み書き可能モードで開く
+        self.file = open(device, "r+b")
+        # フレームバッファをメモリへマッピングする
+        self.map = mmap.mmap(self.file.fileno(), self.size)
+
+    def draw(self, surface):
+        # Surfaceの画像データをRGB565形式で取得する
+        raw = surface.get_view("2")
+        # フレームバッファの先頭へ移動する
+        self.map.seek(0)
+        # Surfaceの画像データをフレームバッファへ書き込み、画面へ描画する
+        self.map.write(raw)
+
+    def close(self):
+        # 画面を黒で塗りつぶす
+        self.draw(self.surface)
+        # メモリマップを閉じる
+        self.map.close()
+        # フレームバッファファイルを閉じる
+        self.file.close()
+
+========================================
+FILE: Src\Project\Display\Output\output_manager.py
+========================================
+
+import pygame
+
+from Display.Output.pygame_output import PyGameOutput
+from Display.Output.frame_buffer_output import FrameBufferOutput
+
+from config import (
+    DISPLAY_WIDTH,
+    DISPLAY_HEIGHT,
+    TOUCH_WIDTH,
+    TOUCH_HEIGHT
+)
+
+class OutputManager:
+    def __init__(self, mode):
+        # True : Raspberry Pi（フレームバッファ描画）
+        # False: PC（pygameウィンドウ描画）
+        self.mode = mode
+    
+        # Raspberry Piモードで使用するインスタンスを生成
+        if self.mode:
+        # フレームバッファへ直接描画するFrameBufferOutputクラスのインスタンスを生成
+            self.fb = FrameBufferOutput()
+            self.GAME_SCREEN_HEIGHT = self.fb.HDMI_HEIGHT
+            self.GAME_SCREEN_WIDTH = self.fb.HDMI_WIDTH
+            self.TOUCH_SCREEN_HEIGHT = self.fb.SPI_HEIGHT
+            self.TOUCH_SCREEN_WIDTH = self.fb.SPI_WIDTH
+        else:
+            # pygameウィンドウを生成
+            self.pygame = PyGameOutput()
+            self.GAME_SCREEN_HEIGHT = DISPLAY_HEIGHT
+            self.GAME_SCREEN_WIDTH = DISPLAY_WIDTH
+            self.TOUCH_SCREEN_HEIGHT = TOUCH_HEIGHT
+            self.TOUCH_SCREEN_WIDTH = TOUCH_WIDTH
+
+    def output(self, game_surface, touch_surface):
+        if self.mode:
+            # Raspberry Piモードでは、フレームバッファに描画する
+            self.fb.game_draw(game_surface)
+            self.fb.touch_draw(touch_surface)
+        else:
+            # PCモードでは、pygameウィンドウに描画する
+            self.pygame.draw_clear()
+            self.pygame.game_draw(game_surface)
+            self.pygame.touch_draw(touch_surface)
+            pygame.display.flip()
+
+    def fb_close(self):
+        self.fb.close()
+
+        
+
+========================================
+FILE: Src\Project\Display\Output\pygame_output.py
+========================================
+
+import pygame
+
+from config import (
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    TOUCH_SCREEN_TOP_X,
+    TOUCH_SCREEN_TOP_Y,
+    BLACK
+)
+
+class PyGameOutput:
+
+    def __init__(self):
+        # pygameウィンドウを生成
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    def draw_clear(self):
+        # pygameウィンドウを背景色で塗りつぶす
+        self.screen.fill(BLACK)
+
+    def game_draw(self, surface):
+        # pygameウィンドウにゲーム画面を描画する
+        self.screen.blit(surface, (0, 0))
+
+    def touch_draw(self, surface):
+        # pygameウィンドウにタッチパネルを描画する
+        self.screen.blit(surface, (TOUCH_SCREEN_TOP_X, TOUCH_SCREEN_TOP_Y))
+
+========================================
+FILE: Src\Project\Display\Renderer\game_renderer.py
+========================================
+
+import pygame
+
+from Display.Renderer.image_manager import ImageManager
+from Display.Renderer.video_manager import VideoManager
+
+from asset_paths import (
+    STAGE1_BACK_GRAUND,
+    TITLE_SELECT_PLAY,  TITLE_SELECT_EXIT,
+    GAMEOVER_SELECT_CONTINUE, GAMEOVER_SELECT_TITLE,
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR,
+    BOSS_IMAGE_PATH, BOSS_STAGE_IMAGE_PATH,
+    STAGE_BACK_GROUND1, STAGE_BACK_GROUND2, STAGE_BACK_GROUND3, STAGE_BACK_GROUND4, STAGE_BACK_GROUND5
+)
+from config import GRAY, BOSS_WIDTH_SCALE, BOSS_HEIGHT_SCALE, BOSS_TOP_X, BOSS_TOP_Y
+from State.game_flag import TitleSceneSelection, GameOverSceneSelection, GameClearSceneSelection, PauseSceneSelection
+
+
+class GameDisplay:
+    TEXT_COLOR = (0, 0, 0)
+
+    def __init__(self, surface: pygame.Surface, image: ImageManager, video: VideoManager):
+        self._surface = surface
+        self._image = image
+        self._video = video
+
+        self._title_images: dict[TitleSceneSelection, pygame.Surface] = {
+            TitleSceneSelection.START: self._image.get_image(TITLE_SELECT_PLAY),
+            TitleSceneSelection.EXIT: self._image.get_image(TITLE_SELECT_EXIT)
+        }
+
+        self._gameclear_images = self._image.get_image(GAMECLEAR)
+
+        self._gameover_images: dict[GameOverSceneSelection, pygame.Surface] = {
+            GameOverSceneSelection.CONTINUE: self._image.get_image(GAMEOVER_SELECT_CONTINUE),
+            GameOverSceneSelection.TITLE: self._image.get_image(GAMEOVER_SELECT_TITLE),
+        }
+
+
+        self._pause_images: dict[PauseSceneSelection, pygame.Surface] = {
+            PauseSceneSelection.RESUME: self._image.get_image(PAUSE_SELECT_START),
+            PauseSceneSelection.TITLE: self._image.get_image(PAUSE_SELECT_TITLE)
+        }
+
+        self._background_images = [STAGE_BACK_GROUND1, STAGE_BACK_GROUND2, STAGE_BACK_GROUND3, STAGE_BACK_GROUND4, STAGE_BACK_GROUND5]
+
+        self._width = surface.get_width()
+        self._height = surface.get_height()
+
+        self._font = pygame.font.Font(None, 50)
+
+
+    def draw_title(self, state: TitleSceneSelection) -> None:
+        # 現在の選択状態に対応するタイトル画像を取得する
+        image = self._title_images[state]
+
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (self._width, self._height))
+
+        # タイトル画面を描画する
+        self._surface.blit(image, (0, 0))
+
+
+    def draw_clear(self) -> None:
+        image = self._gameclear_images
+        image = pygame.transform.scale(image, (self._width, self._height))
+        self._surface.blit(image, (0, 0))
+
+
+    def draw_over(self, state: GameOverSceneSelection) -> None:
+        image = self._gameover_images[state]
+        image = pygame.transform.scale(image, (self._width, self._height))
+        self._surface.blit(image, (0, 0))
+
+    def draw_pause(self, state: PauseSceneSelection) -> None:
+        image = self._pause_images[state]
+        image = pygame.transform.scale(image, (self._width, self._height))
+        self._surface.blit(image, (0, 0))
+
+    def draw_stage_bg(self) -> None:
+        image = self._image.get_image(STAGE1_BACK_GRAUND)
+        image = pygame.transform.scale(image, (self._width, self._height))
+        self._surface.blit(image, (0, 0))
+
+    def draw_boss_stage(self) -> None:
+        boss_stage_image = self._image.get_image(BOSS_STAGE_IMAGE_PATH)
+        boss_stage_image = pygame.transform.scale(boss_stage_image, (self._width, self._height))
+        self._surface.blit(boss_stage_image, (0, 0))
+
+
+
+    def draw_opening(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_opening_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+    def draw_ending(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_ending_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+    def draw_boss_intro(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_boss_intro_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+    def draw_boss_defeat(self, count: int) -> bool:
+        self._surface.fill(GRAY)
+        image = self._video.get_boss_defeat_video_image(count)
+        if image == -1:
+            return True
+        self._surface.blit(image, (0, 0))
+        return False
+
+
+
+
+    def draw_stage1_bg(self, count: int) -> None:
+        # 4フレームごとに背景画像を切り替えてループする
+        index = (count // 4) % len(self._background_images)
+
+        # 背景画像を取得する
+        image = self._image.get_image(self._background_images[index])
+
+        # 画面サイズに変更する
+        image = pygame.transform.scale(image, (self._width, self._height))
+
+        # 背景画像を描画する
+        self._surface.blit(image, (0, 0))
+
+
+
+    def draw_boss(self) -> None:
+
+        boss_image = self._image.get_image(BOSS_IMAGE_PATH)
+
+        boss_width = int(self._width * BOSS_WIDTH_SCALE)
+        boss_height = int(self._width * BOSS_HEIGHT_SCALE)
+
+        boss_image = pygame.transform.scale(boss_image, (boss_width, boss_height))
+
+        boss_x = int(self._width * BOSS_TOP_X) - boss_width // 2
+        boss_y = int(self._height * BOSS_TOP_Y) - boss_height
+
+        self._surface.blit(boss_image, (boss_x, boss_y))
+
+
+========================================
+FILE: Src\Project\Display\Renderer\image_manager.py
+========================================
+
+import pygame
+from pathlib import Path
+
+from System.file_load_system import load_image
+
+from asset_paths import (
+    ENEMY_IMAGE_PATH,
+    OBSTACLE_IMAGE_PATH,
+    PLAYER_IMAGE_PATH,
+    URGENCY_FRAME1, URGENCY_FRAME2, URGENCY_FRAME3, URGENCY_FRAME4, URGENCY_FRAME5, 
+    URGENCY_FRAME6, URGENCY_FRAME7, URGENCY_FRAME8, URGENCY_FRAME9, URGENCY_FRAME10, 
+    URGENCY_FRAME11, URGENCY_FRAME12, URGENCY_FRAME13, URGENCY_FRAME14, URGENCY_FRAME15, 
+    URGENCY_FRAME16, URGENCY_FRAME17, URGENCY_FRAME18, URGENCY_FRAME19, URGENCY_FRAME20, 
+    STAGE1_BACK_GRAUND, OHUDA_IMAGE, OJISAN_DAMAGED_IMAGE,
+    TITLE_SELECT_PLAY,TITLE_SELECT_EXIT,
+    GAMECLEAR_SELECT_NEXT,GAMECLEAR_SELECT_TITLE,
+    GAMEOVER_SELECT_CONTINUE,GAMEOVER_SELECT_TITLE,
+    OPNING_PAGE_1, OPNING_PAGE_2, OPNING_PAGE_3,
+    TOUCH_SCREEN, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH,
+    PAUSE_SELECT_START, PAUSE_SELECT_TITLE,GAMECLEAR,
+    PLAYER_JUMP_IMAGE_PATH, PLAYER_DOWN_IMAGE_PATH, PLAYER_RIGHT_IMAGE_PATH, PLAYER_LEHT_IMAGE_PATH,
+    BOSS_IMAGE_PATH, BOSS_STAGE_IMAGE_PATH, BOSS_HP_FRAME0,
+    BOSS_HP_FRAME1, BOSS_HP_FRAME2, BOSS_HP_FRAME3, BOSS_HP_FRAME4, BOSS_HP_FRAME5, BOSS_HP_FRAME6, BOSS_HP_FRAME7, BOSS_HP_FRAME8, BOSS_HP_FRAME9, BOSS_HP_FRAME10,
+    STUDENT_IMAGE_PATH, STUDENT_DAMAGED_IMAGE, BOSS_SMALL_ATTACK_IMAGE_PATH, BOSS_LARGE_ATTACK_IMAGE_PATH, BOSS_HOMING_ATTACK_IMAGE_PATH,
+    STAGE_BACK_GROUND1, STAGE_BACK_GROUND2, STAGE_BACK_GROUND3, STAGE_BACK_GROUND4, STAGE_BACK_GROUND5,
+    GENERAL_PUBLIC1_IMAGE_PATH, GENERAL_PUBLIC1_DAMAGED_IMAGE, GENERAL_PUBLIC2_IMAGE_PATH,
+    GENERAL_PUBLIC2_DAMAGED_IMAGE, GENERAL_PUBLIC3_IMAGE_PATH, GENERAL_PUBLIC3_DAMAGED_IMAGE
+    )
+
+class ImageManager:
+    def __init__(self):
+        # 読み込んだ画像をパス名をキーとして保存する
+        self._images: dict[str, pygame.Surface] = {}
+
+        # 使用する画像を読み込む
+        self._load(ENEMY_IMAGE_PATH)
+        self._load(OBSTACLE_IMAGE_PATH)
+        self._load(PLAYER_IMAGE_PATH)
+        self._load(URGENCY_FRAME1)
+        self._load(URGENCY_FRAME2)
+        self._load(URGENCY_FRAME3)
+        self._load(URGENCY_FRAME4)
+        self._load(URGENCY_FRAME5)
+        self._load(URGENCY_FRAME6)
+        self._load(URGENCY_FRAME7)
+        self._load(URGENCY_FRAME8)
+        self._load(URGENCY_FRAME9)
+        self._load(URGENCY_FRAME10)
+        self._load(URGENCY_FRAME11)
+        self._load(URGENCY_FRAME12)
+        self._load(URGENCY_FRAME13)
+        self._load(URGENCY_FRAME14)
+        self._load(URGENCY_FRAME15)
+        self._load(URGENCY_FRAME16)
+        self._load(URGENCY_FRAME17)
+        self._load(URGENCY_FRAME18)
+        self._load(URGENCY_FRAME19)
+        self._load(URGENCY_FRAME20)
+        self._load(STAGE1_BACK_GRAUND)
+        self._load(OHUDA_IMAGE)
+        self._load(OJISAN_DAMAGED_IMAGE)
+        self._load(TITLE_SELECT_PLAY)
+        self._load(TITLE_SELECT_EXIT)
+        self._load(GAMECLEAR_SELECT_NEXT)
+        self._load(GAMECLEAR_SELECT_TITLE)
+        self._load(GAMEOVER_SELECT_CONTINUE)
+        self._load(GAMEOVER_SELECT_TITLE)
+        self._load(OPNING_PAGE_1)
+        self._load(OPNING_PAGE_2)
+        self._load(OPNING_PAGE_3)
+        self._load(TOUCH_SCREEN)
+        self._load(GAMECLEAR)
+        self._load(PLAYER_DAMAGE_IMAGE_PATH)
+        self._load(PLAYER_THROW_IMAGE_PATH)
+
+        self._load(PAUSE_SELECT_START)
+        self._load(PAUSE_SELECT_TITLE)
+
+        self._load(PLAYER_JUMP_IMAGE_PATH)
+        self._load(PLAYER_DOWN_IMAGE_PATH)
+        self._load(PLAYER_RIGHT_IMAGE_PATH)
+        self._load(PLAYER_LEHT_IMAGE_PATH)
+        self._load(BOSS_IMAGE_PATH)
+        self._load(BOSS_STAGE_IMAGE_PATH)
+
+        self._load(BOSS_HP_FRAME0)
+        self._load(BOSS_HP_FRAME1)
+        self._load(BOSS_HP_FRAME2)
+        self._load(BOSS_HP_FRAME3)
+        self._load(BOSS_HP_FRAME4)
+        self._load(BOSS_HP_FRAME5)
+        self._load(BOSS_HP_FRAME6)
+        self._load(BOSS_HP_FRAME7)
+        self._load(BOSS_HP_FRAME8)
+        self._load(BOSS_HP_FRAME9)
+        self._load(BOSS_HP_FRAME10)
+
+        self._load(STUDENT_IMAGE_PATH)
+        self._load(STUDENT_DAMAGED_IMAGE)
+
+        self._load(BOSS_SMALL_ATTACK_IMAGE_PATH)
+        self._load(BOSS_LARGE_ATTACK_IMAGE_PATH)
+        self._load(BOSS_HOMING_ATTACK_IMAGE_PATH)
+
+        self._load(STAGE_BACK_GROUND1)
+        self._load(STAGE_BACK_GROUND2)
+        self._load(STAGE_BACK_GROUND3)
+        self._load(STAGE_BACK_GROUND4)
+        self._load(STAGE_BACK_GROUND5)
+
+        self._load(GENERAL_PUBLIC1_IMAGE_PATH)
+        self._load(GENERAL_PUBLIC1_DAMAGED_IMAGE)
+        self._load(GENERAL_PUBLIC2_IMAGE_PATH)
+        self._load(GENERAL_PUBLIC2_DAMAGED_IMAGE)
+        self._load(GENERAL_PUBLIC3_IMAGE_PATH)
+        self._load(GENERAL_PUBLIC3_DAMAGED_IMAGE)
+
+
+    def _load(self, path: Path | None) -> None:
+
+        if path is None:
+            image = pygame.Surface((10, 10))
+            image.fill((0, 0, 0))
+            self._images[path] = image
+            return
+
+        # 画像を読み込んで保存する
+        self._images[path] = load_image(path)
+
+    def get_image(self, path: Path | None) -> pygame.Surface:
+
+        # パスに対応する画像を返す
+        return self._images[path]
+
+========================================
+FILE: Src\Project\Display\Renderer\object_renderer.py
+========================================
+
+import pygame
+from Display.Renderer.image_manager import ImageManager
+from Display.Layout.layout_manager import Layout
+from State.attack_data import Attack
+
+from State.player import Player
+from State.stage_object_data import StageObjectManager
+
+from asset_paths import OHUDA_IMAGE
+
+
+class StageObjectDraw:
+    def __init__(self, surface: pygame.Surface, image: ImageManager, layout: Layout, boss_layout: Layout):
+        self._surface = surface
+        self._image = image
+        self._layout = layout
+        self._boss_layout = boss_layout
+        
+    def draw(self, player: Player, map_data: StageObjectManager, attack: Attack) -> None:
+        self.object_draw(map_data, player, self._layout)
+        self.attack_draw(attack, self._layout)
+
+    def boss_draw(self, player: Player, map_data: StageObjectManager, attack: Attack) -> None:
+        self.object_draw(map_data, player, self._boss_layout)
+        self.attack_draw(attack, self._boss_layout)
+
+
+    def attack_draw(self, attack: Attack, layouts: Layout) -> None:
+
+        # 攻撃中でない場合は描画しない
+        if not attack.get_is_attack():
+            return
+
+        # 現在の攻撃描画データを取得する
+        attack_data = attack.get_attack_data()
+
+        # 攻撃画像を取得する
+        path = attack_data["path"]
+        attack_x = attack_data["x"]
+        attack_y = attack_data["y"]
+
+        if path == None:
+            path = OHUDA_IMAGE
+            layout = layouts.get_lane_attack_layout(attack_x, attack_y)
+        else:
+            layout = layouts.get_middle_lane_enemy_layout(attack_x, attack_y + 1)
+
+
+        image = self._image.get_image(path)
+
+        x = layout["x"]
+        y = layout["y"]
+        width = layout["width"]
+        height = layout["height"]
+
+        # 描画サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (width, height) )
+
+        # x, yを左上座標として画像を描画する
+        self._surface.blit(image, (x, y))
+
+
+    def player_draw(self, player: Player, layouts: Layout) -> None:
+        layout_x = player.get_layout_x()
+        layout_y = player.get_layout_y()
+
+        # 現在のレイアウト位置から描画情報を取得する
+        layout = layouts.get_player_layout(layout_x.value, layout_y.value)
+
+        x = layout["x"]
+        y = layout["y"]
+        width = layout["width"]
+        height = layout["height"]
+
+        # プレイヤー画像を取得する
+        path = player.get_image_path()
+        image = self._image.get_image(path)
+
+        # 描画サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(image, (width, height))
+
+        # x, yを左上座標として画像を描画する
+        self._surface.blit(image, (x, y))
+
+    def object_draw(self, map_data: StageObjectManager, player: Player, layout: Layout) -> None:
+
+        # 中間レーンに描画するかを取得する
+        is_middle_draw = map_data.get_draw_on_middle_lane()
+
+        # 奥から順番に描画する
+        self.draw_lane(map_data, 6, is_middle_draw, layout)
+        self.draw_lane(map_data, 5, is_middle_draw, layout)
+        self.draw_lane(map_data, 4, is_middle_draw, layout)
+        self.draw_lane(map_data, 3, is_middle_draw, layout)
+        self.draw_lane(map_data, 2, is_middle_draw, layout)
+        self.draw_lane(map_data, 1, is_middle_draw, layout)
+
+        # プレイヤーを描画する
+        self.player_draw(player, layout)
+
+        # 一番手前のレーンを描画する
+        self.draw_lane(map_data, 0, is_middle_draw, layout)
+
+        if not is_middle_draw:
+            self.draw_side_move_enemy(map_data, layout)
+
+
+    def draw_lane(self, map_data: StageObjectManager, lane_index: int, is_middle_draw: bool, layouts: Layout) -> None:
+
+        # 左端のマスから順番に描画する
+        cell_index = 0
+
+        while cell_index < 5:
+
+            # 現在のマスに配置されているオブジェクトを取得する
+            data = map_data.get_object(lane_index, cell_index)
+
+            # オブジェクトが存在しない場合
+            if data is None:
+                cell_index += 1
+                continue
+
+            # 描画対象でない場合
+            if not data.get_is_draw():
+                cell_index += 1
+                continue
+
+            # 横移動中の敵は通常位置に描画しない
+            if lane_index == 0:
+                if data.get_id() == 1:
+                    if data.get_is_side_move():
+                        cell_index += 1
+                        continue
+
+            # ジャンプ可能オブジェクト
+            if data.get_is_jumpable():
+                if is_middle_draw:
+                    layout = layouts.get_middle_lane_obstacle_layout(cell_index, lane_index)
+                else:
+                    layout = layouts.get_lane_obstacle_layout(cell_index, lane_index)
+            # 敵
+            else:
+                if is_middle_draw:
+                    layout = layouts.get_middle_lane_enemy_layout(cell_index, lane_index)
+                else:
+                    layout = layouts.get_lane_enemy_layout(cell_index, lane_index)
+
+            # 描画位置とサイズを取得する
+            x = layout["x"]
+            y = layout["y"]
+            width = layout["width"]
+            height = layout["height"]
+
+            # オブジェクト画像を取得する
+            image = self._image.get_image(data.get_image_path())
+
+            # 描画サイズに合わせて画像をリサイズする
+            image = pygame.transform.scale(image, (width, height))
+
+            # オブジェクトを描画する
+            self._surface.blit(image, (x, y))
+
+            cell_index += 1
+
+
+    def draw_side_move_enemy(self, map_data: StageObjectManager, layouts: Layout) -> None:
+
+        # 左端のマスから順番に描画する
+        cell_index = 0
+
+        lane_index = 0
+
+        while cell_index < 5:
+
+            # 現在のマスに配置されているオブジェクトを取得する
+            data = map_data.get_object(lane_index, cell_index)
+
+            # オブジェクトが存在しない場合
+            if data is None:
+                cell_index += 1
+                continue
+
+            # 横移動中の敵
+            if data.get_id() == 1:
+                if data.get_is_side_move():
+
+                    index = data.get_cell_num()
+                    layout = layouts.get_enemy_side_move_layout(index)
+
+                    # 描画位置とサイズを取得する
+                    x = layout["x"]
+                    y = layout["y"]
+                    width = layout["width"]
+                    height = layout["height"]
+
+                    # オブジェクト画像を取得する
+                    image = self._image.get_image(data.get_image_path())
+
+                    # 描画サイズに合わせて画像をリサイズする
+                    image = pygame.transform.scale(image, (width, height))
+
+                    # オブジェクトを描画する
+                    self._surface.blit(image, (x, y))
+
+            cell_index += 1
+
+========================================
+FILE: Src\Project\Display\Renderer\touch_renderer.py
+========================================
+
+import pygame
+
+from Display.Renderer.image_manager import ImageManager
+
+from asset_paths import TOUCH_SCREEN
+from config import GRAY
+
+
+class TouchDisplay:
+
+    # 文字の色
+    TEXT_COLOR = (255, 255, 255)
+
+    # 線の色
+    LINE_COLOR = (255, 255, 255)
+
+    # 線の太さ
+    LINE_WIDTH = 3
+
+    def __init__(self, surface: pygame.Surface, image: ImageManager) -> None:
+        self._surface = surface
+        self._image = image
+        self._touch_image = self._image.get_image(TOUCH_SCREEN)
+        self._width = self._surface.get_width()
+        self._height = self._surface.get_height()
+        self._font = pygame.font.Font(None, 50)
+
+    def draw_text(self, text_string: str, x: int, y: int) -> None:
+        # 指定した文字列を作成する
+        text = self._font.render(text_string, True, self.TEXT_COLOR)
+        # 描画する文字列の幅と高さを取得する
+        text_width = text.get_width()
+        text_height = text.get_height()
+        # 指定された座標を文字列の中心として描画する
+        self._surface.blit(text, ( x - text_width // 2, y - text_height // 2))
+
+    def draw_controller(self) -> None:
+        # 背景を塗りつぶす
+        self._surface.fill(GRAY)
+
+        # 下段の操作文字を描画する
+        self.draw_text( "L", self._width // 6, self._height * 3 // 4)
+        self.draw_text( "J", self._width * 3 // 6, self._height * 3 // 4)
+
+        # 上段の操作文字を描画する
+        self.draw_text( "R", self._width * 5 // 6, self._height * 3 // 4)
+        self.draw_text( "A", self._width // 4, self._height // 4)
+        self.draw_text( "P", self._width * 3 // 4, self._height // 4)
+
+        # 画面の中央Y座標
+        half_height = self._height // 2
+
+        # 上半分を2等分する線
+        pygame.draw.line(self._surface, self.LINE_COLOR, (self._width // 2, 0), (self._width // 2, half_height), self.LINE_WIDTH )
+
+        # 下半分を3等分する線
+        pygame.draw.line(self._surface, self.LINE_COLOR, (self._width // 3, half_height), (self._width // 3, self._height), self.LINE_WIDTH)
+        pygame.draw.line(self._surface, self.LINE_COLOR, (self._width * 2 // 3, half_height), (self._width * 2 // 3, self._height), self.LINE_WIDTH)
+
+        # 上半分と下半分の境界線
+        pygame.draw.line(self._surface, self.LINE_COLOR, (0, half_height), (self._width, half_height), self.LINE_WIDTH)
+
+    def draw_controller_image(self) -> None:
+        
+        # 画面サイズに合わせて画像をリサイズする
+        image = pygame.transform.scale(self._touch_image, (self._width, self._height))
+
+        # コントローラ画面を描画する
+        self._surface.blit(image, (0, 0))
+
+========================================
+FILE: Src\Project\Display\Renderer\ui_renderer.py
+========================================
+
+import pygame
+from Display.Renderer.image_manager import ImageManager
+from asset_paths import (
+    URGENCY_FRAME1, URGENCY_FRAME2, URGENCY_FRAME3, URGENCY_FRAME4, URGENCY_FRAME5, 
+    URGENCY_FRAME6, URGENCY_FRAME7, URGENCY_FRAME8, URGENCY_FRAME9, URGENCY_FRAME10, 
+    URGENCY_FRAME11, URGENCY_FRAME12, URGENCY_FRAME13, URGENCY_FRAME14, URGENCY_FRAME15, 
+    URGENCY_FRAME16, URGENCY_FRAME17, URGENCY_FRAME18, URGENCY_FRAME19, URGENCY_FRAME20,
+    BOSS_HP_FRAME1, BOSS_HP_FRAME2, BOSS_HP_FRAME3, BOSS_HP_FRAME4, BOSS_HP_FRAME5, 
+    BOSS_HP_FRAME6, BOSS_HP_FRAME7, BOSS_HP_FRAME8, BOSS_HP_FRAME9, BOSS_HP_FRAME10, BOSS_HP_FRAME0,
+)
+
+from config import (
+    HP_FRAME_WIDTH_SCALE, HP_FRAME_HEIGHT_SCALE,
+    PLAYER_HP_FRAME_TOP_X, PLAYER_HP_FRAME_TOP_Y,
+    BOSS_HP_FRAME_TOP_X, BOSS_HP_FRAME_TOP_Y,
+)
+
+class UIRenderer:
+
+    def __init__(self, surface: pygame.Surface, image : ImageManager):
+        self._surface = surface
+        self._image = image
+
+        self.width = surface.get_width()
+        self.height = surface.get_height()
+
+        # 日本語を表示する場合は、日本語対応フォントを指定する
+        self.font = pygame.font.Font(None, 50)
+
+        self.URGENCY_FRAMES = [
+            URGENCY_FRAME1, URGENCY_FRAME2, URGENCY_FRAME3, URGENCY_FRAME4, URGENCY_FRAME5, 
+            URGENCY_FRAME6, URGENCY_FRAME7, URGENCY_FRAME8, URGENCY_FRAME9, URGENCY_FRAME10, 
+            URGENCY_FRAME11, URGENCY_FRAME12, URGENCY_FRAME13, URGENCY_FRAME14, URGENCY_FRAME15, 
+            URGENCY_FRAME16, URGENCY_FRAME17, URGENCY_FRAME18, URGENCY_FRAME19, URGENCY_FRAME20, 
+        ]
+
+        self.BOSS_HP_FRAMES = [
+            BOSS_HP_FRAME0, BOSS_HP_FRAME1, BOSS_HP_FRAME2, BOSS_HP_FRAME3, BOSS_HP_FRAME4, BOSS_HP_FRAME5, 
+            BOSS_HP_FRAME6, BOSS_HP_FRAME7, BOSS_HP_FRAME8, BOSS_HP_FRAME9, BOSS_HP_FRAME10
+        ]
+
+        self.health_width = self.width * HP_FRAME_WIDTH_SCALE
+        self.health_height = self.width * HP_FRAME_HEIGHT_SCALE
+
+        self.health_x = self.width * PLAYER_HP_FRAME_TOP_X
+        self.health_y = PLAYER_HP_FRAME_TOP_Y
+
+        self.boss_health_x = BOSS_HP_FRAME_TOP_X
+        self.boss_health_y = BOSS_HP_FRAME_TOP_Y
+
+
+
+    def health_draw(self, urgency_level: int) -> None:
+
+        # 5刻みでフレーム番号を求める
+        if urgency_level == 0:
+            index = 0
+        else:
+            index = (urgency_level - 1) // 5
+
+        path = self.URGENCY_FRAMES[index]
+
+        # 画像を取得する
+        img = self._image.get_image(path)
+
+        # 描画サイズに変更する
+        image = pygame.transform.scale( img, (self.health_width, self.health_height))
+
+        # 画像を描画する
+        self._surface.blit( image,(self.health_x, self.health_y))
+
+    def boss_health_draw(self, boss_urgency_level: int) -> None:
+
+        path = self.BOSS_HP_FRAMES[boss_urgency_level]
+
+        # 画像を取得する
+        img = self._image.get_image(path)
+
+        # 描画サイズに変更する
+        image = pygame.transform.scale( img, (self.health_width, self.health_height))
+
+        # 画像を描画する
+        self._surface.blit( image,(self.boss_health_x, self.boss_health_y))
+
+========================================
+FILE: Src\Project\Display\Renderer\video_manager.py
+========================================
+
+import math
+
+import cv2
+
+from System.file_load_system import load_video
+
+from config import FPS
+
+from asset_paths import OPNING_VIDEO_PATH, BOSS_INTRO_VIDEO_PATH, BOSS_DEFEAT_VIDEO_PATH, ENDING_VIDEO_PATH
+
+import pygame
+
+
+class VideoManager:
+    def __init__(self, width, height):
+
+        self._width = width
+        self._height = height
+        self._fps = FPS
+
+        # 動画をロード
+        self._opening_video = load_video(OPNING_VIDEO_PATH)
+        self._boss_intro_video = load_video(BOSS_INTRO_VIDEO_PATH)
+        self._boss_defeat_video = load_video(BOSS_DEFEAT_VIDEO_PATH)
+        self._ending_video = load_video(ENDING_VIDEO_PATH)
+
+        # 動画を画像配列に変換
+        self._opening_video_images = self.set_up_videos(self._opening_video)
+        self._boss_intro_video_images = self.set_up_videos(self._boss_intro_video)
+        self._boss_defeat_video_images = self.set_up_videos(self._boss_defeat_video)
+        self._ending_video_images = self.set_up_videos(self._ending_video)
+
+
+    def get_opening_video_image(self, count: int):
+        if 0 <= count < len(self._opening_video_images):
+            return self._opening_video_images[count]
+        return -1
+
+    def get_boss_intro_video_image(self, count: int):
+        if 0 <= count < len(self._boss_intro_video_images):
+            return self._boss_intro_video_images[count]
+        return -1
+
+    def get_boss_defeat_video_image(self, count: int):
+        if 0 <= count < len(self._boss_defeat_video_images):
+            return self._boss_defeat_video_images[count]
+        return -1
+
+    def get_ending_video_image(self, count: int):
+        if 0 <= count < len(self._ending_video_images):
+            return self._ending_video_images[count]
+        return -1
+
+    
+    def set_up_videos(self, video):
+
+        # 動画情報を取得
+        video_fps = video.get(cv2.CAP_PROP_FPS)
+        frame_count = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
+
+        if video_fps <= 0 or frame_count <= 0 or self._fps <= 0:
+            video.release()
+            raise ValueError("動画情報が不正です")
+
+        # 動画の再生時間
+        duration = frame_count / video_fps
+
+        # ゲームFPSに合わせた必要フレーム数
+        required_frames = math.ceil(duration * self._fps)
+
+        images = []
+        current_frame = -1
+        last_image = None
+
+        try:
+            for count in range(required_frames):
+
+                # 保存する動画フレーム番号
+                target_frame = min(int(count * video_fps / self._fps), frame_count - 1)
+
+                # 必要なフレームまで順番に進める
+                while current_frame < target_frame:
+
+                    if not video.grab():
+                        return images
+
+                    current_frame += 1
+
+                # 同じフレームを再利用する場合
+                if last_image is not None and target_frame == previous_frame:
+                    images.append(last_image)
+                    continue
+
+                # 現在のフレームを取得
+                ret, frame = video.retrieve()
+
+                if not ret:
+                    break
+
+                # 画面サイズに変更
+                frame = cv2.resize(frame, (self._width, self._height))
+                # BGR → RGB
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Pygame Surfaceに変換
+                image = pygame.image.frombuffer(frame.tobytes(), (self._width, self._height), "RGB")
+                images.append(image)
+
+                last_image = image
+                previous_frame = target_frame
+
+        finally:
+            video.release()
+
+        return images
+
+========================================
+FILE: Src\Project\Input\command_converter.py
+========================================
+
+
+from enum import Enum, auto
+from config import TOUCH_WIDTH, TOUCH_HEIGHT
+
+
+class Command(Enum):
+    LEFT = auto()
+    JUMP = auto()
+    RIGHT = auto()
+    ATTACK = auto()
+    PAUSE = auto()
+    NONE = auto()
+
+
+class CommandConverter:
+    def __init__(self):
+        self.touch_width = TOUCH_WIDTH
+        self.touch_height = TOUCH_HEIGHT
+
+    def convert(self, touch_x: int, touch_y: int) -> Command:
+        # タッチ画面外の入力を除外する
+        if not (
+            0 <= touch_x < self.touch_width
+            and 0 <= touch_y < self.touch_height
+        ):
+            return Command.NONE
+
+        # タッチ座標を割合に変換する
+        x = touch_x / self.touch_width
+        y = touch_y / self.touch_height
+
+        # ATTACK
+        if 0.12 <= x <= 0.32 and 0.07 <= y <= 0.38:
+            return Command.ATTACK
+
+        # PAUSE
+        if 0.69 <= x <= 0.89 and 0.07 <= y <= 0.38:
+            return Command.PAUSE
+
+        # LEFT
+        if 0.00 <= x <= 0.24 and 0.40 <= y <= 0.72:
+            return Command.LEFT
+
+        # RIGHT
+        if 0.78 <= x <= 1.00 and 0.40 <= y <= 0.72:
+            return Command.RIGHT
+
+        # JUMP（円形判定）
+        center_x = 0.50
+        center_y = 0.56
+
+        radius_x = 0.23
+        radius_y = 0.36
+
+        dx = (x - center_x) / radius_x
+        dy = (y - center_y) / radius_y
+
+        if dx * dx + dy * dy <= 1:
+            return Command.JUMP
+
+        return Command.NONE
+
+========================================
+FILE: Src\Project\Input\coord_converter.py
+========================================
+
+
+from config import (
+    TOUCH_WIDTH,
+    TOUCH_HEIGHT,
+    TOUCH_X_MAX,
+    TOUCH_Y_MAX,
+    TOUCH_SCREEN_TOP_X,
+    TOUCH_SCREEN_TOP_Y,
+)
+
+
+def driver_to_game(x: int, y: int) -> tuple[int, int]:
+    # 無効な入力を除外する
+    if x < 0 or y < 0:
+        return -1, -1
+
+    # ドライバ座標をタッチ画面座標へ変換する
+    x = x * TOUCH_WIDTH // TOUCH_X_MAX
+    y = y * TOUCH_HEIGHT // TOUCH_Y_MAX
+
+    # 座標を画面内に制限する
+    x = max(0, min(x, TOUCH_WIDTH - 1))
+    y = max(0, min(y, TOUCH_HEIGHT - 1))
+
+    # Y軸を反転する
+    y = TOUCH_HEIGHT - 1 - y
+
+    return x, y
+
+def pygame_to_game(x: int, y: int) -> tuple[int, int]:
+    # タッチ画面の範囲を判定する
+    if not (
+        TOUCH_SCREEN_TOP_X <= x < TOUCH_SCREEN_TOP_X + TOUCH_WIDTH
+        and TOUCH_SCREEN_TOP_Y <= y < TOUCH_SCREEN_TOP_Y + TOUCH_HEIGHT
+    ):
+        return -1, -1
+
+    # タッチ画面を原点とする座標へ変換する
+    return x - TOUCH_SCREEN_TOP_X, y - TOUCH_SCREEN_TOP_Y
+
+========================================
+FILE: Src\Project\Input\device_input.py
+========================================
+
+# evdevライブラリはLinuxでのみ使用でき、Windowsではインポートできないため、
+# ImportErrorが発生した場合でもプログラムが停止しないようにする
+
+from collections import deque
+
+try:
+    from evdev import InputDevice, list_devices, ecodes
+except ImportError:
+    InputDevice = None
+    list_devices = None
+    ecodes = None
+
+from config import DEVICE_NAME
+
+
+def find_device():
+    if InputDevice is None:
+        raise RuntimeError("evdevが使用できません")
+
+    for path in list_devices():
+        device = InputDevice(path)
+
+        if device.name == DEVICE_NAME:
+            return device
+
+        device.close()
+
+    raise FileNotFoundError(f"{DEVICE_NAME} が見つかりません")
+
+
+class DeviceInput:
+    def __init__(self, device):
+        self._device = device
+
+        self._x = None
+        self._y = None
+        self._is_touching = False
+
+        self._pending = False
+        self._events = deque()
+
+    def update(self):
+        try:
+            for event in self._device.read():
+
+                # タッチ座標を取得する
+                if event.type == ecodes.EV_ABS:
+                    if event.code == ecodes.ABS_X:
+                        self._x = event.value
+                    elif event.code == ecodes.ABS_Y:
+                        self._y = event.value
+
+                # タッチの開始と終了を検出する
+                elif event.type == ecodes.EV_KEY:
+                    if event.code == ecodes.BTN_TOUCH:
+                        if event.value == 1:
+                            self._is_touching = True
+                            self._pending = True
+
+                        elif event.value == 0:
+                            self._is_touching = False
+
+                # イベントを確定する
+                elif event.type == ecodes.EV_SYN:
+                    if event.code == ecodes.SYN_REPORT:
+                        self._commit()
+
+        except BlockingIOError:
+            pass
+
+    def _commit(self):
+        if self._pending and self._x is not None and self._y is not None:
+            self._events.append((self._x, self._y))
+            self._pending = False
+
+    def get_input(self):
+        if self._events:
+            return self._events.popleft()
+
+        return -1, -1
+
+    def has_input(self):
+        return bool(self._events)
+
+========================================
+FILE: Src\Project\Input\input_manager.py
+========================================
+
+
+from collections import deque
+
+from Input.device_input import find_device, DeviceInput
+from Input.pygame_input import PygameInput
+from Input.coord_converter import driver_to_game, pygame_to_game
+from Input.command_converter import CommandConverter, Command
+
+
+class Input:
+    def __init__(self, mode: bool):
+        # True : Raspberry Pi
+        # False: PC
+        self.mode = mode
+
+        if self.mode:
+            self.touch = find_device()
+            self._input = DeviceInput(self.touch)
+        else:
+            self._input = PygameInput()
+
+        self.command_converter = CommandConverter()
+
+        # 未処理コマンドを保存する
+        self._commands = deque()
+
+        self._input_x = -1
+        self._input_y = -1
+
+    def get_is_click(self) -> bool:
+        return bool(self._commands)
+
+    def get_command(self) -> Command:
+        # 保存されたコマンドを順番に取得する
+        if self._commands:
+            return self._commands.popleft()
+
+        return Command.NONE
+
+    def command_update(self) -> None:
+        # デバイスから入力を読み取る
+        self._input.update()
+
+        # 取得した入力をすべて処理する
+        while self._input.has_input():
+            x, y = self._input.get_input()
+
+            # 座標をゲーム内座標へ変換する
+            if self.mode:
+                x, y = driver_to_game(x, y)
+            else:
+                x, y = pygame_to_game(x, y)
+
+            self._input_x = x
+            self._input_y = y
+
+            # 無効な座標を除外する
+            if x < 0 or y < 0:
+                continue
+
+            # 座標からコマンドへ変換する
+            command = self.command_converter.convert(x, y)
+
+            if command == Command.NONE:
+                continue
+
+            # コマンドをキューへ保存する
+            self._commands.append(command)
+
+    def debug_log(self) -> None:
+        command = (
+            self._commands[0].name
+            if self._commands else Command.NONE.name
+        )
+
+        print(
+            f": input = ({self._input_x}, {self._input_y}) "
+            f": click = {self.get_is_click()} "
+            f": saved = {command} "
+            f": queue = {len(self._commands)}"
+        )
+
+========================================
+FILE: Src\Project\Input\pygame_input.py
+========================================
+
+
+from collections import deque
+import pygame
+
+
+class PygameInput:
+    def __init__(self):
+        self._events = deque()
+
+    def update(self):
+        # イベントをまとめて取得する
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self._events.append(event.pos)
+
+            elif event.type == pygame.QUIT:
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def get_input(self):
+        if self._events:
+            return self._events.popleft()
+
+        return -1, -1
+
+    def has_input(self):
+        return bool(self._events)
+
+========================================
+FILE: Src\Project\pi_main.py
+========================================
+
+from Application.app import App
+
+App(True)
+
+========================================
+FILE: Src\Project\StageObject\enemy.py
+========================================
+
+#StageObject/enemy.py
+from StageObject.stage_object import StageObject, ObjectType
+
+from StageObject.object_parameters import(
+    OJISAN_HP,
+    OJISAN_DAMAGE,
+    OJISAN_IS_JUMPABLE,
+    OJISAN_ID,
+
+    SMARTPHONE_USER_HP,
+    SMARTPHONE_USER_DAMAGE,
+    SMARTPHONE_USER_IS_JUMPABLE,
+    SMARTPHONE_USER_ID,
+
+    BOSS_LARGE_ATTACK_ID,
+    BOSS_LARGE_ATTACK_HP,
+    BOSS_LARGE_ATTACK_DAMAGE,
+    BOSS_LARGE_ATTACK_IS_JUMPABLE,
+
+    BOSS_HOMING_ATTACK_ID,
+    BOSS_HOMING_ATTACK_HP,
+    BOSS_HOMING_ATTACK_DAMAGE,
+    BOSS_HOMING_ATTACK_IS_JUMPABLE,
+
+    GENERAL_PUBLIC1_ID,
+    GENERAL_PUBLIC1_HP,
+    GENERAL_PUBLIC1_DAMAGE,
+    GENERAL_PUBLIC1_IS_JUMPABLE,
+
+    GENERAL_PUBLIC2_ID,
+    GENERAL_PUBLIC2_HP,
+    GENERAL_PUBLIC2_DAMAGE,
+    GENERAL_PUBLIC2_IS_JUMPABLE,
+
+    GENERAL_PUBLIC3_ID,
+    GENERAL_PUBLIC3_HP,
+    GENERAL_PUBLIC3_DAMAGE,
+    GENERAL_PUBLIC3_IS_JUMPABLE,
+    )
+
+from asset_paths import (
+    ENEMY_IMAGE_PATH, OJISAN_DAMAGED_IMAGE, STUDENT_IMAGE_PATH, STUDENT_DAMAGED_IMAGE, 
+    BOSS_LARGE_ATTACK_IMAGE_PATH, BOSS_HOMING_ATTACK_IMAGE_PATH,
+    GENERAL_PUBLIC1_IMAGE_PATH, GENERAL_PUBLIC1_DAMAGED_IMAGE, GENERAL_PUBLIC2_IMAGE_PATH,
+    GENERAL_PUBLIC2_DAMAGED_IMAGE, GENERAL_PUBLIC3_IMAGE_PATH, GENERAL_PUBLIC3_DAMAGED_IMAGE
+)
+
+class Enemy(StageObject):
+    def __init__(self, image_path: str, id: int, size: int, is_jumpable: bool, damage: int, hp: int, hit_image: str) -> None:
+        super().__init__(ObjectType.ENEMY, image_path, id , size, is_jumpable, damage)
+
+        self._hp: int = hp
+        self._hit_image_path = hit_image
+
+        self.is_hit: bool = False
+
+    # _hpのgetterとsetter
+    def get_hp(self) -> int:
+        return self._hp
+    
+    def set_hp(self, hp: int) -> None:
+        if not isinstance(hp, int):
+            raise TypeError(f"受け取った型 {type(hp).__name__} : int型を指定してください。")
+        self._hp = hp
+
+
+    def set_is_hit(self, is_hit: bool) -> None:
+        self.is_hit = is_hit
+
+    def get_is_hit(self) -> bool:
+        return self.is_hit
+
+    
+    # _image_pathのgetterとsetter
+    def get_hit_image_path(self) -> str:
+        return self._hit_image_path 
+    
+
+
+class Ojisan(Enemy):
+    def __init__(self) -> None:
+        # IDは一意の初期値を割り当て（ID範囲: 1~3）
+        super().__init__(
+            image_path = ENEMY_IMAGE_PATH,
+            id = OJISAN_ID,
+            size = 1,
+            is_jumpable = OJISAN_IS_JUMPABLE,
+            damage = OJISAN_DAMAGE,
+            hp = OJISAN_HP,
+            hit_image = OJISAN_DAMAGED_IMAGE
+        )
+
+        self._is_sive_move: bool = False
+        self._cell_mum: int = -1
+
+    def get_is_side_move(self) -> bool:
+        return self._is_sive_move
+
+    def set_is_side_move(self, is_side_move: bool) -> None:
+        self._is_sive_move = is_side_move
+
+
+    def get_cell_num(self) -> int:
+        return self._cell_mum
+
+    def set_cell_num(self, cell_num: int) -> None:
+        self._cell_mum = cell_num
+
+
+class Student(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = STUDENT_IMAGE_PATH,
+            id = SMARTPHONE_USER_ID,
+            size = 1,
+            is_jumpable = SMARTPHONE_USER_IS_JUMPABLE,
+            damage = SMARTPHONE_USER_DAMAGE,
+            hp = SMARTPHONE_USER_HP,
+            hit_image = STUDENT_DAMAGED_IMAGE
+        )
+
+class GeneralPublic1(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = GENERAL_PUBLIC1_IMAGE_PATH,
+            id = GENERAL_PUBLIC1_ID,
+            size = 1,
+            is_jumpable = GENERAL_PUBLIC1_IS_JUMPABLE,
+            damage = GENERAL_PUBLIC1_DAMAGE,
+            hp = GENERAL_PUBLIC1_HP,
+            hit_image = GENERAL_PUBLIC1_DAMAGED_IMAGE
+        )
+
+class GeneralPublic2(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = GENERAL_PUBLIC2_IMAGE_PATH,
+            id = GENERAL_PUBLIC2_ID,
+            size = 1,
+            is_jumpable = GENERAL_PUBLIC2_IS_JUMPABLE,
+            damage = GENERAL_PUBLIC2_DAMAGE,
+            hp = GENERAL_PUBLIC2_HP,
+            hit_image = GENERAL_PUBLIC2_DAMAGED_IMAGE
+        )
+
+class GeneralPublic3(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = GENERAL_PUBLIC3_IMAGE_PATH,
+            id = GENERAL_PUBLIC3_ID,
+            size = 1,
+            is_jumpable = GENERAL_PUBLIC3_IS_JUMPABLE,
+            damage = GENERAL_PUBLIC3_DAMAGE,
+            hp = GENERAL_PUBLIC3_HP,
+            hit_image = GENERAL_PUBLIC3_DAMAGED_IMAGE
+        )
+
+        
+
+class BossLargeAttack(Enemy):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = BOSS_LARGE_ATTACK_IMAGE_PATH,
+            id = BOSS_LARGE_ATTACK_ID,
+            size = 1,
+            is_jumpable = BOSS_LARGE_ATTACK_IS_JUMPABLE,
+            damage = BOSS_LARGE_ATTACK_DAMAGE,
+            hp = BOSS_LARGE_ATTACK_HP,
+            hit_image = BOSS_LARGE_ATTACK_IMAGE_PATH
+        )
+
+
+class BossHomingAttack(Enemy):
+    def __init__(self) -> None:
+
+        super().__init__(
+            image_path = BOSS_HOMING_ATTACK_IMAGE_PATH,
+            id = BOSS_HOMING_ATTACK_ID,
+            size = 1,
+            is_jumpable = BOSS_HOMING_ATTACK_IS_JUMPABLE,
+            damage = BOSS_HOMING_ATTACK_DAMAGE,
+            hp = BOSS_HOMING_ATTACK_HP,
+            hit_image = BOSS_HOMING_ATTACK_IMAGE_PATH
+        )
+
+        self._is_sive_move: bool = False
+        self._cell_mum: int = -1
+
+    def get_is_side_move(self) -> bool:
+        return self._is_sive_move
+
+    def set_is_side_move(self, is_side_move: bool) -> None:
+        self._is_sive_move = is_side_move
+
+
+    def get_cell_num(self) -> int:
+        return self._cell_mum
+
+    def set_cell_num(self, cell_num: int) -> None:
+        self._cell_mum = cell_num
+
+# class StrongOjisan(Enemy):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID範囲: 4~6）
+#         super().__init__(
+#             hp=STRONG_OJISAN_HP,
+#             damage=STRONG_OJISAN_DAMAGE,
+#             image_path=ENEMY_IMAGE_PATH,
+#             is_jumpable=STRONG_OJISAN_IS_JUMPABLE,
+#             id=STRONG_OJISAN_ID,
+#             hit_image=ENEMY_IMAGE_PATH
+#         )
+#         # TODO: 左右1マスの当たり判定ロジックを後で実装
+#         # TODO: スコア加算(1000)・減算(1000)の処理を後で実装
+
+
+# class SmartphoneUser(Enemy):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID範囲: 11~14）
+#         super().__init__(
+#             hp=SMARTPHONE_USER_HP,
+#             damage=SMARTPHONE_USER_DAMAGE,
+#             image_path=ENEMY_IMAGE_PATH,
+#             is_jumpable=SMARTPHONE_USER_IS_JUMPABLE,
+#             id=SMARTPHONE_USER_ID,
+#             hit_image=ENEMY_IMAGE_PATH
+#         )
+#         # TODO: スコア加算(300)・減算(300)の処理を後で実装
+
+
+# class FurocanKaiwai(Enemy):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID範囲: 16~19）
+#         super().__init__(
+#             hp=FUROCAN_KAIWAI_HP,
+#             damage=FUROCAN_KAIWAI_DAMAGE,
+#             image_path=ENEMY_IMAGE_PATH,
+#             is_jumpable=FUROCAN_KAIWAI_IS_JUMPABLE,
+#             id=FUROCAN_KAIWAI_ID,
+#             hit_image=ENEMY_IMAGE_PATH
+#         )
+#         # TODO: 左右2マスの当たり判定およびダメージ分岐（本人20、左右5）のロジックを後で実装
+#         # TODO: スコア加算(1000)・減算(1000)の処理を後で実装
+
+
+# class CarryCasePerson(Enemy):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID範囲: 21~24）
+#         super().__init__(
+#             hp=CARRY_CASE_PERSON_HP,
+#             damage=CARRY_CASE_PERSON_DAMAGE,
+#             image_path=ENEMY_IMAGE_PATH,
+#             is_jumpable=CARRY_CASE_PERSON_IS_JUMPABLE,
+#             id=CARRY_CASE_PERSON_ID,
+#             hit_image=ENEMY_IMAGE_PATH
+#         )
+#         # TODO: 2マス分の当たり判定ロジックを後で実装
+#         # TODO: スコア加算(0)・減算(500)の処理を後で実装
+
+
+# class YanchaGroup(Enemy):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID = 26）
+#         super().__init__(
+#             hp=YANCHA_GROUP_HP,
+#             damage=YANCHA_GROUP_DAMAGE,
+#             image_path=ENEMY_IMAGE_PATH,
+#             is_jumpable=YANCHA_GROUP_IS_JUMPABLE,
+#             id=YANCHA_GROUP_ID,
+#             hit_image=ENEMY_IMAGE_PATH
+#         )
+#         # TODO: 横4マス分の当たり判定ロジックを後で実装
+#         # TODO: スコア加算(1000)・減算(1000)の処理を後で実装
+
+# class Civilian(Enemy):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID範囲: 41~45）
+#         super().__init__(
+#             hp=CIVILIAN_HP,
+#             damage=CIVILIAN_DAMAGE,
+#             image_path=ENEMY_IMAGE_PATH,
+#             is_jumpable=CIVILIAN_IS_JUMPABLE,
+#             id=CIVILIAN_ID,
+#             hit_image=ENEMY_IMAGE_PATH
+#         )
+#         # TODO: 攻撃不可（判定・ダメージロジック）を後で実装
+#         # TODO: スコア加算(0)・減算(500)の処理を後で実装
+    
+
+========================================
+FILE: Src\Project\StageObject\object_converter.py
+========================================
+
+from StageObject.enemy import (
+    Ojisan, Student, BossLargeAttack, BossHomingAttack,
+    GeneralPublic1, GeneralPublic2, GeneralPublic3
+)
+from StageObject.obstacle import Banana, BossSmallAttack
+
+from StageObject.stage_object import StageObject
+
+from StageObject.object_parameters import(
+    OJISAN_ID, BANANA_ID, SMARTPHONE_USER_ID, BOSS_SMALL_ATTACK_ID,
+    BOSS_LARGE_ATTACK_ID,BOSS_HOMING_ATTACK_ID,
+    GENERAL_PUBLIC1_ID, GENERAL_PUBLIC2_ID, GENERAL_PUBLIC3_ID
+)
+
+
+class ObjectConverter:
+    def __init__(self):
+        self._objects = {
+            0: None,
+            OJISAN_ID: Ojisan,
+            BANANA_ID: Banana,
+            SMARTPHONE_USER_ID: Student,
+            BOSS_SMALL_ATTACK_ID: BossSmallAttack,
+            BOSS_LARGE_ATTACK_ID: BossLargeAttack,
+            BOSS_HOMING_ATTACK_ID: BossHomingAttack,
+            GENERAL_PUBLIC1_ID: GeneralPublic1,
+            GENERAL_PUBLIC2_ID: GeneralPublic2,
+            GENERAL_PUBLIC3_ID: GeneralPublic3
+        }
+
+    def convert(self,lists: list[int]) -> list[StageObject | None]:
+
+        # 引数がlist型であるか確認する
+        if not isinstance(lists, list):
+            raise TypeError("listsはlist型で指定してください")
+
+        objects = []
+
+        # 数値データをオブジェクトへ変換する
+        i = 0
+        while i < len(lists):
+            object_class = self._objects.get(lists[i])
+
+            # 0の場合はNoneを追加する
+            if object_class is None:
+                objects.append(None)
+
+            # 対応するクラスのインスタンスを生成する
+            else:
+                objects.append(object_class())
+
+            i += 1
+
+        return objects
+
+        
+
+========================================
+FILE: Src\Project\StageObject\object_parameters.py
+========================================
+
+#Src/Project/Domain/object_parameters.py
+
+# ぶつかりおじさんのパラメータ
+OJISAN_ID = 1 # ID範囲: 1~3
+OJISAN_HP = 1
+OJISAN_DAMAGE = 10
+OJISAN_IS_JUMPABLE = False
+
+# 歩きスマホのパラメータ
+SMARTPHONE_USER_ID = 11  # ID範囲: 11~14
+SMARTPHONE_USER_HP = 1
+SMARTPHONE_USER_DAMAGE = 10
+SMARTPHONE_USER_IS_JUMPABLE = False
+
+GENERAL_PUBLIC1_ID = 21
+GENERAL_PUBLIC1_HP = 1
+GENERAL_PUBLIC1_DAMAGE = 5
+GENERAL_PUBLIC1_IS_JUMPABLE = False
+
+GENERAL_PUBLIC2_ID = 22
+GENERAL_PUBLIC2_HP = 1
+GENERAL_PUBLIC2_DAMAGE = 5
+GENERAL_PUBLIC2_IS_JUMPABLE = False
+
+GENERAL_PUBLIC3_ID = 23
+GENERAL_PUBLIC3_HP = 1
+GENERAL_PUBLIC3_DAMAGE = 5
+GENERAL_PUBLIC3_IS_JUMPABLE = False
+
+
+# バナナのパラメータ
+BANANA_ID = 51
+BANANA_HP = 1
+BANANA_DAMAGE  = 0
+BANANA_IS_JUMPABLE = True
+
+
+BOSS_SMALL_ATTACK_ID = 61
+BOSS_SMALL_ATTACK_DAMAGE = 10
+BOSS_SMALL_ATTACK_IS_JUMPABLE = True
+
+BOSS_LARGE_ATTACK_ID = 62
+BOSS_LARGE_ATTACK_HP = 1
+BOSS_LARGE_ATTACK_DAMAGE = 20
+BOSS_LARGE_ATTACK_IS_JUMPABLE = False
+
+BOSS_HOMING_ATTACK_ID = 63
+BOSS_HOMING_ATTACK_HP = 1
+BOSS_HOMING_ATTACK_DAMAGE = 15
+BOSS_HOMING_ATTACK_IS_JUMPABLE = False
+
+
+
+# ぶつかりおじさん（強）のパラメータ
+STRONG_OJISAN_ID = 4  # ID範囲: 4~6
+STRONG_OJISAN_HP = 3
+STRONG_OJISAN_DAMAGE = 20
+STRONG_OJISAN_IS_JUMPABLE = False
+STRONG_OJISAN_ADD_SCORE = 1000
+STRONG_OJISAN_SUB_SCORE = 1000
+
+# ふろキャン界隈のパラメータ
+FUROCAN_KAIWAI_ID = 16  # ID範囲: 16~19
+FUROCAN_KAIWAI_HP = 2
+FUROCAN_KAIWAI_DAMAGE = 20
+FUROCAN_KAIWAI_IS_JUMPABLE = False
+FUROCAN_KAIWAI_ADD_SCORE = 1000
+FUROCAN_KAIWAI_SUB_SCORE = 1000
+
+# ２マスのキャラ（キャリーケースを持った人）のパラメータ
+CARRY_CASE_PERSON_ID = 21  # ID範囲: 21~24
+CARRY_CASE_PERSON_HP = 2
+CARRY_CASE_PERSON_DAMAGE = 10
+CARRY_CASE_PERSON_IS_JUMPABLE = False
+CARRY_CASE_PERSON_ADD_SCORE = 0
+CARRY_CASE_PERSON_SUB_SCORE = 500
+
+# 4人組のやんちゃ集団のパラメータ
+YANCHA_GROUP_ID = 26
+YANCHA_GROUP_HP = 2
+YANCHA_GROUP_DAMAGE = 10
+YANCHA_GROUP_IS_JUMPABLE = False
+YANCHA_GROUP_ADD_SCORE = 1000
+YANCHA_GROUP_SUB_SCORE = 1000
+
+# 一般人のパラメータ
+CIVILIAN_ID = 41  # ID範囲: 41~45
+CIVILIAN_HP = 1
+CIVILIAN_DAMAGE = 3
+CIVILIAN_IS_JUMPABLE = False
+CIVILIAN_ADD_SCORE = 0
+CIVILIAN_SUB_SCORE = 500
+
+# カラーコーン
+COLOR_CONE_ID = 56
+COLOR_CONE_HP = 1
+COLOR_CONE_DAMAGE = 10
+COLOR_CONE_IS_JUMPABLE = False
+COLOR_CONE_ADD_SCORE = 0
+COLOR_CONE_SUB_SCORE = 300
+
+# ２マスの障害物（キャリーケース）のパラメータ
+CARRY_CASE_OBSTACLE_ID = 61
+CARRY_CASE_OBSTACLE_HP = 1
+CARRY_CASE_OBSTACLE_DAMAGE = 5
+CARRY_CASE_OBSTACLE_IS_JUMPABLE = False
+CARRY_CASE_OBSTACLE_ADD_SCORE = 0
+CARRY_CASE_OBSTACLE_SUB_SCORE = 300
+
+========================================
+FILE: Src\Project\StageObject\obstacle.py
+========================================
+
+#StageObject/obstacle.py
+from StageObject.stage_object import StageObject, ObjectType
+
+from StageObject.object_parameters import(
+    BANANA_DAMAGE,
+    BANANA_IS_JUMPABLE,
+    BANANA_ID,
+    
+    BOSS_SMALL_ATTACK_ID,
+    BOSS_SMALL_ATTACK_DAMAGE,
+    BOSS_SMALL_ATTACK_IS_JUMPABLE,
+)
+
+from asset_paths import OBSTACLE_IMAGE_PATH, BOSS_SMALL_ATTACK_IMAGE_PATH
+
+class Obstacle(StageObject):
+    def __init__(self, image_path: str, id: int, size: int, is_jumpable: bool, damage: int) -> None:
+        super().__init__(ObjectType.OBSTACLE, image_path, id , size, is_jumpable, damage)
+
+class Banana(Obstacle):
+    def __init__(self) -> None:
+        # IDは一意の初期値を割り当て（ID = 51）
+        super().__init__(
+            image_path = OBSTACLE_IMAGE_PATH,
+            id = BANANA_ID,
+            size = 1,
+            is_jumpable=BANANA_IS_JUMPABLE,
+            damage=BANANA_DAMAGE,
+        )
+
+class BossSmallAttack(Obstacle):
+    def __init__(self) -> None:
+        super().__init__(
+            image_path = BOSS_SMALL_ATTACK_IMAGE_PATH,
+            id = BOSS_SMALL_ATTACK_ID,
+            size = 1,
+            is_jumpable=BOSS_SMALL_ATTACK_IS_JUMPABLE,
+            damage=BOSS_SMALL_ATTACK_DAMAGE,
+        )
+        
+# class ColorCone(Obstacle):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID = 56）
+#         super().__init__(
+#             damage=COLOR_CONE_DAMAGE,
+#             image_path=OBSTACLE_IMAGE_PATH,
+#             is_jumpable=COLOR_CONE_IS_JUMPABLE,
+#             id=COLOR_CONE_ID
+#         )
+#         # TODO: スコア減算(300)の処理を後で実装
+
+# class CarryCaseObstacle(Obstacle):
+#     def __init__(self) -> None:
+#         # IDは一意の初期値を割り当て（ID = 61）
+#         super().__init__(
+#             damage=CARRY_CASE_OBSTACLE_DAMAGE,
+#             image_path=OBSTACLE_IMAGE_PATH,
+#             is_jumpable=CARRY_CASE_OBSTACLE_IS_JUMPABLE,
+#             id=CARRY_CASE_OBSTACLE_ID
+#         )
+#         # TODO: 2マス分の当たり判定ロジックを後で実装
+#         # TODO: スコア減算(300)の処理を後で実装
+
+========================================
+FILE: Src\Project\StageObject\stage_object.py
+========================================
+
+from enum import Enum, auto
+
+class ObjectType(Enum):
+    OBSTACLE = auto()
+    ENEMY = auto()
+
+
+class StageObject:
+    def __init__(self, object_type, path, id, size, is_jumpable, damage):
+        self._object_type: ObjectType = object_type
+        self._image_path: str = path
+        self._id: int = id
+        self._width_size: int = size
+        self._is_jumpable: bool = is_jumpable
+        self._damage: int = damage
+
+        self._is_draw: bool = True
+
+    def get_object_type(self) -> ObjectType:
+        return self._object_type
+    
+    def get_image_path(self) -> str:
+        return self._image_path
+
+    def get_id(self) -> int:
+        return self._id
+
+    def get_width_size(self) -> int:
+        return self._width_size
+
+    def get_is_jumpable(self) -> bool:
+        return self._is_jumpable
+
+    def get_damage(self) -> int:
+        return self._damage
+
+    def set_is_draw(self, is_draw: bool) -> None:
+        self._is_draw = is_draw
+
+    def get_is_draw(self) -> bool:
+        return self._is_draw
+
+
+========================================
+FILE: Src\Project\State\attack_data.py
+========================================
+
+class Attack:
+    def __init__(self) -> None:
+
+        # 攻撃物のX座標をフレームごとに保持する
+        self._x: list[int] = []
+
+        # 攻撃物のY座標をフレームごとに保持する
+        self._y: list[int] = []
+
+        # 攻撃物の画像パスをフレームごとに保持する
+        self._path: list[str] = []
+
+        self._is_attack: bool = False
+        self._count = 0
+
+    def reset(self) -> None:
+        # 攻撃描画用データを初期化する
+        self._x = []
+        self._y = []
+        self._path = []
+
+        # 攻撃状態を解除する
+        self._is_attack = False
+
+        # 描画フレーム番号を先頭に戻す
+        self._count = 0
+
+    def get_attack_data(self) -> dict:
+        # 現在のフレームの攻撃描画データを取得する
+        data = {
+            "x": self._x[self._count],
+            "y": self._y[self._count],
+            "path": self._path[self._count]
+        }
+
+        # 最後のフレームまで描画した場合は攻撃状態を終了する
+        if self._count == 3:
+            self._count = 0
+            self._is_attack = False
+
+        # 次のフレームへ進む
+        else:
+            self._count += 1
+
+        return data
+
+    def get_is_attack(self) -> bool:
+        return self._is_attack
+
+    def create_attack_date(self, target_x: int, target_y: int, path: str | None) -> None:
+
+        self._is_attack = True
+
+        # 攻撃物は攻撃対象と同じ列を移動するため、すべてのフレームで同じX座標を使用する
+        self._x = [target_x, target_x, target_x, target_x]
+
+        # 攻撃対象のレーン位置に応じて、フレームごとのY座標を設定する
+        self._y = self._calculate_attack_position(target_y)
+
+        # 攻撃対象が存在しない場合は、すべてのフレームでお札画像を使用する
+        if path is None:
+            self._path = [None, None, None, None]
+        # 攻撃対象が存在する場合は、前半はお札、後半は攻撃対象の画像を使用する
+        else:
+            self._path = [None, None, path, path]
+
+
+    def _calculate_attack_position(self, y: int) -> list[int]:
+        # 攻撃対象が存在しない場合は画面奥まで攻撃物を移動する
+        if y in [-1, 0]:
+            return [2, 3, 4, 6]
+        elif y == 1:
+            return [0, 0, 0, 0]
+        # 手前側の敵の場合は同じ位置に表示する
+        elif y == 2:
+            return [0, 1, 1, 1]
+        elif y == 3:
+            return [0, 2, 2, 2]
+        elif y == 4:
+            return [1, 3, 3, 3]
+        elif y == 5:
+            return [1, 4, 4, 4]
+        elif y == 6:
+            return [2, 5, 5, 5]
+
+        self._is_attack = False
+        return [0, 0, 0, 0]
+
+========================================
+FILE: Src\Project\State\game_flag.py
+========================================
+
+from enum import Enum, auto
+
+# ゲーム全体の進行状態
+class GamePhase(Enum):
+    OPENING = auto()
+    TITLE = auto()
+    STAGE = auto()
+    CLEAR = auto()
+    BOSS_INTRO = auto()
+    BOSS_STAGE = auto()
+    BOSS_DEFEAT = auto()
+    ENDING = auto()
+    PAUSE = auto()
+    GAMEOVER = auto()
+
+
+# タイトル画面の選択状態
+class TitleSceneSelection(Enum):
+    START = auto()
+    EXIT = auto()
+
+
+# ゲームオーバー画面の選択状態
+class GameOverSceneSelection(Enum):
+    CONTINUE = auto()
+    TITLE = auto()
+
+
+# クリア画面の選択状態
+class GameClearSceneSelection(Enum):
+    CLEAR = auto()
+    MOVIE = auto()
+
+
+# ポーズ画面の選択状態
+class PauseSceneSelection(Enum):
+    RESUME = auto()
+    TITLE = auto()
+
+
+# 現在のステージ
+class StageNumber(Enum):
+    STAGE_1 = auto()
+    STAGE_2 = auto()
+    STAGE_3 = auto()
+
+
+# ゲームの進行に関するフラグを保持するクラス
+class GameFlag:
+    def __init__(self):
+        """各画面・ゲーム進行の状態"""
+        self._game_phase: GamePhase = GamePhase.OPENING
+        self._title_selection: TitleSceneSelection = TitleSceneSelection.START
+        self._gameover_selection: GameOverSceneSelection = GameOverSceneSelection.CONTINUE
+        self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.CLEAR
+        self._stage_number: StageNumber = StageNumber.STAGE_1
+        self._pause_selection: PauseSceneSelection = PauseSceneSelection.RESUME
+
+        """ゲーム進行の判定に使用するフラグ"""
+        self._is_gameclear: bool = False
+        # ゲームオーバー条件を満たしているか
+        self._is_gameover: bool = False
+        # 初回プレイか
+        self._is_first_play: bool = True
+
+
+    # 各フラグを初期状態に戻す
+    def reset(self) -> None:
+        self._game_phase = GamePhase.TITLE
+        self._title_selection = TitleSceneSelection.START
+        self._gameover_selection = GameOverSceneSelection.CONTINUE
+        self._gameclear_selection = GameClearSceneSelection.CLEAR
+        self._stage_number = StageNumber.STAGE_1
+        self._pause_selection = PauseSceneSelection.RESUME
+        self._is_gameclear = False
+        self._is_gameover = False
+
+    # GamePhaseのGetterとSetter
+    def get_game_phase(self) -> GamePhase:
+        return self._game_phase
+    
+    def set_game_phase(self, state: GamePhase) -> None:
+        if not isinstance(state, GamePhase):
+            raise TypeError(f"受け取った型: {type(state).__name__} : GamePhase型を指定してください。")
+        self._game_phase = state
+
+    # TitleSceneSelectionのGetterとSetter
+    def get_title_selection(self) -> TitleSceneSelection:
+        return self._title_selection
+
+    def set_title_selection(self, state: TitleSceneSelection) -> None:
+        if not isinstance(state, TitleSceneSelection):
+            raise TypeError(f"受け取った型: {type(state).__name__} : TitleSceneSelection型を指定してください。")
+        self._title_selection = state
+
+
+
+    # GameOverSceneSelectionのGetterとSetter
+    def get_gameover_selection(self) -> GameOverSceneSelection:
+        return self._gameover_selection
+
+    def set_gameover_selection(self, state: GameOverSceneSelection) -> None:
+        if not isinstance(state, GameOverSceneSelection):
+            raise TypeError(f"受け取った型: {type(state).__name__} : GameOverSceneSelection型を指定してください。")
+        self._gameover_selection = state
+
+    # GameClearSceneSelectionのGetterとSetter
+    def get_gameclear_selection(self) -> GameClearSceneSelection:
+        return self._gameclear_selection
+
+    def set_gameclear_selection(self, state: GameClearSceneSelection) -> None:
+        if not isinstance(state, GameClearSceneSelection):
+            raise TypeError(f"受け取った型: {type(state).__name__} : GameClearSceneSelection型を指定してください。")
+        self._gameclear_selection = state
+    
+    # StageNumberのGetterとSetter
+    def get_stage_number(self) -> StageNumber:
+        return self._stage_number
+
+    def set_stage_number(self, state: StageNumber) -> None:
+        if not isinstance(state, StageNumber):
+            raise TypeError(f"受け取った型: {type(state).__name__} : StageNumber型を指定してください。")
+        self._stage_number = state
+
+    # is_gameclearのGetterとSetter
+    def get_is_gameclear(self) -> bool:
+        return self._is_gameclear
+
+    def set_is_gameclear(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError(f"受け取った型: {type(value).__name__} : bool型を指定してください。")
+        self._is_gameclear = value
+
+    # is_gameoverのGetterとSetter
+    def get_is_gameover(self) -> bool:
+        return self._is_gameover
+
+    def set_is_gameover(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            raise TypeError(f"受け取った型: {type(value).__name__} : bool型を指定してください。")
+        self._is_gameover = value
+
+    # is_first_playのGetterとSetter
+    def get_is_first_play(self) -> bool:
+        return self._is_first_play
+
+    def set_is_first_play_false(self) -> None:
+        self._is_first_play = False
+
+
+    def get_pause_selection(self) -> PauseSceneSelection:
+        return self._pause_selection
+
+
+    def set_pause_selection(self, selection: PauseSceneSelection) -> None:
+        self._pause_selection = selection
+
+========================================
+FILE: Src\Project\State\player.py
+========================================
+
+from enum import Enum, auto
+
+from asset_paths import (
+    PLAYER_IMAGE_PATH, PLAYER_DAMAGE_IMAGE_PATH, PLAYER_THROW_IMAGE_PATH, 
+    PLAYER_JUMP_IMAGE_PATH, PLAYER_DOWN_IMAGE_PATH, PLAYER_RIGHT_IMAGE_PATH, PLAYER_LEHT_IMAGE_PATH
+)
+
+
+class Player_Move_State_x(Enum):
+    STAY = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+class Player_Move_State_y(Enum):
+    STAY = auto()
+    JUMP = auto()
+    DOWN = auto()
+
+class Player_Position_x(Enum):
+    X1 = 0
+    X2 = 1
+    X3 = 2
+    X4 = 3
+    X5 = 4
+
+class Player_Position_y(Enum):
+    Y1 = 0
+    Y2 = 1
+
+class Player_Layout_x(Enum):
+    X1_0 = 0
+    X1_1 = 1
+    X1_2 = 2
+    X1_3 = 3
+    X2_0 = 4
+    X2_1 = 5
+    X2_2 = 6
+    X2_3 = 7
+    X3_0 = 8
+    X3_1 = 9
+    X3_2 = 10
+    X3_3 = 11
+    X4_0 = 12
+    X4_1 = 13
+    X4_2 = 14
+    X4_3 = 15
+    X5_0 = 16
+
+class Player_Layout_y(Enum):
+    Y1_0 = 0
+    Y1_1 = 1
+    Y1_2 = 2
+    Y1_3 = 3
+    Y2_0 = 4
+
+class Player():
+    def __init__(self) -> None:
+
+        self._normal_image_path = PLAYER_IMAGE_PATH
+        self._damage_image_path = PLAYER_DAMAGE_IMAGE_PATH
+        self._throw_image_path = PLAYER_THROW_IMAGE_PATH
+
+        self._jump_image_path = PLAYER_JUMP_IMAGE_PATH
+        self._down_image_path = PLAYER_DOWN_IMAGE_PATH
+        self._right_image_path = PLAYER_RIGHT_IMAGE_PATH
+        self._left_image_path = PLAYER_LEHT_IMAGE_PATH
+
+        self._power: int = 1
+        self._urgency_level: int = 0
+
+        self._state_x: Player_Move_State_x = Player_Move_State_x.STAY
+        self._state_y: Player_Move_State_y = Player_Move_State_y.STAY
+
+        self._player_position_x: Player_Position_x = Player_Position_x.X3
+        self._player_position_y: Player_Position_y = Player_Position_y.Y1
+
+        self._player_layout_x: Player_Layout_x = Player_Layout_x.X3_0
+        self._player_layout_y: Player_Layout_y = Player_Layout_y.Y1_0
+
+        self._is_hit: bool = False
+        self._is_attack: bool = False
+
+
+    def reset(self) -> None:
+        self._urgency_level = 0
+
+        self._state_x = Player_Move_State_x.STAY
+        self._state_y = Player_Move_State_y.STAY
+
+        self._player_position_x = Player_Position_x.X3
+        self._player_position_y = Player_Position_y.Y1
+
+        self._player_layout_x = Player_Layout_x.X3_0
+        self._player_layout_y = Player_Layout_y.Y1_0
+
+
+    def get_image_path(self) -> str:
+
+        if self._is_hit:
+            return self._damage_image_path
+        elif self._is_attack:
+            return self._throw_image_path
+
+        if self._state_y == Player_Move_State_y.JUMP:
+            return self._jump_image_path
+        elif self._state_y == Player_Move_State_y.DOWN:
+            return self._down_image_path
+
+        if self._state_x == Player_Move_State_x.RIGHT:
+            return self._right_image_path
+        elif self._state_x == Player_Move_State_x.LEFT:
+            return self._left_image_path
+
+        return self._normal_image_path
+
+    def get_is_attack(self) -> bool:
+        return self._is_attack
+
+    def set_is_attack(self, value: bool) -> None:
+        self._is_attack = value
+
+    def get_is_hit(self) -> bool:
+        return self._is_hit
+
+    def set_is_hit(self, value: bool) -> None:
+        self._is_hit = value
+
+
+
+    # power
+    def get_power(self):
+        return self._power
+
+    def set_power(self, power: int) -> None:
+        if not isinstance(power, int):
+            raise TypeError(f"受け取った値: {type(power).__name__}: int型を指定してください。")
+        self._power = power
+
+
+    # urgency_level
+    def get_urgency_level(self):
+        return self._urgency_level
+
+    def set_urgency_level(self, urgency_level: int) -> None:
+        if not isinstance(urgency_level, int):
+            raise TypeError(f"受け取った値: {type(urgency_level).__name__}: int型を指定してください。")
+
+        if urgency_level < 0:
+            urgency_level = 0
+        elif urgency_level > 100:
+            urgency_level = 100
+
+        self._urgency_level = urgency_level
+
+
+    # state_x
+    def get_state_x(self):
+        return self._state_x
+
+    def set_state_x(self, state_x: Player_Move_State_x) -> None:
+        if not isinstance(state_x, Player_Move_State_x):
+            raise TypeError(f"受け取った値: {type(state_x).__name__}: Player_Move_State_x型を指定してください。")
+        self._state_x = state_x
+
+
+    # state_y
+    def get_state_y(self):
+        return self._state_y
+
+    def set_state_y(self, state_y: Player_Move_State_y) -> None:
+        if not isinstance(state_y, Player_Move_State_y):
+            raise TypeError(f"受け取った値: {type(state_y).__name__}: Player_Move_State_y型を指定してください。")
+        self._state_y = state_y
+
+
+    # player_position_x
+    def get_position_x(self):
+        return self._player_position_x
+
+    def set_position_x(self, position_x: Player_Position_x) -> None:
+        if not isinstance(position_x, Player_Position_x):
+            raise TypeError(f"受け取った値: {type(position_x).__name__}: Player_Position_x型を指定してください。")
+        self._player_position_x = position_x
+
+    # player_position_y
+    def get_position_y(self):
+        return self._player_position_y
+
+    def set_position_y(self, position_y: Player_Position_y) -> None:
+        if not isinstance(position_y, Player_Position_y):
+            raise TypeError(f"受け取った値: {type(position_y).__name__}: Player_Position_y型を指定してください。")
+        self._player_position_y = position_y
+
+
+    # player_layout_x
+    def get_layout_x(self):
+        return self._player_layout_x
+
+    def set_layout_x(self, layout_x: Player_Layout_x) -> None:
+        if not isinstance(layout_x, Player_Layout_x):
+            raise TypeError(f"受け取った値: {type(layout_x).__name__}: Player_Layout_x型を指定してください。")
+        self._player_layout_x = layout_x
+
+
+    # player_layout_y
+    def get_layout_y(self):
+        return self._player_layout_y
+
+    def set_layout_y(self, layout_y: Player_Layout_y) -> None:
+        if not isinstance(layout_y, Player_Layout_y):
+            raise TypeError(f"受け取った値: {type(layout_y).__name__}: Player_Layout_y型を指定してください。")
+        self._player_layout_y = layout_y
+
+========================================
+FILE: Src\Project\State\stage_object_data.py
+========================================
+
+from StageObject.stage_object import StageObject, ObjectType
+
+
+LANE_NUM = 7
+CELL_NUM = 5
+
+
+class StageObjectManager:
+
+    def __init__(self) -> None:
+        # レーン数
+        self._lane_num: int = LANE_NUM
+
+        # 1レーンあたりのマス数
+        self._cell_num: int = CELL_NUM
+
+        self._draw_on_middle_lane: bool = False
+
+        # ステージ上のオブジェクトを管理する2次元配列
+        self._objects: list[list[StageObject | None]] = [
+            [None for _ in range(CELL_NUM)]
+            for _ in range(LANE_NUM)
+        ]
+
+
+    def search_enemy(self, cell: int) -> int:
+        # 0番レーンは攻撃対象外なので、1番レーンから探索する
+        lane_num = 1
+
+        while lane_num < len(self._objects):
+            # 指定した列のオブジェクトを取得する
+            obj = self._objects[lane_num][cell]
+
+            # 敵が見つかった場合は、一番手前の敵としてレーン番号を返す
+            if obj is not None and obj.get_object_type() == ObjectType.ENEMY:
+                return lane_num
+
+            # 次のレーンへ進む
+            lane_num += 1
+
+        # 攻撃対象となる敵が存在しない場合
+        return -1
+
+
+    
+    def get_object(self, lane: int, cell: int) -> StageObject | None:
+        """指定したマスのオブジェクトを取得する"""
+        return self._objects[lane][cell]
+
+
+
+    def add_lane(self, objects: list[StageObject | None]) -> None:
+        """既存のレーンを前に移動し、最後に新しいレーンを追加する"""
+
+        if len(objects) != self._cell_num:
+            raise ValueError("レーンのマス数が一致していません")
+
+        # 既存のレーンを1つ手前に移動する
+        i = 0
+        while i < len(self._objects) - 1:
+            self._objects[i] = self._objects[i + 1].copy()
+            i += 1
+
+        # 最後のレーンに新しいレーンを設定する
+        self._objects[-1] = objects.copy()
+        self._object_update()
+
+    def _object_update(self) -> None:
+        lane_num = 0
+        while lane_num < len(self._objects):
+            cell_num = 0
+            while cell_num < len(self._objects[lane_num]):
+                obj = self._objects[lane_num][cell_num]
+                if obj is not None:
+                    # 敵の場合はHPとヒット状態を確認する
+                    obj.set_is_draw(True)
+                    if obj.get_object_type() == ObjectType.ENEMY:
+                        if obj.get_hp() <= 0:
+                            self._objects[lane_num][cell_num] = None
+                            cell_num += 1
+                            continue
+                        if obj.get_is_hit():
+                            obj.set_is_hit(False)
+                cell_num += 1
+            lane_num += 1
+
+
+    def remove_hit_enemy_position(self) -> None:
+        lane_num = 0
+        while lane_num < len(self._objects):
+            cell_num = 0
+            while cell_num < len(self._objects[lane_num]):
+                obj = self._objects[lane_num][cell_num]
+                if obj is not None and obj.get_object_type() == ObjectType.ENEMY:
+                    if obj.get_is_hit():
+                        obj.set_is_draw(False)
+                cell_num += 1
+            lane_num += 1
+
+
+    def is_empty(self) -> bool:
+        lane_num = 0
+        while lane_num < len(self._objects):
+            cell_num = 0
+            while cell_num < len(self._objects[lane_num]):
+                if self._objects[lane_num][cell_num] is not None:
+                    return False
+                cell_num += 1
+            lane_num += 1
+        return True
+
+
+    def clear(self) -> None:
+        """ステージ上のすべてのオブジェクトを削除する"""
+        self._objects = [
+            [None for _ in range(self._cell_num)]
+            for _ in range(self._lane_num)
+        ]
+        self._draw_on_middle_lane = False
+
+    def get_draw_on_middle_lane(self) -> bool:
+        return self._draw_on_middle_lane
+
+    def set_draw_on_middle_lane(self, value: bool) -> None:
+        self._draw_on_middle_lane = value
+
+========================================
+FILE: Src\Project\State\state_manager.py
+========================================
+
+from State.player import Player
+from State.stage_object_data import StageObjectManager
+from State.attack_data import Attack
+
+from State.game_flag import (
+    GameFlag, GamePhase, TitleSceneSelection, 
+    GameOverSceneSelection, GameClearSceneSelection, StageNumber, PauseSceneSelection
+)
+from Input.command_converter import Command
+
+
+
+class State:
+    def __init__(self):
+        self.game_command = Command.NONE
+
+        self._game_flag = GameFlag()
+
+        self._objects = StageObjectManager()
+        self._player = Player()
+        self._attack = Attack()
+
+        self._boss_hp = 10
+
+    def title_reset(self):
+        self.stage_reset()
+        self._game_flag.reset()
+
+    def stage_reset(self):
+        self._boss_hp = 10
+        self._objects.clear()
+        self._player.reset()
+        self._attack.reset()
+
+    def get_objects_data(self):
+        return self._objects
+
+    def get_player_data(self):
+        return self._player
+
+    def get_game_flag(self):
+        return self._game_flag
+
+    def get_attack_data(self):
+        return self._attack
+
+    # ==================================================
+    # フラグのGetter
+    # ==================================================
+
+    def get_boss_hp(self) -> int:
+        return self._boss_hp
+
+    def set_boss_hp(self, hp: int) -> None:
+        self._boss_hp = hp
+
+    def get_game_phase(self) -> GamePhase:
+        return self._game_flag.get_game_phase()
+
+    def get_title_scene_selection(self) -> TitleSceneSelection:
+        return self._game_flag.get_title_selection()
+
+    def get_gameover_scene_selection(self) -> GameOverSceneSelection:
+        return self._game_flag.get_gameover_selection()
+
+    def get_gameclear_scene_selection(self) -> GameClearSceneSelection:
+        return self._game_flag.get_gameclear_selection()
+
+    def get_stage_number(self) -> StageNumber:
+        return self._game_flag.get_stage_number()
+
+    def get_pause_scene_selection(self) -> PauseSceneSelection:
+        return self._game_flag.get_pause_selection()
+
+    # ==================================================
+    # フラグのSetter
+    # ==================================================
+
+    def set_game_phase(self, state: GamePhase) -> None:
+        self._game_flag.set_game_phase(state)
+
+    def set_is_gameclear(self, value: bool) -> None:
+        self._game_flag.set_is_gameclear(value)
+
+    def set_is_gameover(self, value: bool) -> None:
+        self._game_flag.set_is_gameover(value)
+
+
+
+    def get_urgency_level(self) -> int:
+        return self._player.get_urgency_level()
+
+    
+
+    # game_command
+    def get_game_command(self):
+        return self.game_command
+
+    def set_game_command(self, game_command: Command):
+        if not isinstance(game_command, Command):
+            raise TypeError(
+                f"game_commandにはCommand型を指定してください。"
+                f"受け取った値: {game_command}、型: {type(game_command).__name__}"
+            )
+        self.game_command = game_command
+
+========================================
+FILE: Src\Project\System\file_load_system.py
+========================================
+
+from pathlib import Path
+import pygame
+import cv2
+
+
+def load_video(path):
+
+    path = Path(path)
+    
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    # 指定されたパスが動画ファイルであるか確認する
+    if not path.is_file():
+        raise FileNotFoundError(f"動画ファイルではありません: {path}")
+    try:
+        # OpenCVを使用して動画を読み込む
+        video_capture = cv2.VideoCapture(str(path))
+        if not video_capture.isOpened():
+            raise ValueError(f"動画の読み込みに失敗しました: {path}")
+        return video_capture
+    except Exception as e:
+        print(f"動画の読み込みに失敗しました: {path}, エラー: {e}")
+        raise
+
+
+def load_image(path):
+    
+    path = Path(path)
+    
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    # 指定されたパスが画像ファイルであるか確認する
+    if not path.is_file():
+        raise FileNotFoundError(f"画像ファイルではありません: {path}")
+    try:
+        return pygame.image.load(path).convert_alpha()
+    except pygame.error:
+        # Pygameで画像の読み込みに失敗した場合
+        print(f"画像の読み込みに失敗しました: {path}")
+        raise
+
+def load_image(path):
+    # 受け取ったパスをPathオブジェクトに変換する
+    path = Path(path)
+    # 指定されたパスが存在するか確認する
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    if not path.is_file():
+        raise FileNotFoundError(f"画像ファイルではありません: {path}")
+    try:
+        # 画像を読み込み、透過情報を保持した形式に変換して返す
+        image = pygame.image.load(path)
+        # pygameのDisplay Surfaceがある場合のみ変換する
+        if pygame.display.get_surface() is not None:
+            image = image.convert_alpha()
+
+        return image
+
+    except pygame.error:
+        print(f"画像の読み込みに失敗しました: {path}")
+        raise
+
+
+def load_audio(path):
+    # 受け取ったパスをPathオブジェクトに変換する
+    path = Path(path)
+    # 指定されたパスが存在するか確認する
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    # 指定されたパスが音声ファイルであるか確認する
+    if not path.is_file():
+        raise FileNotFoundError(f"音声ファイルではありません: {path}")
+    try:
+        # 音声ファイルをSoundオブジェクトとして読み込んで返す
+        return pygame.mixer.Sound(path)
+    except pygame.error:
+        # Pygameで音声の読み込みに失敗した場合
+        print(f"音声の読み込みに失敗しました: {path}")
+        raise
+
+
+def load_bgm(path):
+    # 受け取ったパスをPathオブジェクトに変換する
+    path = Path(path)
+    # 指定されたパスが存在するか確認する
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    # 指定されたパスが音声ファイルであるか確認する
+    if not path.is_file():
+        raise FileNotFoundError(f"音声ファイルではありません: {path}")
+    try:
+        # BGMとして使用する音声ファイルを読み込む
+        pygame.mixer.music.load(path)
+    except pygame.error:
+        # PygameでBGMの読み込みに失敗した場合
+        print(f"BGMの読み込みに失敗しました: {path}")
+        raise
+    
+
+def load_text(path):
+    # 受け取ったパスをPathオブジェクトに変換する
+    path = Path(path)
+    # 指定されたパスが存在するか確認する
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    # 指定されたパスがテキストファイルであるか確認する
+    if not path.is_file():
+        raise FileNotFoundError(f"テキストファイルではありません: {path}")
+    try:
+        # UTF-8形式でテキストファイルを開く
+        with path.open("r", encoding="utf-8") as file:
+            # 空行を除外し、各行の値を整数に変換して二次元配列として返す
+            return [
+                [int(x) for x in line.split()]
+                for line in file
+                if line.strip()
+            ]
+    except (OSError, ValueError):
+        # ファイルの読み込み、または整数への変換に失敗した場合
+        print(f"テキストファイルの読み込みに失敗しました: {path}")
+        raise
+
+========================================
+FILE: Src\Project\System\map_update.py
+========================================
+
+
+from System.file_load_system import load_text
+
+from StageObject.object_converter import ObjectConverter
+
+from StageObject.stage_object import StageObject
+from State.stage_object_data import StageObjectManager
+from State.player import Player
+
+from State.game_flag import GamePhase
+from asset_paths import STAGE1_PATH, STAGE2_PATH
+
+class Map:
+    def __init__(self):
+        self._stage1_data = load_text(STAGE1_PATH)
+        self._stage2_data = load_text(STAGE2_PATH)
+        self._stage1_count = len(self._stage1_data)
+        self._stage2_count = len(self._stage2_data)
+        self._converter = ObjectConverter()
+
+        self._draw_pattern = self._draw_pattern = [ False, False, True, True ]
+        self._count = 0
+
+    def draw_is_middle_lane_update(
+        self,
+        objects: StageObjectManager,
+        player: Player,
+        count: int
+    ) -> None:
+
+        # 現在の描画パターンを取得する
+        pattern_index = count % len(self._draw_pattern)
+        draw_pattern = self._draw_pattern[pattern_index]
+
+        # 中間レーンに描画するかを設定する
+        objects.set_draw_on_middle_lane(draw_pattern)
+
+        if pattern_index == 2:
+            objects.remove_hit_enemy_position()
+            player.set_is_attack(False)
+            player.set_is_hit(False)
+
+            lane_num = 0
+            cell_num = 0
+
+            while cell_num < 4:
+                obj = objects.get_object(lane_num, cell_num)
+
+                if obj is not None:
+                    if not obj.get_is_draw():
+                        obj.set_is_draw(True)
+
+                cell_num += 1
+
+
+    def stage_update(self, objects: StageObjectManager, count: int, game_phase: GamePhase, boss_hp: int) -> bool:
+
+        # ゲーム開始時はステージを更新しない
+        if count == 0:
+            return False
+
+        # ステージ2のボス戦でボスのHPが0になった場合はステージクリア
+        if game_phase == GamePhase.BOSS_STAGE and boss_hp <= 0:
+            return True
+        
+        # 4カウントごとの進行回数から、次に読み込むレーンの位置を求める
+        index = (count // 4) - 1
+
+        # 現在のステージに対応する次のレーンデータを取得する
+        new_lane = self._get_new_lane(index, game_phase)
+
+
+        # ステージデータが終了した場合
+        if new_lane is None:
+
+            # 空レーンを追加して残っているオブジェクトを手前へ進める
+            empty_lane = [None for _ in range(5)]
+            objects.add_lane(empty_lane)
+
+            # すべてのオブジェクトがなくなったらステージ終了
+            if objects.is_empty():
+                return True
+
+            return False
+
+        # 既存のオブジェクトを更新し、新しいレーンを追加する
+        objects.add_lane(new_lane)
+
+        return False
+
+
+    def _get_new_lane(self, index: int, game_phase: GamePhase ) -> list[StageObject | None] | None:
+        # ステージに対応するデータを取得
+        if game_phase == GamePhase.STAGE:
+            stage_data = self._stage1_data
+            stage_count = self._stage1_count
+        elif game_phase == GamePhase.BOSS_STAGE:
+            stage_data = self._stage2_data
+            stage_count = self._stage2_count
+        else:
+            return None
+        # ステージの最後まで進んだ場合
+        if index >= stage_count:
+            return None
+        # 数値データをオブジェクトへ変換する
+        return self._converter.convert(stage_data[index])
+
+========================================
+FILE: Src\Project\System\Player\player_attack.py
+========================================
+
+from State.stage_object_data import StageObjectManager
+from State.player import Player
+from State.attack_data import Attack
+
+from State.player import Player_Move_State_y
+
+def attack(player: Player, stage_objects: StageObjectManager, attack: Attack, boss_hp: int | None = None) -> int | None:
+
+    if player.get_state_y() != Player_Move_State_y.STAY or player.get_is_hit():
+        return boss_hp
+
+    # プレイヤーがいる横方向のマス位置を取得する
+    x = player.get_position_x().value
+
+    # プレイヤーと同じ列にいる一番手前の敵を探索する
+    y = stage_objects.search_enemy(x)
+
+    # 同じ列に敵がいない場合
+    if y == -1 or y == 0:
+        attack.create_attack_date(x, y, None)
+
+        # ボス戦の場合はボスのHPを減らす
+        if boss_hp is not None:
+            boss_hp -= player.get_power()
+
+        return boss_hp
+
+    # 攻撃対象の敵を取得する
+    target_obj = stage_objects.get_object(y, x)
+
+    # プレイヤーの攻撃力分だけ敵のHPを減らす
+    hp = target_obj.get_hp() - player.get_power()
+    target_obj.set_hp(hp)
+
+    # 攻撃を受けた状態にする
+    target_obj.set_is_hit(True)
+
+    # 攻撃画像を設定する
+    path = target_obj.get_hit_image_path()
+    attack.create_attack_date(x, y, path)
+
+    player.set_is_attack(True)
+
+    return boss_hp
+
+========================================
+FILE: Src\Project\System\Player\player_hit_check.py
+========================================
+
+from State.stage_object_data import StageObjectManager
+from State.player import Player, Player_Move_State_y
+
+from StageObject.object_parameters import BOSS_HOMING_ATTACK_ID, OJISAN_ID
+
+class PlayerHitCheck:
+    def __init__(self):
+        self.last_count: int = 0
+
+    def update(self, count: int, player: Player, stage_data: StageObjectManager) -> None:
+
+         # プレイヤーの現在のマス位置を取得する
+        player_position_x = player.get_position_x()
+        player_position_y = player.get_position_y()
+
+        # 一番手前のレーンを取得する
+        lane_num = 0
+        cell_num = player_position_x.value
+
+        # プレイヤーと同じ位置のオブジェクトを取得する
+        obj = stage_data.get_object(lane_num, cell_num)
+
+        # 現在の切迫度を取得する
+        urgency_level = player.get_urgency_level()
+
+        # オブジェクトが存在する場合
+        if obj is not None:
+
+            # ジャンプ中かどうか
+            is_jump = player.get_state_y() == Player_Move_State_y.JUMP
+            
+            is_jumpable = obj.get_is_jumpable()
+
+            # ジャンプしていない、またはジャンプで回避できない場合
+            if not is_jump or not is_jumpable:
+
+                urgency_level += obj.get_damage()
+                player.set_is_hit(True)
+                obj.set_is_draw(False)
+
+
+        # プレイヤーの左隣のマス
+        left_cell = cell_num - 1
+
+        if left_cell >= 0:
+            obj1 = stage_data.get_object(lane_num, left_cell)
+
+            if obj1 is not None:
+                if obj1.get_id() == BOSS_HOMING_ATTACK_ID or obj1.get_id() == OJISAN_ID:
+                    urgency_level += obj1.get_damage()
+                    player.set_is_hit(True)
+
+                    obj1.set_is_side_move(True)
+                    obj1.set_cell_num(left_cell)
+
+
+        # プレイヤーの右隣のマス
+        right_cell = cell_num + 1
+
+        if right_cell < 5:
+            obj2 = stage_data.get_object(lane_num, right_cell)
+
+            if obj2 is not None:
+                if obj2.get_id() == BOSS_HOMING_ATTACK_ID or obj2.get_id() == OJISAN_ID:
+                    urgency_level += obj2.get_damage()
+                    player.set_is_hit(True)
+
+                    obj2.set_is_side_move(True)
+                    obj2.set_cell_num(cell_num)
+
+            
+
+        # 一定時間ごとに切迫度を増加させる
+        if count - self.last_count >= 100:
+            urgency_level += 5
+            self.last_count = count
+
+        # 切迫度を更新する
+        player.set_urgency_level(urgency_level)
+
+========================================
+FILE: Src\Project\System\Player\player_move.py
+========================================
+
+from Input.command_converter import Command
+from State.player import Player, Player_Move_State_x, Player_Move_State_y, Player_Position_x, Player_Position_y, Player_Layout_x, Player_Layout_y
+
+def player_move(player: Player) -> None:
+
+    state_x = player.get_state_x()
+    state_y = player.get_state_y()
+
+    layout_x = player.get_layout_x()
+    layout_y = player.get_layout_y()
+
+    # X方向の移動
+    if state_x == Player_Move_State_x.LEFT and layout_x != Player_Layout_x.X1_0:
+        player.set_layout_x(Player_Layout_x(layout_x.value - 1))
+    elif state_x == Player_Move_State_x.RIGHT and layout_x != Player_Layout_x.X5_0:
+        player.set_layout_x(Player_Layout_x(layout_x.value + 1))
+
+    # Y方向の移動
+    if state_y == Player_Move_State_y.JUMP and layout_y != Player_Layout_y.Y2_0:
+        player.set_layout_y(Player_Layout_y(layout_y.value + 1))
+
+
+def move_state_update(command: Command, player: Player) -> None:
+
+    # 横方向の移動状態を更新する
+    if command == Command.LEFT:
+        player.set_state_x(Player_Move_State_x.LEFT)
+
+    elif command == Command.RIGHT:
+        player.set_state_x(Player_Move_State_x.RIGHT)
+
+    # 地面にいる状態でジャンプ入力された場合、ジャンプを開始する
+    elif (command == Command.JUMP and player.get_state_y() == Player_Move_State_y.STAY and player.get_is_hit() == False):
+        player.set_state_y(Player_Move_State_y.JUMP)
+
+
+def position_update(player: Player) -> None:
+
+    layout_x = player.get_layout_x()
+
+    # X方向のマス位置を更新する
+    if layout_x == Player_Layout_x.X1_0:
+        player.set_position_x(Player_Position_x.X1)
+        player.set_state_x(Player_Move_State_x.STAY)
+
+    elif layout_x == Player_Layout_x.X2_0:
+        player.set_position_x(Player_Position_x.X2)
+        player.set_state_x(Player_Move_State_x.STAY)
+
+    elif layout_x == Player_Layout_x.X3_0:
+        player.set_position_x(Player_Position_x.X3)
+        player.set_state_x(Player_Move_State_x.STAY)
+
+    elif layout_x == Player_Layout_x.X4_0:
+        player.set_position_x(Player_Position_x.X4)
+        player.set_state_x(Player_Move_State_x.STAY)
+
+    elif layout_x == Player_Layout_x.X5_0:
+        player.set_position_x(Player_Position_x.X5)
+        player.set_state_x(Player_Move_State_x.STAY)
+
+    layout_y = player.get_layout_y()
+
+    # Y方向のマス位置を更新する
+    if layout_y == Player_Layout_y.Y2_0:
+        player.set_layout_y(Player_Layout_y.Y1_0)
+        player.set_state_y(Player_Move_State_y.STAY)
+
+
+
+
+
+
+        
+
+
+========================================
+FILE: Src\Project\System\progress_system.py
+========================================
+
+from State.game_flag import (
+    GameFlag,
+    GamePhase,
+    TitleSceneSelection,
+    GameOverSceneSelection,
+    GameClearSceneSelection,
+    StageNumber,
+    PauseSceneSelection
+)
+from Input.command_converter import Command
+
+
+def pouse_update(command: Command, flag: GameFlag) -> None:
+
+    state = flag.get_pause_selection()
+
+    if state == PauseSceneSelection.RESUME:
+
+        if command == Command.JUMP:
+            flag.set_game_phase(GamePhase.STAGE)
+
+        elif command == Command.RIGHT:
+            flag.set_pause_selection(PauseSceneSelection.TITLE)
+
+    elif state == PauseSceneSelection.TITLE:
+
+        if command == Command.JUMP:
+            flag.set_game_phase(GamePhase.TITLE)
+            flag.set_pause_selection(PauseSceneSelection.RESUME)
+
+        elif command == Command.LEFT:
+            flag.set_pause_selection(PauseSceneSelection.RESUME)
+
+
+def title_update(command: Command, flag: GameFlag) -> bool:
+
+    state = flag.get_title_selection()
+
+    if state == TitleSceneSelection.START:
+        if command == Command.JUMP:
+            flag.set_game_phase(GamePhase.STAGE)
+        elif command == Command.RIGHT:
+            flag.set_title_selection(TitleSceneSelection.EXIT)
+
+    elif state == TitleSceneSelection.EXIT:
+        if command == Command.JUMP:
+            return False
+        elif command == Command.LEFT:
+            flag.set_title_selection(TitleSceneSelection.START)
+
+    return True
+
+                
+            
+
+def gameover_update(command: Command, flag: GameFlag) -> None:
+
+    state = flag.get_gameover_selection()
+
+    if state == GameOverSceneSelection.CONTINUE:
+
+        if command == Command.JUMP:
+            flag.set_game_phase(GamePhase.STAGE)
+        elif command == Command.RIGHT:
+            flag.set_gameover_selection(GameOverSceneSelection.TITLE)
+
+    elif state == GameOverSceneSelection.TITLE:
+
+        if command == Command.JUMP:
+            flag.set_game_phase(GamePhase.TITLE)
+            flag.set_gameover_selection(GameOverSceneSelection.CONTINUE)
+
+        elif command == Command.LEFT:
+            flag.set_gameover_selection(GameOverSceneSelection.CONTINUE)
+
+========================================
+FILE: Src\Project\System\sound_system.py
+========================================
+
+import pygame
+
+from System.file_load_system import load_audio, load_bgm
+from asset_paths import (
+    DECIDE_BUTTON_SOUND_PATH,
+    BGM_PATH,
+)
+
+
+class SoundSystem:
+    def __init__(self):
+        # 効果音をロードする
+        self.sounds = {
+            "push_button": load_audio(DECIDE_BUTTON_SOUND_PATH),
+        }
+
+        # BGMのパスを管理する
+        self.bgms = {
+            "title": BGM_PATH,
+        }
+
+        # 効果音とBGMの初期音量
+        self.se_volume = 1.0
+        self.bgm_volume = 1.0
+
+    def set_se_volume(self, volume):
+        # 音量が0.0～1.0の範囲内の場合のみ変更する
+        if 0.0 <= volume <= 1.0:
+            self.se_volume = volume
+
+    def set_bgm_volume(self, volume):
+        # 音量が0.0～1.0の範囲内の場合のみ変更する
+        if 0.0 <= volume <= 1.0:
+            self.bgm_volume = volume
+            pygame.mixer.music.set_volume(self.bgm_volume)
+
+    def play_se_push_button(self):
+        # ボタン押下時の効果音を取得する
+        sound = self.sounds["push_button"]
+
+        # 効果音の音量を設定する
+        sound.set_volume(self.se_volume)
+
+        # 効果音を再生する
+        sound.play()
+
+    def play_bgm_title(self):
+        # タイトル画面用のBGMをロードする
+        load_bgm(self.bgms["title"])
+
+        # BGMの音量を設定する
+        pygame.mixer.music.set_volume(self.bgm_volume)
+
+        # BGMをループ再生する
+        pygame.mixer.music.play(-1)
+
+    def stop_bgm(self):
+        # BGMを停止する
+        pygame.mixer.music.stop()
+
+    def pause_bgm(self):
+        # BGMを一時停止する
+        pygame.mixer.music.pause()
+
+    def resume_bgm(self):
+        # 一時停止したBGMを再開する
+        pygame.mixer.music.unpause()
+
+========================================
+FILE: Src\Project\System\system_manager.py
+========================================
+
+from State.player import Player
+from State.stage_object_data import StageObjectManager
+from State.attack_data import Attack
+
+from Input.command_converter import Command
+
+from State.game_flag import GameFlag, StageNumber
+
+from System.sound_system import SoundSystem
+from System.map_update import Map
+from System.Player.player_move import player_move, position_update, move_state_update
+from System.Player.player_hit_check import PlayerHitCheck
+from System.Player.player_attack import attack
+
+from System.progress_system import pouse_update, title_update, gameover_update
+
+class System:
+    def __init__(self):
+        self.sound = SoundSystem()
+        self._map = Map()
+        self.hit_check = PlayerHitCheck()
+
+
+    def player_move(self, player: Player) -> None:
+        player_move(player)
+
+    def player_position_update(self, player: Player) -> None:
+        position_update(player)    
+
+    def player_move_state_update(self, cmd: Command, player: Player) -> None:
+        move_state_update(cmd, player)
+        
+
+    def player_hit_check(self, count: int, player: Player, objects: StageObjectManager) -> None:
+        self.hit_check.update(count, player, objects)
+
+    def map_update(self, count: int, objects: StageObjectManager, state: StageNumber, boss_hp: int) -> bool:
+        return self._map.stage_update(objects, count, state, boss_hp)
+
+    def draw_is_middle_lane_update(self, objects: StageObjectManager, player: Player, count: int) -> None:
+        self._map.draw_is_middle_lane_update(objects, player, count)
+
+
+    def player_attack(self, player: Player, objects: StageObjectManager, attack_data: Attack, boss_hp: int | None = None) -> int | None:
+         return attack(player, objects, attack_data, boss_hp)
+
+
+    def title_update(self, command: Command, flag: GameFlag) -> bool:
+        return title_update(command, flag)
+
+    def pause_update(self, command: Command, flag: GameFlag) -> None:
+        pouse_update(command, flag)
+
+    def gameover_update(self, command: Command, flag: GameFlag) -> None:
+        gameover_update(command, flag)
+
+
+    def play_PushButton(self) -> None:
+        self.sound.play_se_push_button()
+
+    def play_TitleBGM(self) -> None:
+        self.sound.play_bgm_title()
+
+    def set_se_volume(self, volume: int) -> None:
+        self.sound.set_se_volume(volume)
+
+    def set_bgm_volume(self, volume: int) -> None:
+        self.sound.set_bgm_volume(volume)
+
+========================================
+FILE: Src\Project\win_main.py
+========================================
+
+from Application.app import App
+
+App(False)

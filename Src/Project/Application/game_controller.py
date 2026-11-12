@@ -23,11 +23,21 @@ class Controller:
         self.mode = mode
         pygame.init()
         
+        print("DisplayManager 開始", flush=True)
         self._display = DisplayManager(mode)
+        print("DisplayManager 完了", flush=True)
 
+        print("Input 開始", flush=True)
         self.input = Input(mode)
+        print("Input 完了", flush=True)
+
+        print("System 開始", flush=True)
         self.system = System()
+        print("System 完了", flush=True)
+
+        print("State 開始", flush=True)
         self.state = State()
+        print("State 完了", flush=True)
 
         # self.system.play_TitleBGM()
         self.loop_flug = True

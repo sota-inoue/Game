@@ -108,6 +108,6 @@ STAGE_BACK_GROUND4 = BASE_DIR / "Image" / "Backgrounds" / "Back4.jpg"
 STAGE_BACK_GROUND5 = BASE_DIR / "Image" / "Backgrounds" / "Back5.jpg"
 
 OPNING_VIDEO_PATH = BASE_DIR / "Video" / "opning_video.mp4"
-BOSS_INTRO_VIDEO_PATH = BASE_DIR / "Video" / "boss_intro.MP4"
-BOSS_DEFEAT_VIDEO_PATH = BASE_DIR / "Video" / "bos_defeat.MP4"
+BOSS_INTRO_VIDEO_PATH = BASE_DIR / "Video" / "boss_intro.mp4"
+BOSS_DEFEAT_VIDEO_PATH = BASE_DIR / "Video" / "bos_defeat.mp4"
 ENDING_VIDEO_PATH = BASE_DIR / "Video" / "ending_video.mp4"

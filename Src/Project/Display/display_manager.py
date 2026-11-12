@@ -27,7 +27,11 @@ from config import (
 class DisplayManager:
     def __init__(self, mode: bool):
         self._mode = mode
+
+        print("OutputManager: 開始", flush=True)
         self._output = OutputManager(mode)
+        print("OutputManager: 完了", flush=True)
+
         DISPLAY_WIDTH = self._output.GAME_SCREEN_WIDTH
         DISPLAY_HEIGHT = self._output.GAME_SCREEN_HEIGHT
         TOUCH_WIDTH = self._output.TOUCH_SCREEN_WIDTH
@@ -47,7 +51,10 @@ class DisplayManager:
                                    BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE, BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE)
 
         self._image = ImageManager()
+        
+        print("VideoManager: 開始", flush=True)
         self._video = VideoManager(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+        print("VideoManager: 完了", flush=True)
 
         self._object = StageObjectDraw(self._game_surface, self._image, layout, boss_layout)
 

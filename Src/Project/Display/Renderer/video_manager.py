@@ -17,7 +17,7 @@ class VideoManager:
         self._width = width
         self._height = height
         self._fps = FPS
-
+        self._video_frame_step = 2
         # 動画をロード
         self._opening_video = load_video(OPNING_VIDEO_PATH)
         self._boss_intro_video = load_video(BOSS_INTRO_VIDEO_PATH)
@@ -25,31 +25,41 @@ class VideoManager:
         self._ending_video = load_video(ENDING_VIDEO_PATH)
 
         # 動画を画像配列に変換
+        print("オープニング動画: 読み込み開始", flush=True)
         self._opening_video_images = self.set_up_videos(self._opening_video)
+        print("オープニング動画: 読み込み完了", flush=True)
+
+        print("ボス登場動画: 読み込み開始", flush=True)
         self._boss_intro_video_images = self.set_up_videos(self._boss_intro_video)
+        print("ボス登場動画: 読み込み完了", flush=True)
+
+        print("ボス撃破動画: 読み込み開始", flush=True)
         self._boss_defeat_video_images = self.set_up_videos(self._boss_defeat_video)
+        print("ボス撃破動画: 読み込み完了", flush=True)
+
+        print("エンディング動画: 読み込み開始", flush=True)
         self._ending_video_images = self.set_up_videos(self._ending_video)
+        print("エンディング動画: 読み込み完了", flush=True)
+
+
+    def _get_video_image(self, images, count: int):
+        index = count // self._video_frame_step
+        if 0 <= index < len(images):
+            return images[index]
+        return -1
 
 
     def get_opening_video_image(self, count: int):
-        if 0 <= count < len(self._opening_video_images):
-            return self._opening_video_images[count]
-        return -1
+        return self._get_video_image(self._opening_video_images, count)
 
     def get_boss_intro_video_image(self, count: int):
-        if 0 <= count < len(self._boss_intro_video_images):
-            return self._boss_intro_video_images[count]
-        return -1
+        return self._get_video_image(self._boss_intro_video_images, count)
 
     def get_boss_defeat_video_image(self, count: int):
-        if 0 <= count < len(self._boss_defeat_video_images):
-            return self._boss_defeat_video_images[count]
-        return -1
+        return self._get_video_image(self._boss_defeat_video_images, count)
 
     def get_ending_video_image(self, count: int):
-        if 0 <= count < len(self._ending_video_images):
-            return self._ending_video_images[count]
-        return -1
+        return self._get_video_image(self._ending_video_images, count)
 
     
     def set_up_videos(self, video):
@@ -66,7 +76,7 @@ class VideoManager:
         duration = frame_count / video_fps
 
         # ゲームFPSに合わせた必要フレーム数
-        required_frames = math.ceil(duration * self._fps)
+        required_frames = math.ceil(duration * self._fps // self._video_frame_step)
 
         images = []
         current_frame = -1
@@ -104,6 +114,7 @@ class VideoManager:
                 # Pygame Surfaceに変換
                 image = pygame.image.frombuffer(frame.tobytes(), (self._width, self._height), "RGB")
                 images.append(image)
+                print(f"{count + 1}/{required_frames}枚目 読み込み完了", flush=True)
 
                 last_image = image
                 previous_frame = target_frame
