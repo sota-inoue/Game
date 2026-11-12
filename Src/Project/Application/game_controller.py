@@ -36,170 +36,8 @@ class Controller:
         self._last_count = 0
 
 
-    def progress_update(self):
+    def input_update(self):
 
-        # 現在のゲーム進行状態と操作情報を取得する
-        game_phase = self.state.get_game_phase()
-        game_flag = self.state.get_game_flag()
-        command = self.state.get_game_command()
-
-        # 現在のゲーム状態に応じた進行処理を行う
-        self.loop_flug = self.system.progress_update(command, game_flag, self.count)
-
-        # 進行処理後のゲーム状態を取得する
-        new_game_phase = self.state.get_game_phase()
-
-        # ポーズへ遷移した場合
-        if game_phase != GamePhase.PAUSE and new_game_phase == GamePhase.PAUSE:
-            self._last_count = self.count
-            self.count = 0
-            self._display.save_surface()
-            return
-
-        # ポーズから復帰した場合
-        if game_phase == GamePhase.PAUSE and new_game_phase != GamePhase.PAUSE:
-            # タイトルに戻る場合はステージをリセットする
-            if new_game_phase == GamePhase.TITLE:
-                self.state.title_reset()
-                self.count = 0
-                self._last_count = 0
-            else:
-                self.count = self._last_count
-
-            self.state.set_game_command(Command.NONE)
-            return
-
-        # 通常のゲーム状態が変化した場合
-        if game_phase != new_game_phase:
-            self.count = 0
-            self._last_count = 0
-
-            if new_game_phase == GamePhase.STAGE:
-                self.state.set_game_command(Command.NONE)
-                self.state.stage_reset()
-            elif new_game_phase == GamePhase.TITLE:
-                self.state.title_reset()
-            elif new_game_phase == GamePhase.GAMEOVER:
-                self._display.save_surface()
-            elif new_game_phase == GamePhase.CLEAR:
-                self._display.save_surface()
-
-
-    def stage_update(self):
-        # ステージ処理に必要な内部データを取得する
-        command = self.state.get_game_command()
-        player = self.state.get_player_data()
-        objects = self.state.get_objects_data()
-        stage = self.state.get_stage_number()
-        boss_hp = self.state.get_boss_hp()
-        attack = self.state.get_attack_data()
-
-        # 4カウントごとにゲーム内部の主要な更新処理を行う
-        if self.count == 0 or self.count % 4 == 0:
-            # マップを更新し、ステージクリア条件を判定する
-            is_gameclear = self.system.map_update(self.count, objects, stage, boss_hp)
-            self.state.set_is_gameclear(is_gameclear)
-
-            # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
-            self.system.player_move_state_update(command, player)
-            
-
-            # プレイヤーとステージオブジェクトの当たり判定を行う
-            self.system.player_hit_check(self.count, player, objects)
-
-            # 現在の切迫度からゲームオーバー条件を判定する
-            hp = self.state.get_urgency_level()
-            is_gameover = hp >= 100
-            self.state.set_is_gameover(is_gameover)
-
-            # 攻撃入力があった場合は攻撃データを生成する
-            if command == Command.ATTACK:
-                if stage == StageNumber.STAGE_1:
-                    self.system.player_attack(player, objects, attack)
-                elif stage == StageNumber.STAGE_2:
-                    new_boss_hp = self.system.player_attack(player, objects, attack, boss_hp)
-                    self.state.set_boss_hp(new_boss_hp)
-                    is_gameclear = new_boss_hp <= 0
-                    self.state.set_is_gameclear(is_gameclear)
-
-        # プレイヤーの描画座標を毎カウント更新する
-        self.system.player_move(player)
-        self.system.player_position_update(player)
-
-        self.system.draw_is_middle_lane_update(objects, player)
-
-
-    def draw(self):
-        # 現在のゲーム進行状態を取得する
-        game_state = self.state.get_game_phase()
-
-        if game_state == GamePhase.PAUSE:
-            self._display.load_surface()
-            self._display.draw_black_overlay()
-            pause = self.state.get_pause_scene_selection()
-            self._display.draw_pause(pause)
-
-        # タイトル画面を描画する
-        if game_state == GamePhase.TITLE:
-            title = self.state.get_title_scene_selection()
-            self._display.draw_title(title)
-
-        # オープニング画面を描画する
-        elif game_state == GamePhase.OPENING:
-            self._display.draw_opening()
-
-        # ゲームステージを描画する
-        elif game_state == GamePhase.STAGE:
-            # ステージの背景を描画する
-            
-
-            # ステージ内の描画に必要なデータを取得する
-            map_data = self.state.get_objects_data()
-            player_data = self.state.get_player_data()
-            attack_data = self.state.get_attack_data()
-
-            stage_num = self.state.get_stage_number()
-
-            if stage_num == StageNumber.STAGE_1:  # ボス戦の場合はボスオブジェクトを描画
-                # self._display.draw_stage(self.count)
-                self._display.draw_stage1_bg()
-                self._display.draw_stage_object(player_data, map_data, attack_data)
-            elif stage_num == StageNumber.STAGE_2:
-                self._display.draw_boss_stage()
-                self._display.draw_boss()
-                boss_hp = self.state.get_boss_hp()
-                self._display.draw_boss_health(boss_hp)
-                self._display.draw_boss_object(player_data, map_data, attack_data)
-
-
-            # 切迫度などのUIを描画する
-            urgency_level = self.state.get_urgency_level()
-            self._display.draw_urgency_level(urgency_level)
-
-        # ゲームクリア画面を描画する
-        elif game_state == GamePhase.CLEAR:
-            clear = self.state.get_gameclear_scene_selection()
-            self._display.draw_clear(clear)
-
-        # ゲームオーバー画面を描画する
-        elif game_state == GamePhase.GAMEOVER:
-            self._display.load_surface()
-            self._display.draw_black_overlay()
-            over= self.state.get_gameover_scene_selection()
-            self._display.draw_over(over)
-
-        # エンディング画面を描画する
-        elif game_state == GamePhase.ENDING:
-            self._display.draw_ending()
-
-        # self.renderer.touch_render()
-        self._display.touch_iamge_render()
-
-        self._display.output()
-
-    def loop(self):
-
-        # 入力状態を更新する
         self.input.command_update()
 
         # 4カウントごとに入力とゲーム進行を更新する
@@ -214,26 +52,237 @@ class Controller:
 
             self.state.set_game_command(command)
 
-            # ゲームフェーズを更新する
-            self.progress_update()
 
-        # フェーズ更新後の状態を取得する
+    def progress_update(self):
+
+        # 現在のゲーム進行状態と操作情報を取得する
+        game_phase = self.state.get_game_phase()
+        game_flag = self.state.get_game_flag()
+        command = self.state.get_game_command()
+
+        if game_phase == GamePhase.TITLE:
+            self.loop_flug = self.system.title_update(command, game_flag)
+
+        elif game_phase == GamePhase.OPENING and command == Command.RIGHT:
+            self.state.set_game_phase(GamePhase.TITLE)
+
+        elif game_phase == GamePhase.BOSS_INTRO and command == Command.RIGHT:
+            self.state.set_game_phase(GamePhase.BOSS_STAGE)
+
+        elif game_phase in (GamePhase.STAGE, GamePhase.BOSS_STAGE):
+
+            if command == Command.PAUSE:
+                self.state.set_game_phase(GamePhase.PAUSE)
+                self._last_count = self.count
+                self.count = 0
+                self._display.save_surface()
+
+            else:
+                # ステージ内部処理
+                self.stage_update()
+
+        elif game_phase == GamePhase.GAMEOVER:
+            self.system.gameover_update(command, game_flag)
+
+        elif game_phase == GamePhase.PAUSE:
+            self.system.pause_update(command, game_flag)
+
+
+    def stage_update(self):
+        # ステージ処理に必要な内部データを取得する
+        command = self.state.get_game_command()
+        player = self.state.get_player_data()
+        objects = self.state.get_objects_data()
         phase = self.state.get_game_phase()
+        boss_hp = self.state.get_boss_hp()
+        attack = self.state.get_attack_data()
 
-        # ステージ中のみステージ内部処理を行う
-        if phase == GamePhase.STAGE:
-            self.stage_update()
+        # 4カウントごとにゲーム内部の主要な更新処理を行う
+        if self.count == 0 or self.count % 4 == 0:
+            # マップを更新し、ステージクリア条件を判定する
+            is_gameclear = self.system.map_update(self.count, objects, phase, boss_hp)
 
-        # 現在のゲーム状態を描画する
+            if is_gameclear == True:
+                self.count = 0
+                if phase == GamePhase.STAGE:
+                    self.state.set_game_phase(GamePhase.CLEAR)
+                elif phase == GamePhase.BOSS_STAGE:
+                    self.state.set_game_phase(GamePhase.BOSS_DEFEAT)
+
+            # 入力コマンドに応じてプレイヤーの当たり判定位置を更新する
+            self.system.player_move_state_update(command, player)
+
+            # プレイヤーとステージオブジェクトの当たり判定を行う
+            self.system.player_hit_check(self.count, player, objects)
+
+            # 現在の切迫度からゲームオーバー条件を判定する
+            hp = self.state.get_urgency_level()
+            is_gameover = hp >= 100
+
+            if is_gameover == True:
+                self.state.set_game_phase(GamePhase.GAMEOVER)
+                self._display.save_surface()
+
+
+            # 攻撃入力があった場合は攻撃データを生成する
+            if command == Command.ATTACK:
+                if phase == GamePhase.STAGE:
+                    self.system.player_attack(player, objects, attack)
+                elif phase == GamePhase.BOSS_STAGE:
+                    new_boss_hp = self.system.player_attack(player, objects, attack, boss_hp)
+                    self.state.set_boss_hp(new_boss_hp)
+                    is_gameclear = new_boss_hp <= 0
+                    self.state.set_is_gameclear(is_gameclear)
+
+        # プレイヤーの描画座標を毎カウント更新する
+        self.system.player_move(player)
+        self.system.player_position_update(player)
+
+        self.system.draw_is_middle_lane_update(objects, player, self.count)
+
+
+    def draw(self):
+        # 現在のゲーム進行状態を取得する
+        game_state = self.state.get_game_phase()
+
+        if game_state == GamePhase.PAUSE:
+            pause = self.state.get_pause_scene_selection()
+            self._display.draw_pause(pause)
+
+        # オープニング画面を描画する
+        elif game_state == GamePhase.OPENING:
+            if self._display.draw_opening(self.count):
+                self.state.set_game_phase(GamePhase.TITLE)
+
+        # タイトル画面を描画する
+        elif game_state == GamePhase.TITLE:
+            title = self.state.get_title_scene_selection()
+            self._display.draw_title(title)
+
+
+        # ゲームステージを描画する
+        elif game_state == GamePhase.STAGE:
+            # ステージの背景を描画する
+            self._display.draw_stage()
+
+            # ステージ内の描画に必要なデータを取得する
+            map_data = self.state.get_objects_data()
+            player_data = self.state.get_player_data()
+            attack_data = self.state.get_attack_data()
+
+            self._display.draw_stage_object(player_data, map_data, attack_data)
+
+            urgency_level = self.state.get_urgency_level()
+            self._display.draw_urgency_level(urgency_level)
+
+        elif game_state == GamePhase.BOSS_STAGE:
+            self._display.draw_boss_stage()
+            self._display.draw_boss()
+
+            boss_hp = self.state.get_boss_hp()
+            self._display.draw_boss_health(boss_hp)
+
+            map_data = self.state.get_objects_data()
+            player_data = self.state.get_player_data()
+            attack_data = self.state.get_attack_data()
+            self._display.draw_boss_object(player_data, map_data, attack_data)
+
+            urgency_level = self.state.get_urgency_level()
+            self._display.draw_urgency_level(urgency_level)
+
+
+        # ゲームクリア画面を描画する
+        elif game_state == GamePhase.CLEAR:
+            if self.count < 40:
+                self._display.draw_clear()
+            else:
+                self.state.set_game_phase(GamePhase.BOSS_INTRO)
+
+        elif game_state == GamePhase.BOSS_INTRO:
+            if self._display.draw_boss_intro(self.count):
+                self.state.set_game_phase(GamePhase.BOSS_STAGE)
+
+        elif game_state == GamePhase.BOSS_DEFEAT:
+            if self.count < 24:
+                self._display.draw_clear()
+            else:
+                defeat_count = self.count - 24
+                if self._display.draw_boss_defeat(defeat_count):
+                    self.state.set_game_phase(GamePhase.ENDING)
+                    self.count = 0
+
+        # エンディング画面を描画する
+        elif game_state == GamePhase.ENDING:
+            if self._display.draw_ending(self.count):
+                self.state.set_game_phase(GamePhase.TITLE)
+
+        # ゲームオーバー画面を描画する
+        elif game_state == GamePhase.GAMEOVER:
+            self._display.load_surface()
+            self._display.draw_black_overlay()
+            over= self.state.get_gameover_scene_selection()
+            self._display.draw_over(over)
+
+        # self.renderer.touch_render()
+        self._display.touch_iamge_render()
+
+        self._display.output()
+
+    def update_phase_transition(self, before_phase: GamePhase, after_phase: GamePhase):
+
+        # ゲーム状態が変化していない場合
+        if before_phase == after_phase:
+            self.count += 1
+            return
+
+        # ポーズから復帰した場合
+        if before_phase == GamePhase.PAUSE and after_phase != GamePhase.PAUSE:
+
+            # タイトルに戻る場合
+            if after_phase == GamePhase.TITLE:
+                self.state.title_reset()
+                self.count = 0
+                self._last_count = 0
+
+            # ゲームに復帰する場合
+            else:
+                self.count = self._last_count
+
+            self.state.set_game_command(Command.NONE)
+            return
+
+        # 通常のゲーム状態が変化した場合
+        self.count = 0
+        self._last_count = 0
+
+        if after_phase == GamePhase.STAGE:
+            self.state.set_game_command(Command.NONE)
+            self.state.stage_reset()
+
+        elif after_phase == GamePhase.BOSS_STAGE:
+            self.state.set_game_command(Command.NONE)
+            self.state.stage_reset()
+
+        elif after_phase == GamePhase.TITLE:
+            self.state.title_reset()
+
+        elif after_phase == GamePhase.GAMEOVER:
+            self._display.save_surface()
+
+        elif after_phase == GamePhase.CLEAR or after_phase == GamePhase.BOSS_DEFEAT:
+            self._display.save_surface()
+            self.count = 0
+
+    def loop(self):
+        self.input_update()
+
+        before_phase = self.state.get_game_phase()
+        self.progress_update()
         self.draw()
+        after_phase = self.state.get_game_phase()
 
-        # エンディング終了後にゲームループを終了する
-        if phase == GamePhase.ENDING:
-            if self.count > 30:
-                return False
-
-        # ゲーム全体で使用するカウントを更新する
-        self.count += 1
+        # 描画前にフェーズ変更を反映する
+        self.update_phase_transition(before_phase, after_phase)
 
         return self.loop_flug
 

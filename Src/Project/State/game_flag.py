@@ -2,13 +2,16 @@ from enum import Enum, auto
 
 # ゲーム全体の進行状態
 class GamePhase(Enum):
-    TITLE = auto()
     OPENING = auto()
+    TITLE = auto()
     STAGE = auto()
-    GAMEOVER = auto()
     CLEAR = auto()
+    BOSS_INTRO = auto()
+    BOSS_STAGE = auto()
+    BOSS_DEFEAT = auto()
     ENDING = auto()
     PAUSE = auto()
+    GAMEOVER = auto()
 
 
 # タイトル画面の選択状態
@@ -46,7 +49,7 @@ class StageNumber(Enum):
 class GameFlag:
     def __init__(self):
         """各画面・ゲーム進行の状態"""
-        self._game_phase: GamePhase = GamePhase.TITLE
+        self._game_phase: GamePhase = GamePhase.OPENING
         self._title_selection: TitleSceneSelection = TitleSceneSelection.START
         self._gameover_selection: GameOverSceneSelection = GameOverSceneSelection.CONTINUE
         self._gameclear_selection: GameClearSceneSelection = GameClearSceneSelection.CLEAR
@@ -54,7 +57,6 @@ class GameFlag:
         self._pause_selection: PauseSceneSelection = PauseSceneSelection.RESUME
 
         """ゲーム進行の判定に使用するフラグ"""
-        # 画面がタッチされたか
         self._is_gameclear: bool = False
         # ゲームオーバー条件を満たしているか
         self._is_gameover: bool = False
@@ -142,10 +144,8 @@ class GameFlag:
     def get_is_first_play(self) -> bool:
         return self._is_first_play
 
-    def set_is_first_play(self, value: bool) -> None:
-        if not isinstance(value, bool):
-            raise TypeError(f"受け取った型: {type(value).__name__} : bool型を指定してください。")
-        self._is_first_play = value
+    def set_is_first_play_false(self) -> None:
+        self._is_first_play = False
 
 
     def get_pause_selection(self) -> PauseSceneSelection:

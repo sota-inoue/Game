@@ -1,5 +1,26 @@
 from pathlib import Path
 import pygame
+import cv2
+
+
+def load_video(path):
+
+    path = Path(path)
+    
+    if not path.exists():
+        raise FileNotFoundError(f"パスが存在しません: {path}")
+    # 指定されたパスが動画ファイルであるか確認する
+    if not path.is_file():
+        raise FileNotFoundError(f"動画ファイルではありません: {path}")
+    try:
+        # OpenCVを使用して動画を読み込む
+        video_capture = cv2.VideoCapture(str(path))
+        if not video_capture.isOpened():
+            raise ValueError(f"動画の読み込みに失敗しました: {path}")
+        return video_capture
+    except Exception as e:
+        print(f"動画の読み込みに失敗しました: {path}, エラー: {e}")
+        raise
 
 
 def load_image(path):
@@ -12,7 +33,6 @@ def load_image(path):
     if not path.is_file():
         raise FileNotFoundError(f"画像ファイルではありません: {path}")
     try:
-        
         return pygame.image.load(path).convert_alpha()
     except pygame.error:
         # Pygameで画像の読み込みに失敗した場合

@@ -5,6 +5,7 @@ from Display.Renderer.game_renderer import GameDisplay
 from Display.Renderer.object_renderer import StageObjectDraw
 from Display.Renderer.ui_renderer import UIRenderer
 from Display.Renderer.image_manager import ImageManager
+from Display.Renderer.video_manager import VideoManager
 
 from Display.Layout.layout_manager import Layout
 
@@ -46,14 +47,17 @@ class DisplayManager:
                                    BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE, BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE)
 
         self._image = ImageManager()
+        self._video = VideoManager(DISPLAY_WIDTH, DISPLAY_HEIGHT)
 
         self._object = StageObjectDraw(self._game_surface, self._image, layout, boss_layout)
 
         self._ui = UIRenderer(self._game_surface, self._image)
 
-        self._game = GameDisplay(self._game_surface, self._image)
+        self._game = GameDisplay(self._game_surface, self._image, self._video)
 
         self._touch = TouchDisplay(self._touch_surface, self._image)
+
+        
 
         self._width = DISPLAY_WIDTH
         self._height = DISPLAY_HEIGHT
@@ -87,31 +91,41 @@ class DisplayManager:
         self._output.fb_close()
 
 
-    def draw_opening(self):
-        self._game.draw_opening()
 
     def draw_over(self, state: GameOverSceneSelection):
         self._game.draw_over(state)
 
     def draw_title(self, state: TitleSceneSelection):
         self._game.draw_title(state)
-    
-    def draw_clear(self, state: GameClearSceneSelection):
-        if state == GameClearSceneSelection.CLEAR:
-            self.load_surface()
-            self.draw_black_overlay()
-        self._game.draw_clear(state)
 
     def draw_pause(self, state: PauseSceneSelection):
+        self._game_surface.blit(self._save_surface, (0, 0))
+        self.draw_black_overlay()
         self._game.draw_pause(state)
+    
+    def draw_clear(self):
+        self._game.draw_clear()
 
-    def draw_ending(self):
-        self._game.draw_ending()
 
-    def draw_stage(self, count: int):
-        self._game.draw_stage1_bg(count)
 
-    def draw_stage1_bg(self):
+    def draw_opening(self, count: int) -> bool:
+        return self._game.draw_opening(count)
+
+    def draw_ending(self, count: int) -> bool:
+        return self._game.draw_ending(count)
+
+    def draw_boss_intro(self, count: int) -> bool:
+        return self._game.draw_boss_intro(count)
+
+    def draw_boss_defeat(self, count: int) -> bool:
+        return self._game.draw_boss_defeat(count)
+
+
+
+    # def draw_stage(self, count: int):
+    #     self._game.draw_stage1_bg(count)
+
+    def draw_stage(self):
         self._game.draw_stage_bg()
 
     def draw_boss_stage(self):

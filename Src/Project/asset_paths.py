@@ -96,12 +96,18 @@ TOUCH_SCREEN = BASE_DIR / "Image" / "UI" / "botanpause.JPG"
 
 BOSS_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "last_boss_ 2.png"
 BOSS_STAGE_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "Back_Boss 2.png"
-BOSS_SMALL_ATTACK_IMAGE_PATH = None
-BOSS_LARGE_ATTACK_IMAGE_PATH = None
-BOSS_HOMING_ATTACK_IMAGE_PATH = None
+
+BOSS_SMALL_ATTACK_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "boss_attack_small.png"
+BOSS_LARGE_ATTACK_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "boss_attack_large.png"
+BOSS_HOMING_ATTACK_IMAGE_PATH = BASE_DIR / "Image" / "BOSSUI" / "boss_attack_homing.png"
 
 STAGE_BACK_GROUND1 = BASE_DIR / "Image" / "Backgrounds" / "Back1.jpg"
 STAGE_BACK_GROUND2 = BASE_DIR / "Image" / "Backgrounds" / "Back2.jpg"
 STAGE_BACK_GROUND3 = BASE_DIR / "Image" / "Backgrounds" / "Back3.jpg"
 STAGE_BACK_GROUND4 = BASE_DIR / "Image" / "Backgrounds" / "Back4.jpg"
 STAGE_BACK_GROUND5 = BASE_DIR / "Image" / "Backgrounds" / "Back5.jpg"
+
+OPNING_VIDEO_PATH = BASE_DIR / "Video" / "opning_video.mp4"
+BOSS_INTRO_VIDEO_PATH = BASE_DIR / "Video" / "boss_intro.MP4"
+BOSS_DEFEAT_VIDEO_PATH = BASE_DIR / "Video" / "bos_defeat.MP4"
+ENDING_VIDEO_PATH = BASE_DIR / "Video" / "ending_video.mp4"
