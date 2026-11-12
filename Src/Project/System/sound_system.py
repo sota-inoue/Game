@@ -1,67 +1,111 @@
 import pygame
 
 from System.file_load_system import load_audio, load_bgm
+import pygame
+
 from asset_paths import (
     DECIDE_BUTTON_SOUND_PATH,
-    BGM_PATH,
+    BOSS_INTRO_SOUND,
+    BOSS_DEFEAT_SOUND,
+    GAMEOVER_SOUND_PATH,
+    PLAYER_HIT_SOUND,
+    OHUDA_THROW_SOUND,
+    ENDING_SOUND,
+    TITLE_BGM_PATH,
+    STAGE_BGM_PATH,
+    BOSS_STAGE_BGM_PATH,
 )
 
 
 class SoundSystem:
     def __init__(self):
+        self.se_volume = 1.0
+        self.bgm_volume = 1.0
+
         # 効果音をロードする
-        self.sounds = {
-            "push_button": load_audio(DECIDE_BUTTON_SOUND_PATH),
+        self.se = {
+            "decide_button": load_audio(DECIDE_BUTTON_SOUND_PATH),
+            "boss_intro": load_audio(BOSS_INTRO_SOUND),
+            "boss_defeat": load_audio(BOSS_DEFEAT_SOUND),
+            "gameover": load_audio(GAMEOVER_SOUND_PATH),
+            "player_hit": load_audio(PLAYER_HIT_SOUND),
+            "ohuda_throw": load_audio(OHUDA_THROW_SOUND),
+            "ending": load_audio(ENDING_SOUND),
         }
 
         # BGMのパスを管理する
         self.bgms = {
-            "title": BGM_PATH,
+            "title": TITLE_BGM_PATH,
+            "stage": STAGE_BGM_PATH,
+            "boss": BOSS_STAGE_BGM_PATH,
         }
 
-        # 効果音とBGMの初期音量
-        self.se_volume = 1.0
-        self.bgm_volume = 1.0
-
     def set_se_volume(self, volume):
-        # 音量が0.0～1.0の範囲内の場合のみ変更する
         if 0.0 <= volume <= 1.0:
             self.se_volume = volume
 
     def set_bgm_volume(self, volume):
-        # 音量が0.0～1.0の範囲内の場合のみ変更する
         if 0.0 <= volume <= 1.0:
             self.bgm_volume = volume
-            pygame.mixer.music.set_volume(self.bgm_volume)
+            pygame.mixer.music.set_volume(volume)
 
-    def play_se_push_button(self):
-        # ボタン押下時の効果音を取得する
-        sound = self.sounds["push_button"]
+    def play_se(self, name):
+        """効果音を1回再生する。"""
+        sound = self.se.get(name)
+        if sound is not None:
+            sound.set_volume(self.se_volume)
+            sound.play()
 
-        # 効果音の音量を設定する
-        sound.set_volume(self.se_volume)
+    def play_bgm(self, name, loops=-1):
+        """指定したBGMを再生する。loops=-1でループ再生。"""
+        path = self.bgms.get(name)
+        if path is None:
+            return
 
-        # 効果音を再生する
-        sound.play()
+        pygame.mixer.music.stop()
+        load_bgm(path)
+        pygame.mixer.music.set_volume(self.bgm_volume)
+        pygame.mixer.music.play(loops)
 
     def play_bgm_title(self):
-        # タイトル画面用のBGMをロードする
-        load_bgm(self.bgms["title"])
+        self.play_bgm("title")
 
-        # BGMの音量を設定する
-        pygame.mixer.music.set_volume(self.bgm_volume)
+    def play_bgm_stage(self):
+        self.play_bgm("stage")
 
-        # BGMをループ再生する
-        pygame.mixer.music.play(-1)
+    def play_bgm_boss(self):
+        self.play_bgm("boss")
 
     def stop_bgm(self):
-        # BGMを停止する
-        pygame.mixer.music.stop()
+        if pygame.mixer.get_init() is not None:
+            pygame.mixer.music.stop()
 
     def pause_bgm(self):
-        # BGMを一時停止する
-        pygame.mixer.music.pause()
+        if pygame.mixer.get_init() is not None:
+            pygame.mixer.music.pause()
 
     def resume_bgm(self):
-        # 一時停止したBGMを再開する
-        pygame.mixer.music.unpause()
+        if pygame.mixer.get_init() is not None:
+            pygame.mixer.music.unpause()
+
+    # 効果音を名前付きで呼び出すためのメソッド
+    def play_se_decide_button(self):
+        self.play_se("decide_button")
+
+    def play_se_boss_intro(self):
+        self.play_se("boss_intro")
+
+    def play_se_boss_defeat(self):
+        self.play_se("boss_defeat")
+
+    def play_se_gameover(self):
+        self.play_se("gameover")
+
+    def play_se_player_hit(self):
+        self.play_se("player_hit")
+
+    def play_se_ohuda_throw(self):
+        self.play_se("ohuda_throw")
+
+    def play_se_ending(self):
+        self.play_se("ending")

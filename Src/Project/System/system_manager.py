@@ -1,3 +1,5 @@
+import pygame
+
 from State.player import Player
 from State.stage_object_data import StageObjectManager
 from State.attack_data import Attack
@@ -16,9 +18,9 @@ from System.progress_system import pouse_update, title_update, gameover_update
 
 class System:
     def __init__(self):
-        self.sound = SoundSystem()
+        self._sound = SoundSystem()
         self._map = Map()
-        self.hit_check = PlayerHitCheck()
+        self._hit_check = PlayerHitCheck()
 
 
     def player_move(self, player: Player) -> None:
@@ -32,7 +34,7 @@ class System:
         
 
     def player_hit_check(self, count: int, player: Player, objects: StageObjectManager) -> None:
-        self.hit_check.update(count, player, objects)
+        self._hit_check.update(count, player, objects)
 
     def map_update(self, count: int, objects: StageObjectManager, state: StageNumber, boss_hp: int) -> bool:
         return self._map.stage_update(objects, count, state, boss_hp)
@@ -55,14 +57,53 @@ class System:
         gameover_update(command, flag)
 
 
-    def play_PushButton(self) -> None:
-        self.sound.play_se_push_button()
-
-    def play_TitleBGM(self) -> None:
-        self.sound.play_bgm_title()
 
     def set_se_volume(self, volume: int) -> None:
-        self.sound.set_se_volume(volume)
+        self._sound.set_se_volume(volume)
 
     def set_bgm_volume(self, volume: int) -> None:
-        self.sound.set_bgm_volume(volume)
+        self._sound.set_bgm_volume(volume)
+
+
+    def play_bgm_title(self):
+        self._sound.play_bgm_title()
+
+    def play_bgm_stage(self):
+        self._sound.play_bgm_stage()
+
+    def play_bgm_boss(self):
+        self._sound.play_bgm_boss()
+
+
+    def stop_bgm(self):
+        self._sound.stop_bgm()
+
+    def pause_bgm(self):
+        self._sound.pause_bgm()
+
+    def resume_bgm(self):
+        self._sound.resume_bgm()
+
+        
+
+    # 効果音を名前付きで呼び出すためのメソッド
+    def play_se_decide_button(self):
+        self._sound.play_se_decide_button()
+
+    def play_se_boss_intro(self):
+        self._sound.play_se_boss_intro()
+
+    def play_se_boss_defeat(self):
+        self._sound.play_se_boss_defeat()
+
+    def play_se_gameover(self):
+        self._sound.play_se_gameover()
+
+    def play_se_player_hit(self):
+        self._sound.play_se_player_hit()
+
+    def play_se_ohuda_throw(self):
+        self._sound.play_se_ohuda_throw()
+
+    def play_se_ending(self):
+        self._sound.play_se_ending()

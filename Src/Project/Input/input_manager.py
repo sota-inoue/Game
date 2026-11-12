@@ -38,14 +38,11 @@ class Input:
         return Command.NONE
 
     def command_update(self) -> None:
-        # デバイスから入力を読み取る
         self._input.update()
 
-        # 取得した入力をすべて処理する
         while self._input.has_input():
             x, y = self._input.get_input()
 
-            # 座標をゲーム内座標へ変換する
             if self.mode:
                 x, y = driver_to_game(x, y)
             else:
@@ -54,18 +51,16 @@ class Input:
             self._input_x = x
             self._input_y = y
 
-            # 無効な座標を除外する
+            # 新しい入力が来たら、古い未処理コマンドを破棄
+            self._commands.clear()
+
             if x < 0 or y < 0:
                 continue
 
-            # 座標からコマンドへ変換する
             command = self.command_converter.convert(x, y)
 
-            if command == Command.NONE:
-                continue
-
-            # コマンドをキューへ保存する
-            self._commands.append(command)
+            if command != Command.NONE:
+                self._commands.append(command)
 
     def debug_log(self) -> None:
         command = (

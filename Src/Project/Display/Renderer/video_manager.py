@@ -114,7 +114,7 @@ class VideoManager:
                 # Pygame Surfaceに変換
                 image = pygame.image.frombuffer(frame.tobytes(), (self._width, self._height), "RGB")
                 images.append(image)
-                print(f"{count + 1}/{required_frames}枚目 読み込み完了", flush=True)
+                # print(f"{count + 1}/{required_frames}枚目 読み込み完了", flush=True)
 
                 last_image = image
                 previous_frame = target_frame
