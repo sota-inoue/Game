@@ -9,7 +9,18 @@ STAGE2_PATH = BASE_DIR / "Map" / "stage2.txt"
 STAGE3_PATH = BASE_DIR / "Map" / "stage3.txt"
 
 DECIDE_BUTTON_SOUND_PATH = BASE_DIR / "Sound" / "Se" / "decide_button.mp3"
-BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Morning.mp3"
+
+BOSS_INTRO_SOUND = BASE_DIR / "Sound" / "Se" / "Before_Boss_Battle.mp3"
+BOSS_DEFEAT_SOUND = BASE_DIR / "Sound" / "Se" / "勝利.mp3"
+OPNING_SOUND_PATH = None
+GAMEOVER_SOUND_PATH = BASE_DIR / "Sound" / "Se" / "gameover.mp3"
+PLAYER_HIT_SOUND= BASE_DIR / "Sound" / "Se" / "crash.mp3"
+OHUDA_THROW_SOUND = BASE_DIR / "Sound" / "Se" / "throw ohuda.mp3"
+ENDING_SOUND = BASE_DIR / "Sound" / "Se" / "End_of_story.mp3"
+
+TITLE_BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "I'm_fine.mp3"
+STAGE_BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "yokai_subway_boss_bgm.mp3"
+BOSS_STAGE_BGM_PATH = BASE_DIR / "Sound" / "Bgm" / "Bossbgm.mp3"
 
 
 OHUDA_IMAGE = BASE_DIR / "Image" / "Player" / "ohuda.png"
@@ -108,6 +119,6 @@ STAGE_BACK_GROUND4 = BASE_DIR / "Image" / "Backgrounds" / "Back4.jpg"
 STAGE_BACK_GROUND5 = BASE_DIR / "Image" / "Backgrounds" / "Back5.jpg"
 
 OPNING_VIDEO_PATH = BASE_DIR / "Video" / "opning_video.mp4"
-BOSS_INTRO_VIDEO_PATH = BASE_DIR / "Video" / "boss_intro.MP4"
-BOSS_DEFEAT_VIDEO_PATH = BASE_DIR / "Video" / "bos_defeat.MP4"
+BOSS_INTRO_VIDEO_PATH = BASE_DIR / "Video" / "boss_intro.mp4"
+BOSS_DEFEAT_VIDEO_PATH = BASE_DIR / "Video" / "bos_defeat.mp4"
 ENDING_VIDEO_PATH = BASE_DIR / "Video" / "ending_video.mp4"

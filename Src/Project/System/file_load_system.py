@@ -24,22 +24,6 @@ def load_video(path):
 
 
 def load_image(path):
-    
-    path = Path(path)
-    
-    if not path.exists():
-        raise FileNotFoundError(f"パスが存在しません: {path}")
-    # 指定されたパスが画像ファイルであるか確認する
-    if not path.is_file():
-        raise FileNotFoundError(f"画像ファイルではありません: {path}")
-    try:
-        return pygame.image.load(path).convert_alpha()
-    except pygame.error:
-        # Pygameで画像の読み込みに失敗した場合
-        print(f"画像の読み込みに失敗しました: {path}")
-        raise
-
-def load_image(path):
     # 受け取ったパスをPathオブジェクトに変換する
     path = Path(path)
     # 指定されたパスが存在するか確認する

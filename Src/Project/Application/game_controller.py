@@ -23,11 +23,21 @@ class Controller:
         self.mode = mode
         pygame.init()
         
+        print("DisplayManager 開始", flush=True)
         self._display = DisplayManager(mode)
+        print("DisplayManager 完了", flush=True)
 
+        print("Input 開始", flush=True)
         self.input = Input(mode)
+        print("Input 完了", flush=True)
+
+        print("System 開始", flush=True)
         self.system = System()
+        print("System 完了", flush=True)
+
+        print("State 開始", flush=True)
         self.state = State()
+        print("State 完了", flush=True)
 
         # self.system.play_TitleBGM()
         self.loop_flug = True
@@ -48,7 +58,7 @@ class Controller:
 
             # ボタンが押された場合は効果音を再生する
             if command != Command.NONE:
-                self.system.play_PushButton()
+                self.system.play_se_decide_button()
 
             self.state.set_game_command(command)
 
@@ -76,6 +86,7 @@ class Controller:
                 self._last_count = self.count
                 self.count = 0
                 self._display.save_surface()
+                return
 
             else:
                 # ステージ内部処理
@@ -193,26 +204,33 @@ class Controller:
 
         # ゲームクリア画面を描画する
         elif game_state == GamePhase.CLEAR:
-            if self.count < 40:
+            if self.count < 8:
                 self._display.draw_clear()
             else:
                 self.state.set_game_phase(GamePhase.BOSS_INTRO)
 
         elif game_state == GamePhase.BOSS_INTRO:
+            if self.count == 0:
+                self.system.play_se_boss_intro()
             if self._display.draw_boss_intro(self.count):
                 self.state.set_game_phase(GamePhase.BOSS_STAGE)
 
         elif game_state == GamePhase.BOSS_DEFEAT:
-            if self.count < 24:
+            if self.count < 8:
                 self._display.draw_clear()
             else:
-                defeat_count = self.count - 24
+                if self.count == 8:
+                    self.system.play_se_boss_defeat()
+
+                defeat_count = self.count - 8
                 if self._display.draw_boss_defeat(defeat_count):
                     self.state.set_game_phase(GamePhase.ENDING)
                     self.count = 0
 
         # エンディング画面を描画する
         elif game_state == GamePhase.ENDING:
+            if self.count == 0:
+                self.system.play_se_ending()
             if self._display.draw_ending(self.count):
                 self.state.set_game_phase(GamePhase.TITLE)
 
@@ -228,7 +246,7 @@ class Controller:
 
         self._display.output()
 
-    def update_phase_transition(self, before_phase: GamePhase, after_phase: GamePhase):
+    def update_phase_transition(self, before_phase: GamePhase, after_phase: GamePhase) -> None:
 
         # ゲーム状態が変化していない場合
         if before_phase == after_phase:
@@ -244,32 +262,51 @@ class Controller:
                 self.count = 0
                 self._last_count = 0
 
+                # タイトルBGMに切り替える
+                self.system.stop_bgm()
+                self.system.play_bgm_title()
+
             # ゲームに復帰する場合
             else:
                 self.count = self._last_count
+                self._last_count = 0
 
             self.state.set_game_command(Command.NONE)
+            return
+
+        # ポーズに入る場合
+        # progress_update() で保存した _last_count を消さない
+        if after_phase == GamePhase.PAUSE:
             return
 
         # 通常のゲーム状態が変化した場合
         self.count = 0
         self._last_count = 0
+        self.system.stop_bgm()
 
         if after_phase == GamePhase.STAGE:
             self.state.set_game_command(Command.NONE)
             self.state.stage_reset()
+            self.system.play_bgm_stage()
 
         elif after_phase == GamePhase.BOSS_STAGE:
             self.state.set_game_command(Command.NONE)
             self.state.stage_reset()
+            self.system.play_bgm_boss()
 
         elif after_phase == GamePhase.TITLE:
             self.state.title_reset()
+            self.system.play_bgm_title()
 
         elif after_phase == GamePhase.GAMEOVER:
             self._display.save_surface()
+            self.system.play_se_gameover()
 
-        elif after_phase == GamePhase.CLEAR or after_phase == GamePhase.BOSS_DEFEAT:
+        elif after_phase == GamePhase.CLEAR:
+            self._display.save_surface()
+            self.count = 0
+
+        elif after_phase == GamePhase.BOSS_DEFEAT:
             self._display.save_surface()
             self.count = 0
 

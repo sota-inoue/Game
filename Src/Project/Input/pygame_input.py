@@ -8,11 +8,10 @@ class PygameInput:
         self._events = deque()
 
     def update(self):
-        # イベントをまとめて取得する
         for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    self._events.append(event.pos)
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                self._events.clear()
+                self._events.append(event.pos)
 
             elif event.type == pygame.QUIT:
                 pygame.event.post(pygame.event.Event(pygame.QUIT))

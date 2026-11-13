@@ -40,7 +40,7 @@ TOUCH_X_MAX = 4095
 TOUCH_Y_MAX = 4095
 
 # ステージのレイアウト設定
-STAGE_TOP_LANE_WIDTH_SCALE = 2 / 10  # 上レーンの幅（画面幅に対する割合）
+STAGE_TOP_LANE_WIDTH_SCALE = 3 / 20  # 上レーンの幅（画面幅に対する割合）
 STAGE_BOTTOM_LANE_WIDTH_SCALE = 9 / 10  # 下レーンの幅（画面幅に対する割合）
 STAGE_TOP_LANE_VERTICAL_MARGIN_SCALE = 4 / 15  # 上レーンの上端位置（画面高さに対する割合）
 STAGE_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15  # 下レーンの下端からの余白（画面高さに対する割合）
@@ -51,17 +51,18 @@ BOSS_BOTTOM_LANE_WIDTH_SCALE = 9 / 10 # 下レーンの高さ（画面高さに�
 BOSS_TOP_LANE_VERTICAL_MARGIN_SCALE = 7 / 15  # 上レーンの縦方向の余白（画面高さに対する割合）
 BOSS_BOTTOM_LANE_VERTICAL_MARGIN_SCALE = 1 / 15 # 下レーンの縦方向の余白（画面高さに対する割合)
 
+BASS_SIZE = 3 / 16
 
 # プレイヤーのサイズの比率 : 縦横比 5:3
-PLAYER_WIDTH_SCALE = 1 / 8  # 横幅
+PLAYER_WIDTH_SCALE = BASS_SIZE  # 横幅
 PLAYER_HEIGHT_SCALE = PLAYER_WIDTH_SCALE * 5 / 3  # 高さ
 
 # 敵のサイズの比率：縦横比 5:3
-ENEMY_WIDTH_SCALE = 1 / 8  # 横幅
+ENEMY_WIDTH_SCALE = BASS_SIZE  # 横幅
 ENEMY_HEIGHT_SCALE = ENEMY_WIDTH_SCALE * 5 / 3  # 高さ
 
 # 障害物のサイズの比率：縦横比 1:1
-OBSTACLE_WIDTH_SCALE = 1 / 8  # 横幅
+OBSTACLE_WIDTH_SCALE = BASS_SIZE  # 横幅
 OBSTACLE_HEIGHT_SCALE = OBSTACLE_WIDTH_SCALE  # 高さ
 
 # 攻撃物のサイズの比率：縦横比 1:1
